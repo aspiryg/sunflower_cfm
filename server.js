@@ -16,7 +16,7 @@ import authRoutes from "./routes/authRoute.js";
 import feedbackRoutes from "./routes/feedbackRoute.js";
 import notificationRoutes from "./routes/notificationRoute.js";
 import feedbackRelatedDataRoute from "./routes/feedbackRelatedDataRoute.js";
-// import myProfileRoutes from "./routes/myProfileRoute.js";
+import myProfileRoutes from "./routes/myProfileRoute.js";
 
 // Security Middleware
 app.use(
@@ -125,7 +125,7 @@ app.get("/api/health", async (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/feedback", feedbackRoutes);
-// app.use("/api/profile", myProfileRoutes);
+app.use("/api/profile", myProfileRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/feedback-related-data", feedbackRelatedDataRoute);
 
