@@ -5,10 +5,12 @@ import { database } from "./config/database.js";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
+import path from "path";
 
 config();
 const app = express();
 const PORT = process.env.PORT || 3000;
+const __dirname = path.resolve();
 
 // Import routes
 import userRoutes from "./routes/userRoute.js";
@@ -128,6 +130,14 @@ app.use("/api/feedback", feedbackRoutes);
 app.use("/api/profile", myProfileRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/feedback-related-data", feedbackRelatedDataRoute);
+
+// Serve static files from the frontend build directory
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "frontend/dist")));
+  app.get("/*splat", (req, res) => {
+    res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"));
+  });
+}
 
 // TODO: 404 handler
 
