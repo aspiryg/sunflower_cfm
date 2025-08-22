@@ -17,7 +17,7 @@ import {
 } from "../features/feedback/useFeedback";
 import { useDashboardFilters } from "../features/dashboard/useDashboard";
 
-// ...existing styled components...
+// DashboardHeader
 
 const PageContainer = styled.div`
   display: flex;
@@ -141,6 +141,11 @@ function Dashboard() {
     filters: statsFilters, // Pass converted filters to useFeedbackStats
   });
 
+  // console.log("Dashboard - stats data:", stats);
+  // console.log("Dashboard - statsFilters:", statsFilters);
+  // console.log("Dashboard - isLoading:", statsLoading);
+  // console.log("Dashboard - error:", statsError);
+
   // Fetch recent feedback with applied filters (except date range for recent items)
   const recentFeedbackFilters = {
     ...(filters.status !== "all" && { status: filters.status }),
@@ -251,7 +256,7 @@ function Dashboard() {
           </Text>
         </LoadingContainer>
       ) : (
-        <ContentGrid>
+        <ContentGrid aria-label="Dashboard Content">
           {/* Filters */}
           <FiltersArea>
             <DashboardFilters
@@ -274,10 +279,10 @@ function Dashboard() {
           <ChartsArea>
             <DashboardCharts
               stats={stats}
-              recentFeedback={recentFeedback}
+              // recentFeedback={recentFeedback}
               filters={filters}
-              isLoading={isLoading}
-              error={hasError}
+              isLoading={statsLoading}
+              error={statsError}
             />
           </ChartsArea>
 

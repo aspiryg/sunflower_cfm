@@ -3,13 +3,18 @@ import { useNavigate } from "react-router-dom";
 import styled, { css } from "styled-components";
 import PropTypes from "prop-types";
 import { useUserNotifications } from "../features/notifications/useNotification";
+import {
+  useMarkNotificationAsRead,
+  useMarkAllNotificationsAsRead,
+  useDeleteNotification,
+} from "../features/notifications/useNotificationActions";
 import { formatRelativeTime } from "../utils/dateUtils";
 import {
   HiOutlineBell,
-  HiOutlineEllipsisVertical,
+  // HiOutlineEllipsisVertical,
   HiOutlineEye,
   HiOutlineTrash,
-  HiOutlineChatBubbleLeftRight,
+  // HiOutlineChatBubbleLeftRight,
   HiOutlineExclamationTriangle,
   HiOutlineInformationCircle,
   HiOutlineCheckCircle,
@@ -246,6 +251,8 @@ const ViewAllButton = styled.button`
   FEEDBACK_UNASSIGNED: 
   FEEDBACK_STATUS_CHANGED: 
 */
+
+// Types of Notification
 export const notificationsIcons = {
   FEEDBACK_SUBMITTED: HiOutlineCheckCircle,
   FEEDBACK_ASSIGNED: HiOutlineExclamationTriangle,
@@ -296,13 +303,14 @@ function NotificationsDropdown({ className = "" }) {
   const menuRef = useRef(null);
   const triggerRef = useRef(null);
   const navigate = useNavigate();
-  const notifications = [];
-  const { data: notificationsData } = useUserNotifications();
-  if (notificationsData) {
-    notifications.push(...notificationsData);
-  }
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
+  const { data: notificationsData } = useUserNotifications();
+  const markAsReadMutation = useMarkNotificationAsRead();
+  const markAllAsReadMutation = useMarkAllNotificationsAsRead();
+  const deleteNotificationMutation = useDeleteNotification();
+
+  const notifications = notificationsData?.data || [];
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
   // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -339,23 +347,29 @@ function NotificationsDropdown({ className = "" }) {
   };
 
   const markAsRead = (notificationId) => {
-    console.log("Marking notification as read:", notificationId);
+    markAsReadMutation.mutate(notificationId);
   };
 
   const markAllAsRead = () => {
-    console.log("Marking all notifications as read");
+    markAllAsReadMutation.mutate();
   };
 
   const deleteNotification = (notificationId) => {
-    console.log("Deleting notification:", notificationId);
+    deleteNotificationMutation.mutate(notificationId);
   };
 
   const handleNotificationClick = (notification) => {
     if (!notification.isRead) {
       markAsRead(notification.id);
     }
-    // You can add navigation logic here based on notification type
-    console.log("Notification clicked:", notification);
+    navigate(`/feedback/view/${notification.feedbackId}`);
+    // Navigate to action URL or feedback page
+    // if (notification.actionUrl) {
+    //   navigate(notification.actionUrl);
+    // } else if (notification.feedbackId) {
+    //   navigate(`/feedback/view/${notification.feedbackId}`);
+    // }
+    // setIsOpen(false);
   };
 
   const handleViewAll = () => {

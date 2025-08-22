@@ -126,8 +126,9 @@ function AssignFeedbackModal({ isOpen = false, onClose, feedback, onSuccess }) {
   const defaultOrganizationName = "Sunflower";
 
   // Fetch assignable users
-  const { data: assignableUsers = [], isLoading: usersLoading } =
-    useFeedbackUsers();
+  const { data, isLoading: usersLoading } = useFeedbackUsers();
+
+  const assignableUsers = data?.data || [];
 
   // Reset form when modal opens
   useEffect(() => {
@@ -149,7 +150,7 @@ function AssignFeedbackModal({ isOpen = false, onClose, feedback, onSuccess }) {
   });
 
   const handleClose = () => {
-    if (!assignMutation.isLoading) {
+    if (!assignMutation.isError) {
       setSelectedUserId("");
       setcomments("");
       setErrors({});
@@ -206,15 +207,15 @@ function AssignFeedbackModal({ isOpen = false, onClose, feedback, onSuccess }) {
       <Button
         variant="secondary"
         onClick={handleClose}
-        disabled={assignMutation.isLoading}
+        disabled={assignMutation.isPending}
       >
         Cancel
       </Button>
       <Button
         variant="primary"
         onClick={handleSubmit}
-        loading={assignMutation.isLoading}
-        disabled={assignMutation.isLoading || !hasChanges}
+        loading={assignMutation.isPending}
+        disabled={assignMutation.isPending || !hasChanges}
       >
         <HiOutlineUserPlus />
         Assign Feedback
@@ -232,8 +233,8 @@ function AssignFeedbackModal({ isOpen = false, onClose, feedback, onSuccess }) {
       description="Assign this feedback to a team member"
       size="md"
       footer={footer}
-      closeOnOverlayClick={!assignMutation.isLoading}
-      closeOnEscape={!assignMutation.isLoading}
+      closeOnOverlayClick={!assignMutation.isPending}
+      closeOnEscape={!assignMutation.isPending}
     >
       {/* Feedback Information */}
       <FeedbackSection>
@@ -304,7 +305,7 @@ function AssignFeedbackModal({ isOpen = false, onClose, feedback, onSuccess }) {
               setErrors((prev) => ({ ...prev, user: "" }));
             }}
             $hasError={!!errors.user}
-            disabled={assignMutation.isLoading || usersLoading}
+            disabled={assignMutation.isPending || usersLoading}
           >
             <option value="">
               {usersLoading ? "Loading users..." : "Select a user..."}
@@ -336,7 +337,7 @@ function AssignFeedbackModal({ isOpen = false, onClose, feedback, onSuccess }) {
               setErrors((prev) => ({ ...prev, user: "" }));
             }}
             $hasError={!!errors.user}
-            disabled={assignMutation.isLoading || usersLoading}
+            disabled={assignMutation.isPending || usersLoading}
             options={[
               {
                 value: "",
@@ -396,7 +397,7 @@ function AssignFeedbackModal({ isOpen = false, onClose, feedback, onSuccess }) {
             placeholder="Add any specific instructions or context for the assignee..."
             rows={3}
             $hasError={!!errors.comments}
-            disabled={assignMutation.isLoading}
+            disabled={assignMutation.isPending}
             maxLength={500}
           />
           <Text
@@ -409,7 +410,7 @@ function AssignFeedbackModal({ isOpen = false, onClose, feedback, onSuccess }) {
         </FormField>
       </FormSection>
 
-      {assignMutation.isLoading && (
+      {assignMutation.isPending && (
         <Text size="sm" color="muted" style={{ textAlign: "center" }}>
           Assigning feedback...
         </Text>

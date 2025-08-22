@@ -1,7 +1,7 @@
 import express from "express";
 import { config } from "dotenv";
 import cors from "cors";
-import { database } from "./config/database.js";
+import { database } from "./backend/config/database.js";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
@@ -13,12 +13,12 @@ const PORT = process.env.PORT || 3000;
 const __dirname = path.resolve();
 
 // Import routes
-import userRoutes from "./routes/userRoute.js";
-import authRoutes from "./routes/authRoute.js";
-import feedbackRoutes from "./routes/feedbackRoute.js";
-import notificationRoutes from "./routes/notificationRoute.js";
-import feedbackRelatedDataRoute from "./routes/feedbackRelatedDataRoute.js";
-import myProfileRoutes from "./routes/myProfileRoute.js";
+import userRoutes from "./backend/routes/userRoute.js";
+import authRoutes from "./backend/routes/authRoute.js";
+import feedbackRoutes from "./backend/routes/feedbackRoute.js";
+import notificationRoutes from "./backend/routes/notificationRoute.js";
+import feedbackRelatedDataRoute from "./backend/routes/feedbackRelatedDataRoute.js";
+import myProfileRoutes from "./backend/routes/myProfileRoute.js";
 
 // Security Middleware
 app.use(

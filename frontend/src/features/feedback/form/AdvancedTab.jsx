@@ -141,8 +141,10 @@ function AdvancedTab({
     });
 
   // Fetch user options for assignments
-  const { data: feedbackUsers = [], isLoading: feedbackUsersLoading } =
-    useFeedbackUsers();
+  const { data, isLoading: feedbackUsersLoading } = useFeedbackUsers();
+
+  const feedbackUsers = data?.data || [];
+
   const submitterUsers = feedbackUsers;
   const reviewerUsers = feedbackUsers;
   const assignableUsers = feedbackUsers;

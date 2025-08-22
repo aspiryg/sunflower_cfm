@@ -21,6 +21,7 @@ import MyProfile from "./pages/MyProfile";
 import Feedback from "./pages/Feedback";
 import AddFeedback from "./pages/AddFeedback";
 import FeedbackDetails from "./pages/FeedbackDetails";
+import Notifications from "./pages/Notifications";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -103,7 +104,7 @@ function App() {
                   <Route index element={<Navigate replace to="dashboard" />} />
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/settings" element={<Settings />} />
-                  <Route path="/users" element={<Users />} />
+                  <Route path="/notifications" element={<Notifications />} />
                   <Route path="/my-profile" element={<MyProfile />} />
                 </Route>
                 {/* Catch all route */}
@@ -141,6 +142,20 @@ function App() {
                       </ProtectedRoute>
                     }
                   />
+                </Route>
+                {/*Users route */}
+                <Route
+                  path="/users"
+                  element={
+                    <ProtectedRoute requiredRole={"admin"}>
+                      <AppLayout />
+                    </ProtectedRoute>
+                  }
+                >
+                  <Route index element={<Users />} />
+                  {/* <Route path="add" element={<AddUser />} />
+                  <Route path="edit/:id" element={<EditUser />} />
+                  <Route path="view/:id" element={<ViewUser />} /> */}
                 </Route>
                 <Route path="*" element={<PageNotFound />} />
               </Routes>

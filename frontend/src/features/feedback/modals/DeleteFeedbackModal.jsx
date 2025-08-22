@@ -154,7 +154,7 @@ function DeleteFeedbackModal({ isOpen = false, onClose, feedback, onSuccess }) {
   };
 
   const handleClose = () => {
-    if (!deleteMutation.isLoading) {
+    if (!deleteMutation.isError) {
       setConfirmationChecked(false);
       onClose();
     }
@@ -171,7 +171,7 @@ function DeleteFeedbackModal({ isOpen = false, onClose, feedback, onSuccess }) {
   // console.log("DeleteFeedbackModal render:", {
   //   isOpen,
   //   confirmationChecked,
-  //   isLoading: deleteMutation.isLoading,
+  //   isPending: deleteMutation.isPending,
   //   feedback: feedback?.title,
   // });
 
@@ -185,9 +185,9 @@ function DeleteFeedbackModal({ isOpen = false, onClose, feedback, onSuccess }) {
       confirmText="Delete Feedback"
       cancelText="Cancel"
       destructive={true}
-      isLoading={deleteMutation.isLoading}
-      closeOnOverlayClick={!deleteMutation.isLoading}
-      closeOnEscape={!deleteMutation.isLoading}
+      isLoading={deleteMutation.isPending}
+      closeOnOverlayClick={!deleteMutation.isPending}
+      closeOnEscape={!deleteMutation.isPending}
       disabled={disabled}
     >
       <WarningContainer>
@@ -296,7 +296,7 @@ function DeleteFeedbackModal({ isOpen = false, onClose, feedback, onSuccess }) {
             id="delete-confirmation"
             checked={confirmationChecked}
             onChange={handleCheckboxChange}
-            disabled={deleteMutation.isLoading}
+            disabled={deleteMutation.isPending}
           />
           <CheckboxContent>
             <CheckboxLabel htmlFor="delete-confirmation">
@@ -316,7 +316,7 @@ function DeleteFeedbackModal({ isOpen = false, onClose, feedback, onSuccess }) {
         </CheckboxField>
       </ConfirmationSection>
 
-      {deleteMutation.isLoading && (
+      {deleteMutation.isPending && (
         <Text
           size="sm"
           color="muted"

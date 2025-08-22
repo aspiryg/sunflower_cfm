@@ -147,7 +147,7 @@ function UpdateStatusModal({ isOpen = false, onClose, feedback, onSuccess }) {
   });
 
   const handleClose = () => {
-    if (!updateStatusMutation.isLoading) {
+    if (!updateStatusMutation.isError) {
       setSelectedStatus("");
       setcomments("");
       setErrors({});
@@ -203,15 +203,15 @@ function UpdateStatusModal({ isOpen = false, onClose, feedback, onSuccess }) {
       <Button
         variant="secondary"
         onClick={handleClose}
-        disabled={updateStatusMutation.isLoading}
+        disabled={updateStatusMutation.isPending}
       >
         Cancel
       </Button>
       <Button
         variant="primary"
         onClick={handleSubmit}
-        loading={updateStatusMutation.isLoading}
-        disabled={updateStatusMutation.isLoading || !hasChanges}
+        loading={updateStatusMutation.isPending}
+        disabled={updateStatusMutation.isPending || !hasChanges}
       >
         <HiOutlineCheck />
         Update Status
@@ -229,8 +229,8 @@ function UpdateStatusModal({ isOpen = false, onClose, feedback, onSuccess }) {
       description="Change the status of this feedback entry"
       size="md"
       footer={footer}
-      closeOnOverlayClick={!updateStatusMutation.isLoading}
-      closeOnEscape={!updateStatusMutation.isLoading}
+      closeOnOverlayClick={!updateStatusMutation.isPending}
+      closeOnEscape={!updateStatusMutation.isPending}
     >
       {/* Current Status Section */}
       <CurrentStatusSection>
@@ -275,7 +275,7 @@ function UpdateStatusModal({ isOpen = false, onClose, feedback, onSuccess }) {
               setErrors((prev) => ({ ...prev, status: "" }));
             }}
             $hasError={!!errors.status}
-            disabled={updateStatusMutation.isLoading}
+            disabled={updateStatusMutation.isPending}
           >
             <option value="">Select new status...</option>
             {STATUS_OPTIONS.map((status) => (
@@ -303,7 +303,7 @@ function UpdateStatusModal({ isOpen = false, onClose, feedback, onSuccess }) {
               setErrors((prev) => ({ ...prev, status: "" }));
             }}
             $hasError={!!errors.status}
-            disabled={updateStatusMutation.isLoading}
+            disabled={updateStatusMutation.isPending}
             options={STATUS_OPTIONS.map((status) => ({
               value: status.value,
               label:
@@ -351,7 +351,7 @@ function UpdateStatusModal({ isOpen = false, onClose, feedback, onSuccess }) {
               placeholder="Explain why you're changing the status..."
               rows={3}
               $hasError={!!errors.comments}
-              disabled={updateStatusMutation.isLoading}
+              disabled={updateStatusMutation.isPending}
               maxLength={500}
             />
             <Text
@@ -365,7 +365,7 @@ function UpdateStatusModal({ isOpen = false, onClose, feedback, onSuccess }) {
         </CommentsSection>
       </FormSection>
 
-      {updateStatusMutation.isLoading && (
+      {updateStatusMutation.isPending && (
         <Text size="sm" color="muted" style={{ textAlign: "center" }}>
           Updating status...
         </Text>

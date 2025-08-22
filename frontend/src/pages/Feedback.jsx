@@ -21,6 +21,7 @@ import { useFeedbackTable } from "../features/feedback/useFeedbackTable";
 import DeleteFeedbackModal from "../features/feedback/modals/DeleteFeedbackModal";
 import UpdateStatusModal from "../features/feedback/modals/UpdateStatusModal";
 import AssignFeedbackModal from "../features/feedback/modals/AssignFeedbackModal";
+import AddCommentModal from "../features/feedback/modals/AddCommentModel";
 
 const PageContainer = styled.div`
   display: flex;
@@ -100,6 +101,10 @@ function Feedback() {
     isOpen: false,
     feedback: null,
   });
+  const [addCommentModal, setAddCommentModal] = useState({
+    isOpen: false,
+    feedback: null,
+  });
 
   // Use the enhanced feedback table hook
   const {
@@ -172,6 +177,9 @@ function Feedback() {
   const handleUpdateStatus = (feedback) => {
     setStatusModal({ isOpen: true, feedback });
   };
+  const handleAddComment = (feedback) => {
+    setAddCommentModal({ isOpen: true, feedback });
+  };
 
   // Modal close handlers
   const handleCloseDeleteModal = () => {
@@ -184,6 +192,10 @@ function Feedback() {
 
   const handleCloseAssignModal = () => {
     setAssignModal({ isOpen: false, feedback: null });
+  };
+
+  const handleCloseAddCommentModal = () => {
+    setAddCommentModal({ isOpen: false, feedback: null });
   };
 
   // Success handlers for modals
@@ -286,6 +298,7 @@ function Feedback() {
           onDeleteFeedback={handleDeleteFeedback}
           onUpdateStatus={handleUpdateStatus}
           onAssignFeedback={handleAssignFeedback}
+          onAddComment={handleAddComment}
         />
 
         {/* Empty State for No Results */}
@@ -334,6 +347,13 @@ function Feedback() {
         isOpen={assignModal.isOpen}
         onClose={handleCloseAssignModal}
         feedback={assignModal.feedback}
+        onSuccess={handleModalSuccess}
+      />
+
+      <AddCommentModal
+        isOpen={addCommentModal.isOpen}
+        onClose={handleCloseAddCommentModal}
+        feedback={addCommentModal.feedback}
         onSuccess={handleModalSuccess}
       />
     </PageContainer>

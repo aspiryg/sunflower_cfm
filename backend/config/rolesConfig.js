@@ -72,14 +72,15 @@ const ROLE_PERMISSIONS = {
       [ACTIONS.UPDATE]: ACTION_RESTRICTIONS.ASSIGNED, // Can update all feedback
     },
     [RESOURCES.USERS]: {
-      [ACTIONS.READ]: ACTION_RESTRICTIONS.OWN, // Can only read own profile
-      [ACTIONS.UPDATE]: ACTION_RESTRICTIONS.ALL, // Can only update own profile
+      [ACTIONS.READ]: ACTION_RESTRICTIONS.ALL, // Can read all user profiles
+      [ACTIONS.UPDATE]: ACTION_RESTRICTIONS.OWN, // Can only update own profile
     },
     [RESOURCES.CATEGORIES]: {
       [ACTIONS.READ]: ACTION_RESTRICTIONS.ALL,
     },
     [RESOURCES.NOTIFICATIONS]: {
       [ACTIONS.READ]: ACTION_RESTRICTIONS.OWN,
+      [ACTIONS.UPDATE]: ACTION_RESTRICTIONS.OWN,
       [ACTIONS.CREATE]: ACTION_RESTRICTIONS.ALL, // Can create notifications
     },
     [RESOURCES.COMMENTS]: {

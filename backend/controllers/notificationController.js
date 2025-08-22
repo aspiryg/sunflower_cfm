@@ -174,6 +174,8 @@ export const notificationController = {
     try {
       const userId = req.user?.id;
       const { notificationIds } = req.body;
+      console.log("Marking multiple notifications as read:", notificationIds);
+      console.log("User ID:", userId);
 
       if (!Array.isArray(notificationIds) || notificationIds.length === 0) {
         return res.status(400).json({
@@ -182,15 +184,17 @@ export const notificationController = {
         });
       }
 
-      const userPermission =
-        ROLE_PERMISSIONS[req.user?.role]?.[RESOURCES.NOTIFICATIONS][
-          ACTIONS.UPDATE
-        ];
-      const userIdForCheck =
-        userPermission === ACTION_RESTRICTIONS.ALL ? null : userId;
+      // const userPermission =
+      //   ROLE_PERMISSIONS[req.user?.role]?.[RESOURCES.NOTIFICATIONS][
+      //     ACTIONS.UPDATE
+      //   ];
+
+      // console.log("User permission for update:", userPermission);
+      // const userIdForCheck =
+      //   userPermission === ACTION_RESTRICTIONS.OWN ? null : userId;
 
       const updatedCount = await Notification.markMultipleAsReadAsync(
-        userIdForCheck,
+        userId,
         notificationIds
       );
 

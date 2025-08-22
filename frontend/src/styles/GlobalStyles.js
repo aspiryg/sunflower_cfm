@@ -109,6 +109,7 @@ const GlobalStyles = createGlobalStyle`
 
     /* ===== RED (0-900) ===== */
     --color-red-0: #ffffff;
+    --color-red-25: #fee2e2;
     --color-red-50: #fef2f2;
     --color-red-100: #fee2e2;
     --color-red-200: #fecaca;
@@ -163,6 +164,7 @@ const GlobalStyles = createGlobalStyle`
 
     /* Error (Red) */
     --color-error-0: var(--color-red-0);
+    --color-error-25: var(--color-red-25);
     --color-error-50: var(--color-red-50);
     --color-error-100: var(--color-red-100);
     --color-error-200: var(--color-red-200);
