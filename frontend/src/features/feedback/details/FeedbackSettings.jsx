@@ -117,7 +117,7 @@ const SettingControl = styled.div`
 const DangerZone = styled(Card)`
   padding: var(--spacing-5);
   border: 1px solid var(--color-error-200);
-  background-color: var(--color-error-25);
+  /* background-color: var(--color-error-0); */
   grid-column: 1 / -1;
 
   @media (max-width: 768px) {
@@ -531,6 +531,7 @@ function FeedbackSettings({ feedback, feedbackId, onEdit, onDelete }) {
                       border: "1px solid var(--color-grey-300)",
                       borderRadius: "var(--border-radius-sm)",
                       fontSize: "var(--font-size-sm)",
+                      backgroundColor: "var(--color-grey-0)",
                     }}
                   />
                   <Button
@@ -566,7 +567,10 @@ function FeedbackSettings({ feedback, feedbackId, onEdit, onDelete }) {
           <Text
             size="sm"
             color="muted"
-            style={{ marginBottom: "var(--spacing-4)" }}
+            style={{
+              marginBottom: "var(--spacing-4)",
+              // color: "var(--color-grey-400)",
+            }}
           >
             These actions are permanent and cannot be undone. Please proceed
             with caution.

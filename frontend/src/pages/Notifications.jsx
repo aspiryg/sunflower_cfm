@@ -30,7 +30,7 @@ import {
   useBulkMarkAsRead,
 } from "../features/notifications/useNotificationActions";
 import { formatRelativeTime } from "../utils/dateUtils";
-import { notificationsIcons } from "../ui/NotificationsDropdown";
+import { notificationsIcons } from "../features/notifications/notificationCONST";
 
 const PageContainer = styled.div`
   display: flex;
@@ -576,11 +576,21 @@ function Notifications() {
           </Text>
         </StatItem>
         <StatItem>
-          <Badge variant="error" size="sm" content={summary.unread} />
+          <Badge
+            variant="error"
+            size="sm"
+            content={summary.unread}
+            zeroTolerance={true}
+          />
           <Text size="sm">Unread</Text>
         </StatItem>
         <StatItem>
-          <Badge variant="success" size="sm" content={summary.isRead} />
+          <Badge
+            variant="success"
+            size="sm"
+            content={summary.isRead}
+            zeroTolerance={true}
+          />
           <Text size="sm">Read</Text>
         </StatItem>
       </StatsBar>

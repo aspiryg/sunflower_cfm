@@ -121,6 +121,7 @@ function Badge({
   pulse = false,
   className = "",
   children,
+  zeroTolerance = false,
   ...props
 }) {
   return (
@@ -132,7 +133,11 @@ function Badge({
       className={className}
       {...props}
     >
-      {dot ? null : content || children}
+      {dot
+        ? null
+        : zeroTolerance
+        ? content || children || 0
+        : content || children}
     </BadgeContainer>
   );
 }

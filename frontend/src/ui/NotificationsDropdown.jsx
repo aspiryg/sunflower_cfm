@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import styled, { css } from "styled-components";
 import PropTypes from "prop-types";
@@ -9,19 +9,19 @@ import {
   useDeleteNotification,
 } from "../features/notifications/useNotificationActions";
 import { formatRelativeTime } from "../utils/dateUtils";
+import { notificationsIcons } from "../features/notifications/notificationCONST";
 import {
   HiOutlineBell,
   // HiOutlineEllipsisVertical,
   HiOutlineEye,
   HiOutlineTrash,
   // HiOutlineChatBubbleLeftRight,
-  HiOutlineExclamationTriangle,
   HiOutlineInformationCircle,
-  HiOutlineCheckCircle,
 } from "react-icons/hi2";
 import IconButton from "./IconButton";
 import Text from "./Text";
 import Badge from "./Badge";
+import LoadingSpinner from "./LoadingSpinner";
 
 const NotificationContainer = styled.div`
   position: relative;
@@ -252,65 +252,46 @@ const ViewAllButton = styled.button`
   FEEDBACK_STATUS_CHANGED: 
 */
 
-// Types of Notification
-export const notificationsIcons = {
-  FEEDBACK_SUBMITTED: HiOutlineCheckCircle,
-  FEEDBACK_ASSIGNED: HiOutlineExclamationTriangle,
-  FEEDBACK_UNASSIGNED: HiOutlineExclamationTriangle,
-  FEEDBACK_STATUS_CHANGED: HiOutlineInformationCircle,
-};
-
-// Mock notifications data (replace with real data from your API)
-// const mockNotifications = [
-//   {
-//     id: "1",
-//     type: "success",
-//     title: "Feedback submitted successfully",
-//     message: "Your feedback has been received and is being reviewed.",
-//     time: "2 minutes ago",
-//     isRead: false,
-//   },
-//   {
-//     id: "2",
-//     type: "info",
-//     title: "System maintenance scheduled",
-//     message: "The system will be down for maintenance on Sunday at 2 AM.",
-//     time: "1 hour ago",
-//     isRead: false,
-//   },
-//   {
-//     id: "3",
-//     type: "message",
-//     title: "New response to your feedback",
-//     message:
-//       "John Doe has responded to your feedback about the user interface.",
-//     time: "3 hours ago",
-//     isRead: true,
-//   },
-//   {
-//     id: "4",
-//     type: "warning",
-//     title: "Profile completion required",
-//     message: "Please complete your profile to access all features.",
-//     time: "1 day ago",
-//     isRead: true,
-//   },
-// ];
-
 function NotificationsDropdown({ className = "" }) {
   const [isOpen, setIsOpen] = useState(false);
-  // const [notifications, setNotifications] = useState(mockNotifications);
+  const [optimisticNotifications, setOptimisticNotifications] = useState([]);
   const menuRef = useRef(null);
   const triggerRef = useRef(null);
   const navigate = useNavigate();
 
-  const { data: notificationsData } = useUserNotifications();
+  // Fetch notifications with proper limit for dropdown
+  const {
+    data: notificationsData,
+    isLoading,
+    refetch,
+  } = useUserNotifications({
+    limit: 100, // Limit for dropdown display
+  });
+
   const markAsReadMutation = useMarkNotificationAsRead();
   const markAllAsReadMutation = useMarkAllNotificationsAsRead();
   const deleteNotificationMutation = useDeleteNotification();
 
-  const notifications = notificationsData?.data || [];
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
+  const notifications = useMemo(
+    () => notificationsData?.data || [],
+    [notificationsData]
+  );
+
+  // Use optimistic notifications if available, otherwise use fetched data
+  const displayNotifications =
+    optimisticNotifications.length > 0
+      ? optimisticNotifications
+      : notifications;
+
+  const unreadCount = displayNotifications.filter((n) => !n.isRead).length;
+
+  // Update optimistic notifications when real data changes
+  useEffect(() => {
+    if (notifications.length > 0) {
+      setOptimisticNotifications(notifications);
+    }
+  }, [notifications]);
+
   // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -347,29 +328,91 @@ function NotificationsDropdown({ className = "" }) {
   };
 
   const markAsRead = (notificationId) => {
-    markAsReadMutation.mutate(notificationId);
+    // Optimistic update
+    setOptimisticNotifications((prev) =>
+      prev.map((notification) =>
+        notification.id === notificationId
+          ? { ...notification, isRead: true, readAt: new Date().toISOString() }
+          : notification
+      )
+    );
+
+    // Perform mutation
+    markAsReadMutation.mutate(notificationId, {
+      onError: () => {
+        // Revert optimistic update on error
+        setOptimisticNotifications(notifications);
+      },
+      onSettled: () => {
+        // Refetch to ensure consistency
+        refetch();
+      },
+    });
   };
 
   const markAllAsRead = () => {
-    markAllAsReadMutation.mutate();
+    const unreadNotifications = displayNotifications
+      .filter((n) => !n.isRead)
+      .map((n) => n.id);
+
+    if (unreadNotifications.length === 0) return;
+
+    // Optimistic update - mark all as read
+    setOptimisticNotifications((prev) =>
+      prev.map((notification) => ({
+        ...notification,
+        isRead: true,
+        readAt: new Date().toISOString(),
+      }))
+    );
+
+    // Perform mutation
+    markAllAsReadMutation.mutate(unreadNotifications, {
+      onError: () => {
+        // Revert optimistic update on error
+        setOptimisticNotifications(notifications);
+      },
+      onSettled: () => {
+        // Refetch to ensure consistency
+        refetch();
+      },
+    });
   };
 
   const deleteNotification = (notificationId) => {
-    deleteNotificationMutation.mutate(notificationId);
+    // Optimistic update - remove notification
+    setOptimisticNotifications((prev) =>
+      prev.filter((notification) => notification.id !== notificationId)
+    );
+
+    // Perform mutation
+    deleteNotificationMutation.mutate(notificationId, {
+      onError: () => {
+        // Revert optimistic update on error
+        setOptimisticNotifications(notifications);
+      },
+      onSettled: () => {
+        // Refetch to ensure consistency
+        refetch();
+      },
+    });
   };
 
   const handleNotificationClick = (notification) => {
+    // Mark as read if not already read
     if (!notification.isRead) {
       markAsRead(notification.id);
     }
-    navigate(`/feedback/view/${notification.feedbackId}`);
-    // Navigate to action URL or feedback page
-    // if (notification.actionUrl) {
-    //   navigate(notification.actionUrl);
-    // } else if (notification.feedbackId) {
-    //   navigate(`/feedback/view/${notification.feedbackId}`);
-    // }
-    // setIsOpen(false);
+
+    // Close dropdown
+    setIsOpen(false);
+
+    // Navigate to feedback page
+    if (notification.feedbackId) {
+      navigate(`/feedback/view/${notification.feedbackId}`);
+    } else if (notification.actionUrl) {
+      navigate(notification.actionUrl);
+    }
   };
 
   const handleViewAll = () => {
@@ -415,15 +458,25 @@ function NotificationsDropdown({ className = "" }) {
                 onClick={markAllAsRead}
                 aria-label="Mark all as read"
                 tooltip="Mark all as read"
+                disabled={markAllAsReadMutation.isPending}
               >
-                <HiOutlineEye />
+                {markAllAsReadMutation.isPending ? (
+                  <LoadingSpinner size="small" />
+                ) : (
+                  <HiOutlineEye />
+                )}
               </IconButton>
             )}
           </HeaderActions>
         </DropdownHeader>
 
         <NotificationList>
-          {notifications.length === 0 ? (
+          {isLoading ? (
+            <EmptyState>
+              <LoadingSpinner size="medium" />
+              <Text color="muted">Loading notifications...</Text>
+            </EmptyState>
+          ) : displayNotifications.length === 0 ? (
             <EmptyState>
               <HiOutlineBell
                 style={{
@@ -435,12 +488,13 @@ function NotificationsDropdown({ className = "" }) {
               <Text color="muted">No notifications yet</Text>
             </EmptyState>
           ) : (
-            notifications.map((notification) => {
+            displayNotifications.map((notification) => {
               const metadata = notification.metadata;
               const feedbackNumber = metadata?.feedbackNumber || "";
               const IconComponent =
                 notificationsIcons[notification.type] ||
                 HiOutlineInformationCircle;
+
               return (
                 <NotificationItem
                   key={notification.id}
@@ -459,9 +513,11 @@ function NotificationsDropdown({ className = "" }) {
                     <Text size="sm" weight="medium">
                       {notification.title}
                     </Text>
-                    <FeedbackNumber size="sm" color="muted">
-                      {feedbackNumber}
-                    </FeedbackNumber>
+                    {feedbackNumber && (
+                      <FeedbackNumber size="sm" color="muted">
+                        {feedbackNumber}
+                      </FeedbackNumber>
+                    )}
                     <Text size="sm" color="muted">
                       {notification.message}
                     </Text>
@@ -481,8 +537,13 @@ function NotificationsDropdown({ className = "" }) {
                         }}
                         aria-label="Mark as read"
                         tooltip="Mark as read"
+                        disabled={markAsReadMutation.isPending}
                       >
-                        <HiOutlineEye />
+                        {markAsReadMutation.isPending ? (
+                          <LoadingSpinner size="small" />
+                        ) : (
+                          <HiOutlineEye />
+                        )}
                       </IconButton>
                     )}
                     <IconButton
@@ -494,8 +555,13 @@ function NotificationsDropdown({ className = "" }) {
                       }}
                       aria-label="Delete notification"
                       tooltip="Delete"
+                      disabled={deleteNotificationMutation.isPending}
                     >
-                      <HiOutlineTrash />
+                      {deleteNotificationMutation.isPending ? (
+                        <LoadingSpinner size="small" />
+                      ) : (
+                        <HiOutlineTrash />
+                      )}
                     </IconButton>
                   </NotificationActions>
                 </NotificationItem>
@@ -504,7 +570,7 @@ function NotificationsDropdown({ className = "" }) {
           )}
         </NotificationList>
 
-        {notifications.length > 0 && (
+        {displayNotifications.length > 0 && (
           <DropdownFooter>
             <ViewAllButton onClick={handleViewAll}>
               View All Notifications
