@@ -102,12 +102,18 @@ export async function updateUserStatus(userId, isActive) {
 /**
  * Update user role
  * @param {string|number} userId - User ID
- * @param {string} role - New role
+ * @param {Object} roleData - Role change data {role, reason}
  * @returns {Promise<Object>} Updated user
  */
-export async function updateUserRole(userId, role) {
-  const response = await userApi.patch(`/${userId}/role`, { role });
-  return response;
+export async function updateUserRole(userId, roleData) {
+  try {
+    const response = await userApi.patch(`/${userId}/role`, roleData);
+    // The issue is here - we need to return the response data properly
+    return response; // Remove .data since userApi interceptor already handles it
+  } catch (error) {
+    console.error("Error updating user role:", error);
+    throw error;
+  }
 }
 
 /**

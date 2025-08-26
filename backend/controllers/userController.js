@@ -180,6 +180,54 @@ export async function getUserByIdAsync(req, res) {
   }
 }
 
+// ... existing imports and functions ...
+
+/**
+ * Updates a user's role - simplified version using existing User.updateUserAsync
+ * @function updateUserRoleAsync
+ * @param {Object} req - The request object
+ * @param {Object} res - The response object
+ */
+export async function updateUserRoleAsync(req, res) {
+  try {
+    const userId = req.params.id;
+    const { role, reason } = req.body;
+    const currentUser = req.user;
+
+    // Basic security check - prevent self role change
+    if (currentUser.id === parseInt(userId)) {
+      return res.status(403).json({
+        success: false,
+        message: "Cannot change your own role",
+      });
+    }
+
+    // Use existing updateUserAsync function
+    const updatedUser = await User.updateUserAsync(
+      userId,
+      { role },
+      currentUser.id
+    );
+
+    console.log(
+      `✅ Role changed: User ${userId} role updated to ${role} by ${currentUser.id}. Reason: ${reason}`
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "User role updated successfully",
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.error("Error updating user role:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+}
+
 // deleteUserAsync
 export async function deleteUserAsync(req, res) {
   const userId = req.params.id;

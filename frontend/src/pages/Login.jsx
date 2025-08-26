@@ -32,11 +32,11 @@ const LoginCard = styled.div`
 function Login() {
   return (
     <LoginContainer>
-      <Container size="sm">
-        <LoginCard>
-          <LoginForm />
-        </LoginCard>
-      </Container>
+      {/* <Container size="sm"> */}
+      <LoginCard>
+        <LoginForm />
+      </LoginCard>
+      {/* </Container> */}
     </LoginContainer>
   );
 }

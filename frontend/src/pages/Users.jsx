@@ -24,7 +24,7 @@ import { useUsersTable } from "../features/user/useUsersTable";
 // Import modals (we'll create these later)
 // import DeleteUserModal from "../features/user/modals/DeleteUserModal";
 // import EditUserModal from "../features/user/modals/EditUserModal";
-// import ChangeRoleModal from "../features/user/modals/ChangeRoleModal";
+import ChangeRoleModal from "../features/user/modals/ChangeRoleModal";
 
 const PageContainer = styled.div`
   display: flex;
@@ -466,14 +466,14 @@ function Users() {
         onClose={handleCloseEditModal}
         user={editModal.user}
         onSuccess={handleModalSuccess}
-      />
+      />*/}
 
       <ChangeRoleModal
         isOpen={roleModal.isOpen}
         onClose={handleCloseRoleModal}
         user={roleModal.user}
         onSuccess={handleModalSuccess}
-      /> */}
+      />
     </PageContainer>
   );
 }

@@ -10,6 +10,8 @@ import {
 } from "react-icons/hi2";
 import Text from "./Text";
 import Column from "./Column";
+import { ROLES } from "../services/permissionService";
+import { useRoleBasedAuth } from "../hooks/useRoleBasedAuth";
 
 const SidebarContainer = styled.aside`
   background-color: var(--color-grey-0);
@@ -61,11 +63,11 @@ const SidebarHeader = styled.div`
 const Logo = styled.div`
   width: 4rem;
   height: 4rem;
-  background: linear-gradient(
+  /* background: linear-gradient(
     135deg,
     var(--color-brand-600),
     var(--color-brand-700)
-  );
+  ); */
   border-radius: var(--border-radius-lg);
   display: flex;
   align-items: center;
@@ -198,6 +200,8 @@ const navigation = [
       { name: "Users", to: "/users", icon: HiOutlineUsers },
       { name: "Settings", to: "/settings", icon: HiOutlineCog8Tooth },
     ],
+    requireAuth: true,
+    requiredRole: ROLES.admin,
   },
   {
     section: "Personal",
@@ -209,6 +213,7 @@ const navigation = [
 ];
 
 function Sidebar({ $isOpen, $isMobile, onClose }) {
+  const { hasRole } = useRoleBasedAuth();
   const handleNavClick = () => {
     if ($isMobile) {
       onClose();
@@ -226,24 +231,36 @@ function Sidebar({ $isOpen, $isMobile, onClose }) {
   return (
     <SidebarContainer $isOpen={$isOpen} $isMobile={$isMobile}>
       <SidebarHeader>
-        <Logo>C</Logo>
+        <Logo>
+          <img src="/logo2.png" alt="Logo" />
+        </Logo>
         <BrandName size="lg">CFM System</BrandName>
       </SidebarHeader>
 
       <Navigation>
-        {navigation.map((section) => (
-          <NavSection key={section.section}>
-            <NavSectionTitle size="xs">{section.section}</NavSectionTitle>
-            <NavList>
-              {section.items.map((item) => (
-                <NavItem key={item.to} to={item.to} onClick={handleNavClick}>
-                  <item.icon />
-                  {item.name}
-                </NavItem>
-              ))}
-            </NavList>
-          </NavSection>
-        ))}
+        {navigation.map((section) =>
+          // console.log(
+          //   "section: ",
+          //   section.section,
+          //   "requiredRole: ",
+          //   section.requiredRole,
+          //   "User has role: ",
+          //   hasRole(section.requiredRole)
+          // ),
+          section.requiredRole && !hasRole(section.requiredRole) ? null : (
+            <NavSection key={section.section}>
+              <NavSectionTitle size="xs">{section.section}</NavSectionTitle>
+              <NavList>
+                {section.items.map((item) => (
+                  <NavItem key={item.to} to={item.to} onClick={handleNavClick}>
+                    <item.icon />
+                    {item.name}
+                  </NavItem>
+                ))}
+              </NavList>
+            </NavSection>
+          )
+        )}
       </Navigation>
 
       <SidebarFooter>

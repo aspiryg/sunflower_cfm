@@ -5,6 +5,13 @@
  */
 
 // Role hierarchy matching backend
+const ROLES = {
+  user: "user",
+  staff: "staff",
+  manager: "manager",
+  admin: "admin",
+  super_admin: "super_admin",
+};
 const ROLES_HIERARCHY = {
   user: 1,
   staff: 2,
@@ -232,4 +239,4 @@ export class FrontendPermissionService {
 }
 
 // Export constants for use in components
-export { ACTIONS, RESOURCES, ACTION_RESTRICTIONS, ROLES_HIERARCHY };
+export { ROLES, ACTIONS, RESOURCES, ACTION_RESTRICTIONS, ROLES_HIERARCHY };

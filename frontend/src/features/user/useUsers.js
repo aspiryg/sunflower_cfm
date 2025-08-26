@@ -180,30 +180,55 @@ export function useToggleUserStatus() {
 }
 
 /**
- * Hook to change user role
+ * Hook to change user role - fixed to handle response properly
+ * @param {Object} options - Mutation options including onSuccess callback
  * @returns {Object} React Query mutation
  */
-export function useChangeUserRole() {
+export function useChangeUserRole(options = {}) {
   const queryClient = useQueryClient();
+  const { onSuccess: customOnSuccess } = options;
 
   return useMutation({
-    mutationFn: ({ userId, role }) => userApi.updateUserRole(userId, role),
+    mutationFn: ({ userId, role, reason }) =>
+      userApi.updateUserRole(userId, { role, reason }),
     onSuccess: (data, variables) => {
       const { userId } = variables;
 
+      // Extract the user data from the response
+      const updatedUser = data?.user || data;
+
+      // console.log("Role change success - Raw data:", data);
+      // console.log("Role change success - Updated user:", updatedUser);
+
       // Update specific user in cache
-      queryClient.setQueryData(USER_QUERY_KEYS.detail(userId), data);
+      if (updatedUser) {
+        queryClient.setQueryData(USER_QUERY_KEYS.detail(userId), updatedUser);
+      }
 
       // Invalidate lists to refresh table data
       queryClient.invalidateQueries({ queryKey: USER_QUERY_KEYS.lists() });
 
       toast.success("User role updated successfully");
-      return data;
+
+      // Call custom onSuccess callback with proper data
+      if (customOnSuccess) {
+        customOnSuccess(updatedUser, variables);
+      }
+
+      return updatedUser;
     },
-    onError: (error) => {
+    onError: (error, variables) => {
+      console.error("Role change error:", error);
+
       const message =
         error?.response?.data?.message || "Failed to update user role";
       toast.error(message);
+
+      // Call custom onError callback if provided
+      if (options.onError) {
+        options.onError(error, variables);
+      }
+
       throw error;
     },
   });

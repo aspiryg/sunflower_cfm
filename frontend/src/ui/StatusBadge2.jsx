@@ -55,6 +55,28 @@ const badgeVariants = {
     color: "var(--color-red-700)",
     border: "var(--color-red-200)",
   },
+
+  // generic color
+  green: {
+    background: "var(--color-green-100)",
+    color: "var(--color-green-700)",
+    border: "var(--color-green-200)",
+  },
+  blue: {
+    background: "var(--color-blue-100)",
+    color: "var(--color-blue-700)",
+    border: "var(--color-blue-200)",
+  },
+  orange: {
+    background: "var(--color-orange-100)",
+    color: "var(--color-orange-700)",
+    border: "var(--color-orange-200)",
+  },
+  red: {
+    background: "var(--color-red-100)",
+    color: "var(--color-red-700)",
+    border: "var(--color-red-200)",
+  },
 };
 
 const StyledBadge = styled.span`

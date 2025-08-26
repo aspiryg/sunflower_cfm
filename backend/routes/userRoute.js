@@ -5,6 +5,7 @@ import {
   updateUserAsync,
   getUserByIdAsync,
   deleteUserAsync,
+  updateUserRoleAsync,
 } from "../controllers/userController.js";
 import {
   validateUserRegistration,
@@ -69,6 +70,18 @@ router.put(
     getResource: ResourceHelpers.getUser,
   }),
   updateUserAsync
+);
+
+/**
+ * @route PATCH /users/:id/role
+ * @description Update user role
+ * @access Private - Admin only
+ */
+router.patch(
+  "/:id/role",
+  authenticateToken,
+  requirePermission(RESOURCES.USERS, ACTIONS.UPDATE),
+  updateUserRoleAsync
 );
 
 /**
