@@ -2,28 +2,72 @@ import { Controller } from "react-hook-form";
 import { useEffect } from "react";
 import styled from "styled-components";
 import PropTypes from "prop-types";
+import {
+  HiOutlineUser,
+  HiOutlineUsers,
+  HiOutlineShieldCheck,
+  HiOutlineInformationCircle,
+} from "react-icons/hi2";
+
 import FormField, { Input, Select } from "../../../ui/FormField";
+import StyledSelect from "../../../ui/StyledSelect";
 import Text from "../../../ui/Text";
+import Heading from "../../../ui/Heading";
+import Column from "../../../ui/Column";
 
 const TabContainer = styled.div`
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-6);
-  max-width: 80rem;
+  gap: var(--spacing-8);
+  max-width: 90rem;
+  padding: var(--spacing-8);
+
+  @media (max-width: 768px) {
+    padding: var(--spacing-6);
+    gap: var(--spacing-6);
+  }
 `;
 
 const Section = styled.div`
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-4);
+  gap: var(--spacing-5);
 `;
 
 const SectionHeader = styled.div`
   display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding-bottom: var(--spacing-4);
+  border-bottom: 2px solid var(--color-grey-200);
+`;
+
+const SectionIcon = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.2rem;
+  height: 3.2rem;
+  background: linear-gradient(
+    135deg,
+    var(--color-brand-500),
+    var(--color-brand-400)
+  );
+  border-radius: var(--border-radius-md);
+  color: var(--color-grey-0);
+  flex-shrink: 0;
+
+  svg {
+    width: 1.8rem;
+    height: 1.8rem;
+  }
+`;
+
+const SectionContent = styled.div`
+  display: flex;
   flex-direction: column;
   gap: var(--spacing-1);
-  padding-bottom: var(--spacing-2);
-  border-bottom: 1px solid var(--color-grey-200);
+  flex: 1;
 `;
 
 const FieldGroup = styled.div`
@@ -39,23 +83,31 @@ const FieldGroup = styled.div`
 
 const CheckboxField = styled.div`
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--spacing-3);
-  padding: var(--spacing-3);
+  padding: var(--spacing-4);
   border: 1px solid var(--color-grey-200);
   border-radius: var(--border-radius-md);
   background-color: var(--color-grey-25);
+  transition: all var(--duration-normal) var(--ease-in-out);
 
   &:hover {
     background-color: var(--color-grey-50);
+    border-color: var(--color-grey-300);
+  }
+
+  &:has(input:checked) {
+    background-color: var(--color-brand-25);
+    border-color: var(--color-brand-200);
   }
 `;
 
 const Checkbox = styled.input`
-  width: 1.6rem;
-  height: 1.6rem;
+  width: 1.8rem;
+  height: 1.8rem;
   accent-color: var(--color-brand-500);
   cursor: pointer;
+  margin-top: 0.2rem;
 `;
 
 const CheckboxLabel = styled.label`
@@ -64,27 +116,40 @@ const CheckboxLabel = styled.label`
   color: var(--color-grey-700);
   cursor: pointer;
   flex: 1;
+  line-height: 1.5;
 `;
 
 const ConditionalSection = styled.div`
   padding: var(--spacing-4);
-  background-color: var(--color-grey-25);
-  border: 1px solid var(--color-grey-200);
+  background-color: var(--color-brand-25);
+  border: 1px solid var(--color-brand-200);
   border-radius: var(--border-radius-md);
-  transition: opacity var(--duration-normal) var(--ease-in-out);
+  transition: all var(--duration-normal) var(--ease-in-out);
 
   ${(props) =>
     props.$hidden &&
     `
-    opacity: 0.5;
+    opacity: 0.3;
     pointer-events: none;
   `}
 `;
 
-/**
- * Provider Details Tab Component
- * Handles provider information with dynamic fields based on provider type
- */
+const InfoNote = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-3);
+  background: linear-gradient(
+    135deg,
+    var(--color-info-25),
+    var(--color-info-50)
+  );
+  border: 1px solid var(--color-info-200);
+  border-left: 4px solid var(--color-info-500);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-4);
+  color: var(--color-info-700);
+`;
+
 function ProviderDetailsTab({
   control,
   errors,
@@ -93,15 +158,16 @@ function ProviderDetailsTab({
   isLoading = false,
   formOptions,
 }) {
-  // Watch provider type to show/hide conditional fields
+  // Watch fields for conditional rendering
   const providerType = watch("providerType");
+  const consentToFollowUp = watch("consentToFollowUp");
   const isIndividualProvider = providerType === 1;
   const isGroupProvider = providerType === 2;
 
-  // label for provider name fiels
+  // Provider name labels based on type
   const providerNameLabel = {
     1: "Full Name",
-    2: "Name of the beneficiary group, if any",
+    2: "Group/Organization Name",
     3: "Organization Name",
     4: "Contractor Name",
     5: "Supplier Name",
@@ -109,12 +175,43 @@ function ProviderDetailsTab({
     7: "Provider Name",
   };
 
-  // Provider types
-  const { providerTypes } = formOptions || [];
-  // console.log("Provider Types:", providerTypes);
+  // Provider types from formOptions
+  const { providerTypes = [] } = formOptions || {};
 
-  // Individual provider options
+  // Contact method options (shown when consent to follow-up is given)
+  const contactMethods = [
+    { value: "", label: "Select preferred contact method...", disabled: true },
+    {
+      value: "phone",
+      label: "Phone Call",
+      description: "Direct phone contact",
+    },
+    { value: "email", label: "Email", description: "Email communication" },
+    {
+      value: "sms",
+      label: "SMS/Text Message",
+      description: "Text message updates",
+    },
+    {
+      value: "in_person",
+      label: "In-Person Meeting",
+      description: "Face-to-face meeting",
+    },
+    {
+      value: "letter",
+      label: "Written Letter",
+      description: "Postal correspondence",
+    },
+    {
+      value: "any",
+      label: "Any Method",
+      description: "No preference for contact method",
+    },
+  ];
+
+  // Demographic options
   const genderOptions = [
+    { value: "", label: "Select gender...", disabled: true },
     { value: "male", label: "Male" },
     { value: "female", label: "Female" },
     { value: "non_binary", label: "Non-binary" },
@@ -123,6 +220,7 @@ function ProviderDetailsTab({
   ];
 
   const ageGroups = [
+    { value: "", label: "Select age group...", disabled: true },
     { value: "under_18", label: "Under 18" },
     { value: "18_25", label: "18-25" },
     { value: "26_35", label: "26-35" },
@@ -132,6 +230,7 @@ function ProviderDetailsTab({
   ];
 
   const disabilityStatuses = [
+    { value: "", label: "Select disability status...", disabled: true },
     { value: "none", label: "No disability" },
     { value: "physical", label: "Physical disability" },
     { value: "visual", label: "Visual impairment" },
@@ -141,8 +240,8 @@ function ProviderDetailsTab({
     { value: "prefer_not_to_say", label: "Prefer not to say" },
   ];
 
-  // Group provider options
   const genderCompositions = [
+    { value: "", label: "Select composition...", disabled: true },
     { value: "mixed", label: "Mixed gender" },
     { value: "majority_male", label: "Majority male" },
     { value: "majority_female", label: "Majority female" },
@@ -154,28 +253,57 @@ function ProviderDetailsTab({
   // Reset fields when provider type changes
   useEffect(() => {
     if (providerType === 1) {
-      // Reset group provider fields
       setValue("groupProviderNumberOfIndividuals", "");
       setValue("groupProviderGenderComposition", "");
     } else if (providerType === 2) {
-      // Reset individual provider fields
       setValue("individualProviderGender", "");
       setValue("individualProviderAgeGroup", "");
       setValue("individualProviderDisabilityStatus", "");
     }
   }, [providerType, setValue]);
 
+  // Reset follow-up contact method when consent is withdrawn
+  useEffect(() => {
+    if (!consentToFollowUp) {
+      setValue("followUpContactMethod", "");
+    }
+  }, [consentToFollowUp, setValue]);
+
   return (
-    <TabContainer>
+    <TabContainer aria-label="Provider Details">
+      {/* Provider Information Note */}
+      <InfoNote>
+        <HiOutlineInformationCircle
+          size={20}
+          style={{ marginTop: "2px", flexShrink: 0 }}
+        />
+        <Column gap={1}>
+          <Text size="sm" weight="semibold">
+            Provider Information Guidelines
+          </Text>
+          <Text size="sm">
+            Collect only necessary information for case processing and
+            follow-up. All demographic information is optional and should be
+            provided with consent. Respect privacy preferences and data
+            protection requirements.
+          </Text>
+        </Column>
+      </InfoNote>
+
       {/* Provider Type Section */}
       <Section>
         <SectionHeader>
-          <Text size="lg" weight="semibold">
-            Provider Type
-          </Text>
-          <Text size="sm" color="muted">
-            Specify whether this feedback is from an individual or a group
-          </Text>
+          <SectionIcon>
+            <HiOutlineUser />
+          </SectionIcon>
+          <SectionContent>
+            <Heading as="h3" size="h4">
+              Provider Type
+            </Heading>
+            <Text size="sm" color="muted">
+              Identify whether the feedback comes from an individual or group
+            </Text>
+          </SectionContent>
         </SectionHeader>
 
         <Controller
@@ -189,21 +317,27 @@ function ProviderDetailsTab({
               label="Provider Type"
               required
               error={errors.providerType?.message}
-              helpText="Choose if the feedback provider is an individual person or a group/organization"
+              helpText="Choose the category that best describes the feedback provider"
             >
-              <Select
+              <StyledSelect
                 {...field}
                 $hasError={!!errors.providerType}
                 disabled={isLoading}
-                onChange={(e) => field.onChange(Number(e.target.value))}
-              >
-                <option value="">Select provider type...</option>
-                {providerTypes.map((type) => (
-                  <option key={type.id} value={type.id}>
-                    {type.name}
-                  </option>
-                ))}
-              </Select>
+                placeholder="Select provider type..."
+                options={[
+                  {
+                    value: "",
+                    label: "Select provider type...",
+                    disabled: true,
+                  },
+                  ...providerTypes.map((type) => ({
+                    value: type.id,
+                    label: type.name,
+                    description: type.description,
+                  })),
+                ]}
+                onChange={(value) => field.onChange(parseInt(value) || "")}
+              />
             </FormField>
           )}
         />
@@ -212,12 +346,17 @@ function ProviderDetailsTab({
       {/* Basic Contact Information */}
       <Section>
         <SectionHeader>
-          <Text size="lg" weight="semibold">
-            Contact Information
-          </Text>
-          <Text size="sm" color="muted">
-            Basic contact details for the feedback provider
-          </Text>
+          <SectionIcon>
+            <HiOutlineUser />
+          </SectionIcon>
+          <SectionContent>
+            <Heading as="h3" size="h4">
+              Contact Information
+            </Heading>
+            <Text size="sm" color="muted">
+              Basic contact details for case communication and follow-up
+            </Text>
+          </SectionContent>
         </SectionHeader>
 
         <FieldGroup>
@@ -240,19 +379,17 @@ function ProviderDetailsTab({
                 label={providerNameLabel[providerType] || "Provider Name"}
                 required
                 error={errors.providerName?.message}
-                helpText={
-                  providerNameLabel[providerType] ||
-                  "Enter the name of the provider"
-                }
+                helpText="Enter the full name or organization name"
               >
                 <Input
                   {...field}
                   placeholder={`Enter ${
                     providerNameLabel[providerType]?.toLowerCase() ||
-                    "Provider Name"
+                    "provider name"
                   }...`}
                   $hasError={!!errors.providerName}
                   disabled={isLoading}
+                  maxLength={100}
                 />
               </FormField>
             )}
@@ -271,7 +408,7 @@ function ProviderDetailsTab({
               <FormField
                 label="Email Address"
                 error={errors.providerEmail?.message}
-                helpText="Contact email (optional)"
+                helpText="Contact email for case updates and communication"
               >
                 <Input
                   {...field}
@@ -297,7 +434,7 @@ function ProviderDetailsTab({
               <FormField
                 label="Phone Number"
                 error={errors.providerPhone?.message}
-                helpText="Contact phone number (optional)"
+                helpText="Contact phone number for urgent communication"
               >
                 <Input
                   {...field}
@@ -312,16 +449,21 @@ function ProviderDetailsTab({
         </FieldGroup>
       </Section>
 
-      {/* Individual Provider Details */}
+      {/* Individual Provider Demographics */}
       {isIndividualProvider && (
-        <ConditionalSection>
+        <Section>
           <SectionHeader>
-            <Text size="lg" weight="semibold">
-              Individual Details
-            </Text>
-            <Text size="sm" color="muted">
-              Demographic information for individual providers
-            </Text>
+            <SectionIcon>
+              <HiOutlineUser />
+            </SectionIcon>
+            <SectionContent>
+              <Heading as="h3" size="h4">
+                Individual Demographics
+              </Heading>
+              <Text size="sm" color="muted">
+                Optional demographic information for reporting and analysis
+              </Text>
+            </SectionContent>
           </SectionHeader>
 
           <FieldGroup>
@@ -330,22 +472,17 @@ function ProviderDetailsTab({
               control={control}
               render={({ field }) => (
                 <FormField
-                  label="Gender"
+                  label="Gender Identity"
                   error={errors.individualProviderGender?.message}
-                  helpText="Gender identity (optional)"
+                  helpText="Optional demographic information"
                 >
-                  <Select
+                  <StyledSelect
                     {...field}
                     $hasError={!!errors.individualProviderGender}
                     disabled={isLoading}
-                  >
-                    <option value="">Select gender...</option>
-                    {genderOptions.map((gender) => (
-                      <option key={gender.value} value={gender.value}>
-                        {gender.label}
-                      </option>
-                    ))}
-                  </Select>
+                    placeholder="Select gender..."
+                    options={genderOptions}
+                  />
                 </FormField>
               )}
             />
@@ -357,20 +494,15 @@ function ProviderDetailsTab({
                 <FormField
                   label="Age Group"
                   error={errors.individualProviderAgeGroup?.message}
-                  helpText="Age category (optional)"
+                  helpText="Age category for demographic analysis"
                 >
-                  <Select
+                  <StyledSelect
                     {...field}
                     $hasError={!!errors.individualProviderAgeGroup}
                     disabled={isLoading}
-                  >
-                    <option value="">Select age group...</option>
-                    {ageGroups.map((ageGroup) => (
-                      <option key={ageGroup.value} value={ageGroup.value}>
-                        {ageGroup.label}
-                      </option>
-                    ))}
-                  </Select>
+                    placeholder="Select age group..."
+                    options={ageGroups}
+                  />
                 </FormField>
               )}
             />
@@ -382,37 +514,37 @@ function ProviderDetailsTab({
                 <FormField
                   label="Disability Status"
                   error={errors.individualProviderDisabilityStatus?.message}
-                  helpText="Disability information (optional)"
+                  helpText="Accessibility and accommodation information"
                 >
-                  <Select
+                  <StyledSelect
                     {...field}
                     $hasError={!!errors.individualProviderDisabilityStatus}
                     disabled={isLoading}
-                  >
-                    <option value="">Select disability status...</option>
-                    {disabilityStatuses.map((status) => (
-                      <option key={status.value} value={status.value}>
-                        {status.label}
-                      </option>
-                    ))}
-                  </Select>
+                    placeholder="Select disability status..."
+                    options={disabilityStatuses}
+                  />
                 </FormField>
               )}
             />
           </FieldGroup>
-        </ConditionalSection>
+        </Section>
       )}
 
-      {/* Group Provider Details */}
+      {/* Group Provider Information */}
       {isGroupProvider && (
-        <ConditionalSection>
+        <Section>
           <SectionHeader>
-            <Text size="lg" weight="semibold">
-              Group Details
-            </Text>
-            <Text size="sm" color="muted">
-              Information about the group or organization
-            </Text>
+            <SectionIcon>
+              <HiOutlineUsers />
+            </SectionIcon>
+            <SectionContent>
+              <Heading as="h3" size="h4">
+                Group Demographics
+              </Heading>
+              <Text size="sm" color="muted">
+                Information about the group or organization providing feedback
+              </Text>
+            </SectionContent>
           </SectionHeader>
 
           <FieldGroup>
@@ -431,9 +563,9 @@ function ProviderDetailsTab({
               }}
               render={({ field }) => (
                 <FormField
-                  label="Number of Individuals"
+                  label="Number of People"
                   error={errors.groupProviderNumberOfIndividuals?.message}
-                  helpText="How many people are in this group? (optional)"
+                  helpText="How many individuals are represented by this group?"
                 >
                   <Input
                     {...field}
@@ -455,45 +587,39 @@ function ProviderDetailsTab({
                 <FormField
                   label="Gender Composition"
                   error={errors.groupProviderGenderComposition?.message}
-                  helpText="Gender distribution in the group (optional)"
+                  helpText="Gender distribution within the group"
                 >
-                  <Select
+                  <StyledSelect
                     {...field}
                     $hasError={!!errors.groupProviderGenderComposition}
                     disabled={isLoading}
-                  >
-                    <option value="">Select composition...</option>
-                    {genderCompositions.map((composition) => (
-                      <option key={composition.value} value={composition.value}>
-                        {composition.label}
-                      </option>
-                    ))}
-                  </Select>
+                    placeholder="Select composition..."
+                    options={genderCompositions}
+                  />
                 </FormField>
               )}
             />
           </FieldGroup>
-        </ConditionalSection>
+        </Section>
       )}
 
-      {/* Consent Section */}
+      {/* Consent & Follow-up Section */}
       <Section>
         <SectionHeader>
-          <Text size="lg" weight="semibold">
-            Consent & Permissions
-          </Text>
-          <Text size="sm" color="muted">
-            Data sharing and follow-up consent preferences
-          </Text>
+          <SectionIcon>
+            <HiOutlineShieldCheck />
+          </SectionIcon>
+          <SectionContent>
+            <Heading as="h3" size="h4">
+              Consent & Follow-up Preferences
+            </Heading>
+            <Text size="sm" color="muted">
+              Data sharing permissions and follow-up communication preferences
+            </Text>
+          </SectionContent>
         </SectionHeader>
 
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "var(--spacing-3)",
-          }}
-        >
+        <Column gap={4}>
           <Controller
             name="dataSharingConsent"
             control={control}
@@ -511,7 +637,9 @@ function ProviderDetailsTab({
                   <br />
                   <Text size="sm" color="muted">
                     The provider consents to having their feedback data shared
-                    with relevant stakeholders for program improvement purposes
+                    with relevant stakeholders and partners for program
+                    improvement and reporting purposes. Personal identifying
+                    information will be protected according to privacy policies.
                   </Text>
                 </CheckboxLabel>
               </CheckboxField>
@@ -535,13 +663,67 @@ function ProviderDetailsTab({
                   <br />
                   <Text size="sm" color="muted">
                     The provider agrees to be contacted for additional
-                    information or follow-up regarding this feedback
+                    information, clarification, or updates regarding this case.
+                    They may withdraw this consent at any time.
                   </Text>
                 </CheckboxLabel>
               </CheckboxField>
             )}
           />
-        </div>
+
+          {/* Follow-up Contact Method - Conditional Field */}
+          {consentToFollowUp && (
+            <ConditionalSection>
+              <Column gap={3}>
+                <Text size="sm" weight="semibold" color="brand">
+                  Follow-up Contact Preferences
+                </Text>
+
+                <Controller
+                  name="followUpContactMethod"
+                  control={control}
+                  rules={
+                    consentToFollowUp
+                      ? {
+                          required:
+                            "Please select a preferred contact method for follow-up",
+                        }
+                      : {}
+                  }
+                  render={({ field }) => (
+                    <FormField
+                      label="Preferred Contact Method"
+                      required={consentToFollowUp}
+                      error={errors.followUpContactMethod?.message}
+                      helpText="How would you prefer to be contacted for follow-up communication?"
+                    >
+                      <StyledSelect
+                        {...field}
+                        $hasError={!!errors.followUpContactMethod}
+                        disabled={isLoading}
+                        placeholder="Select contact method..."
+                        options={contactMethods}
+                      />
+                    </FormField>
+                  )}
+                />
+
+                <InfoNote style={{ marginTop: "var(--spacing-2)" }}>
+                  <HiOutlineInformationCircle
+                    size={16}
+                    style={{ marginTop: "1px", flexShrink: 0 }}
+                  />
+                  <Text size="xs">
+                    Follow-up contact will only be made when necessary for case
+                    resolution or to provide updates. The provider can request
+                    to change their contact preferences or withdraw consent at
+                    any time.
+                  </Text>
+                </InfoNote>
+              </Column>
+            </ConditionalSection>
+          )}
+        </Column>
       </Section>
     </TabContainer>
   );
@@ -553,6 +735,9 @@ ProviderDetailsTab.propTypes = {
   watch: PropTypes.func.isRequired,
   setValue: PropTypes.func.isRequired,
   isLoading: PropTypes.bool,
+  formOptions: PropTypes.shape({
+    providerTypes: PropTypes.array,
+  }),
 };
 
 export default ProviderDetailsTab;

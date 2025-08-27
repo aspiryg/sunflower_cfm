@@ -1,20 +1,24 @@
 import { useState } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-import { HiOutlinePlus, HiMiniArrowPath } from "react-icons/hi2";
+import {
+  HiOutlinePlus,
+  HiMiniArrowPath,
+  HiOutlineChatBubbleLeftRight,
+  HiOutlineDocumentText,
+} from "react-icons/hi2";
 
 import Heading from "../ui/Heading";
 import Button from "../ui/Button";
 import IconButton from "../ui/IconButton";
 import Text from "../ui/Text";
 import Column from "../ui/Column";
+import Breadcrumb from "../ui/Breadcrumb";
 
-// import FeedbackSummary from "../features/feedback/FeedbackSummary";
 import FeedbackTable from "../features/feedback/FeedbackTable";
 import FeedbackFilters from "../features/feedback/FeedbackFilters";
 import FeedbackTableControls from "../features/feedback/FeedbackTableControls";
 
-// Import the enhanced hook
 import { useFeedbackTable } from "../features/feedback/useFeedbackTable";
 
 // Import modals
@@ -29,13 +33,25 @@ const PageContainer = styled.div`
   gap: var(--spacing-6);
   max-width: var(--container-2xl);
   margin: 0 auto;
+  padding: var(--spacing-4);
 
   @media (max-width: 768px) {
     gap: var(--spacing-4);
+    padding: var(--spacing-2);
   }
 `;
 
 const PageHeader = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+
+  @media (max-width: 768px) {
+    gap: var(--spacing-3);
+  }
+`;
+
+const HeaderContent = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -48,7 +64,48 @@ const PageHeader = styled.div`
   }
 `;
 
-const PageHeaderContent = styled.div`
+const PageHeaderInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+
+  @media (max-width: 640px) {
+    gap: var(--spacing-3);
+  }
+`;
+
+const CaseIcon = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4.8rem;
+  height: 4.8rem;
+  background: linear-gradient(
+    135deg,
+    var(--color-brand-500),
+    var(--color-brand-400)
+  );
+  border-radius: var(--border-radius-lg);
+  color: var(--color-grey-0);
+  box-shadow: var(--shadow-md);
+
+  svg {
+    width: 2.4rem;
+    height: 2.4rem;
+  }
+
+  @media (max-width: 640px) {
+    width: 4rem;
+    height: 4rem;
+
+    svg {
+      width: 2rem;
+      height: 2rem;
+    }
+  }
+`;
+
+const PageHeaderText = styled.div`
   display: flex;
   flex-direction: column;
   gap: var(--spacing-2);
@@ -106,33 +163,20 @@ function Feedback() {
     feedback: null,
   });
 
-  // Use the enhanced feedback table hook
   const {
-    // Data
     data: feedbackData,
-    // allData,
-
-    // Loading states
     isLoading,
     isFetching,
     isError,
     error,
-
-    // Search
     searchQuery,
     handleSearchChange,
-
-    // Filters
     filters,
     handleFilterChange,
     handleResetFilters,
-
-    // Sorting
     sortBy,
     sortOrder,
     handleSort,
-
-    // Pagination
     currentPage,
     totalPages,
     pageSize,
@@ -141,42 +185,48 @@ function Feedback() {
     endItem,
     handlePageChange,
     handlePageSizeChange,
-
-    // Actions
     handleRefresh,
-
-    // Stats
     totalResults,
     filteredResults,
   } = useFeedbackTable();
 
   const navigate = useNavigate();
 
+  // Breadcrumb items
+  const breadcrumbItems = [
+    {
+      label: "Case Management",
+      to: "/feedback",
+      icon: HiOutlineChatBubbleLeftRight,
+    },
+  ];
+
   // Navigation handlers
-  const handleCreateFeedback = () => {
+  const handleCreateCase = () => {
     navigate("/feedback/add");
   };
 
-  const handleViewFeedback = (feedback) => {
+  const handleViewCase = (feedback) => {
     navigate(`/feedback/view/${feedback.id}`);
   };
 
-  const handleEditFeedback = (feedback) => {
+  const handleEditCase = (feedback) => {
     navigate(`/feedback/edit/${feedback.id}`);
   };
 
   // Modal handlers
-  const handleDeleteFeedback = (feedback) => {
+  const handleDeleteCase = (feedback) => {
     setDeleteModal({ isOpen: true, feedback });
   };
 
-  const handleAssignFeedback = (feedback) => {
+  const handleAssignCase = (feedback) => {
     setAssignModal({ isOpen: true, feedback });
   };
 
   const handleUpdateStatus = (feedback) => {
     setStatusModal({ isOpen: true, feedback });
   };
+
   const handleAddComment = (feedback) => {
     setAddCommentModal({ isOpen: true, feedback });
   };
@@ -198,60 +248,62 @@ function Feedback() {
     setAddCommentModal({ isOpen: false, feedback: null });
   };
 
-  // Success handlers for modals
   const handleModalSuccess = (data, originalFeedback) => {
     console.log("Modal operation successful:", { data, originalFeedback });
-    // Data will be automatically updated via React Query cache invalidation
   };
 
   return (
     <PageContainer>
-      {/* Page Header */}
       <PageHeader>
-        <PageHeaderContent>
-          <Heading as="h1" size="h1">
-            Beneficiary Feedback
-          </Heading>
-          <Text size="lg" color="muted">
-            Manage and track beneficiary feedback submissions
-          </Text>
-        </PageHeaderContent>
+        {/* Breadcrumb Navigation */}
+        <Breadcrumb items={breadcrumbItems} />
 
-        <PageActions>
-          <IconButton
-            variant="ghost"
-            size="medium"
-            onClick={handleRefresh}
-            disabled={isLoading || isFetching}
-            aria-label="Refresh feedback data"
-          >
-            <HiMiniArrowPath />
-          </IconButton>
+        {/* Page Header */}
+        <HeaderContent>
+          <PageHeaderInfo>
+            <CaseIcon>
+              <HiOutlineChatBubbleLeftRight />
+            </CaseIcon>
+            <PageHeaderText>
+              <Heading as="h1" size="h1">
+                Case Management
+              </Heading>
+              <Text size="lg" color="muted">
+                Track and manage beneficiary complaints, suggestions, and
+                feedback
+              </Text>
+            </PageHeaderText>
+          </PageHeaderInfo>
 
-          <Button
-            variant="primary"
-            size="medium"
-            onClick={handleCreateFeedback}
-          >
-            <HiOutlinePlus />
-            Add Feedback
-          </Button>
-        </PageActions>
+          <PageActions>
+            <IconButton
+              variant="ghost"
+              size="medium"
+              onClick={handleRefresh}
+              disabled={isLoading || isFetching}
+              aria-label="Refresh case data"
+            >
+              <HiMiniArrowPath />
+            </IconButton>
+
+            <Button variant="primary" size="medium" onClick={handleCreateCase}>
+              <HiOutlinePlus />
+              New Case
+            </Button>
+          </PageActions>
+        </HeaderContent>
       </PageHeader>
-
-      {/* Summary Cards */}
-      {/* <FeedbackSummary feedbackData={allData} isLoading={isLoading} /> */}
 
       {/* Error State */}
       {isError && (
         <ErrorContainer>
           <ErrorContent>
             <Text size="sm" weight="semibold" color="error">
-              Failed to load feedback
+              Failed to load cases
             </Text>
             <Text size="sm" color="muted">
               {error?.message ||
-                "Something went wrong while loading the feedback data."}
+                "Something went wrong while loading the cases data."}
             </Text>
           </ErrorContent>
           <Button variant="secondary" size="small" onClick={handleRefresh}>
@@ -262,7 +314,6 @@ function Feedback() {
 
       {/* Main Table Section */}
       <TableSection>
-        {/* Search and Filters */}
         <FeedbackFilters
           searchQuery={searchQuery}
           onSearchChange={handleSearchChange}
@@ -274,7 +325,6 @@ function Feedback() {
           isLoading={isLoading}
         />
 
-        {/* Table Controls (Sort & Pagination) */}
         <FeedbackTableControls
           sortBy={sortBy}
           sortOrder={sortOrder}
@@ -289,19 +339,18 @@ function Feedback() {
           endItem={endItem}
         />
 
-        {/* Feedback Table */}
         <FeedbackTable
           feedbackData={feedbackData}
           isLoading={isLoading}
-          onViewFeedback={handleViewFeedback}
-          onEditFeedback={handleEditFeedback}
-          onDeleteFeedback={handleDeleteFeedback}
+          onViewFeedback={handleViewCase}
+          onEditFeedback={handleEditCase}
+          onDeleteFeedback={handleDeleteCase}
           onUpdateStatus={handleUpdateStatus}
-          onAssignFeedback={handleAssignFeedback}
+          onAssignFeedback={handleAssignCase}
           onAddComment={handleAddComment}
         />
 
-        {/* Empty State for No Results */}
+        {/* Empty State */}
         {!isLoading && totalItems === 0 && (
           <Column
             align="center"
@@ -310,12 +359,12 @@ function Feedback() {
           >
             <Text size="lg" color="muted">
               {totalResults === 0
-                ? "No feedback entries found"
+                ? "No cases found"
                 : "No results match your search"}
             </Text>
             <Text size="sm" color="muted">
               {totalResults === 0
-                ? "Get started by adding your first feedback entry"
+                ? "Get started by creating your first case"
                 : "Try adjusting your search terms or filters"}
             </Text>
             {(searchQuery ||

@@ -29,6 +29,9 @@ import EmailVerificationSuccess from "./pages/EmailVerificationSuccess";
 import VerifyEmail from "./pages/VerifyEmail";
 import ResetPassword from "./pages/ResetPassword";
 import PageNotFound from "./pages/PageNotFound";
+// Import sub pages
+import AssignedToMe from "./features/feedback/AssignedToMe";
+import CreatedByMe from "./features/feedback/CreatedByMe";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -142,6 +145,9 @@ function App() {
                       </ProtectedRoute>
                     }
                   />
+                  {/* Sub pages */}
+                  <Route path="assigned-to-me" element={<AssignedToMe />} />
+                  <Route path="created-by-me" element={<CreatedByMe />} />
                 </Route>
                 {/*Users route */}
                 <Route

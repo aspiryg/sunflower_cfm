@@ -4,12 +4,14 @@ import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import PropTypes from "prop-types";
 import {
-  HiOutlineInformationCircle,
+  HiOutlineDocumentText,
+  HiOutlineRectangleStack,
   HiOutlineUser,
   HiOutlineMapPin,
   HiOutlineCog6Tooth,
   HiOutlineCheck,
   HiOutlineXMark,
+  HiOutlineExclamationTriangle,
 } from "react-icons/hi2";
 
 import {
@@ -30,6 +32,7 @@ import { useFeedbackFormOptions } from "./useFeedbackData";
 
 // Import tab components
 import BasicInfoTab from "./form/BasicInfoTab";
+import ClassificationTab from "./form/ClassificationTab";
 import ProviderDetailsTab from "./form/ProviderDetailsTab";
 import LocationTab from "./form/LocationTab";
 import AdvancedTab from "./form/AdvancedTab";
@@ -37,9 +40,9 @@ import AdvancedTab from "./form/AdvancedTab";
 const FormContainer = styled.div`
   background-color: var(--color-grey-0);
   border: 1px solid var(--color-grey-200);
-  border-radius: var(--border-radius-lg);
+  border-radius: var(--border-radius-xl);
   overflow: hidden;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-lg);
   width: 100%;
   max-width: 100%;
 `;
@@ -53,13 +56,18 @@ const FormActions = styled.div`
   justify-content: space-between;
   align-items: center;
   gap: var(--spacing-4);
-  padding: var(--spacing-4) var(--spacing-6);
-  background-color: var(--color-grey-25);
+  padding: var(--spacing-5) var(--spacing-8);
+  background: linear-gradient(
+    135deg,
+    var(--color-grey-25),
+    var(--color-grey-50)
+  );
   border-top: 1px solid var(--color-grey-200);
 
   @media (max-width: 640px) {
     flex-direction: column-reverse;
     gap: var(--spacing-3);
+    padding: var(--spacing-4) var(--spacing-6);
   }
 `;
 
@@ -84,21 +92,49 @@ const StatusIndicator = styled.div`
   gap: var(--spacing-2);
   font-size: var(--font-size-sm);
   color: var(--color-grey-600);
+
+  svg {
+    width: 1.4rem;
+    height: 1.4rem;
+  }
+`;
+
+const ErrorSummary = styled.div`
+  background: linear-gradient(
+    135deg,
+    var(--color-error-50),
+    var(--color-error-25)
+  );
+  border: 1px solid var(--color-error-200);
+  border-left: 4px solid var(--color-error-500);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-4);
+  margin: var(--spacing-4) var(--spacing-8);
+  color: var(--color-error-700);
+`;
+
+const LoadingContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-12);
+  gap: var(--spacing-4);
 `;
 
 /**
- * FeedbackForm Component
+ * Enhanced Case Management Form Component
  *
- * Handles both creation and editing of feedback entries using a tabbed interface
- * Integrates with React Query hooks for data management
+ * Modern case management form with improved terminology, structure, and UX
+ * Handles both creation and editing of feedback cases using a tabbed interface
  *
  * Props:
- * - feedbackId: ID for editing existing feedback (null for new feedback)
+ * - feedbackId: ID for editing existing case (null for new case)
  * - onSuccess: Callback when form is successfully submitted
  * - onCancel: Callback when form is cancelled
  * - initialData: Optional initial form data (overrides API data)
  */
-function FeedbackForm({
+function CaseForm({
   feedbackId = null,
   onSuccess,
   onCancel,
@@ -113,12 +149,11 @@ function FeedbackForm({
   const [tabErrors, setTabErrors] = useState({});
   const [isFormReady, setIsFormReady] = useState(false);
 
-  // Fetch existing feedback data if editing
-  //   console.log("Fetching existing feedback data for feedbackId:", feedbackId);
+  // Fetch existing case data if editing
   const {
-    data: existingFeedback,
-    isLoading: feedbackLoading,
-    error: feedbackError,
+    data: existingCase,
+    isLoading: caseLoading,
+    error: caseError,
   } = useFeedback(feedbackId, {
     enabled: isEditing && !initialData,
   });
@@ -132,17 +167,8 @@ function FeedbackForm({
     projects,
     activities,
     communities,
-
-    // provider types later ...
     isLoading: optionsLoading,
   } = useFeedbackFormOptions();
-
-  // console.log("Form options:", {
-  //   categories,
-  //   channels,
-  // });
-
-  // Mock data for the programmes and communities
 
   // Mutations for create/update
   const createMutation = useCreateFeedback({
@@ -168,33 +194,43 @@ function FeedbackForm({
     watch,
     setValue,
     trigger,
-    // reset,
+    reset,
     formState: { errors, isDirty, isValid, isSubmitting },
   } = useForm({
     mode: "onChange",
     defaultValues: getDefaultFormValues(),
   });
 
-  // Get default form values
+  // Get default form values for new case
   function getDefaultFormValues() {
+    const today = new Date().toISOString().slice(0, 10);
+
     return {
       // Basic Information
       title: "",
       description: "",
-      category: "",
-      priority: "medium",
-      status: "open",
-      feedbackChannel: "",
-      feedbackDate: new Date().toISOString().slice(0, 10),
+      feedbackDate: today,
+      caseType: "complaint", // complaint, suggestion, compliment, inquiry
+      urgency: "normal", // low, normal, high, critical
       impactDescription: "",
+
+      // Classification
+      category: "",
+      priority: "medium", // low, medium, high, urgent
+      status: "open", // open, acknowledged, investigating, resolved, closed
+      feedbackChannel: "",
+      severity: "medium", // low, medium, high, critical
 
       // Provider Details
       providerType: 1, // Individual by default
       providerName: "",
       providerEmail: "",
       providerPhone: "",
+      providerOrganization: "",
+      providerAddress: "",
       dataSharingConsent: false,
       consentToFollowUp: false,
+      followUpContactMethod: "", // Conditional field
 
       // Individual Provider Fields
       individualProviderGender: "",
@@ -222,12 +258,57 @@ function FeedbackForm({
       isSensitive: false,
       isAnonymized: false,
       isPublic: true,
+      privacyPolicyAccepted: false,
       tags: "",
     };
   }
 
-  // Get nested fields
-  const getNestedField = () => [
+  // Enhanced tab configuration with new structure
+  const tabs = [
+    {
+      value: "basic",
+      label: "Basic Information",
+      icon: HiOutlineDocumentText,
+      component: BasicInfoTab,
+      required: true,
+      description: "Essential case details and description",
+    },
+    {
+      value: "classification",
+      label: "Classification",
+      icon: HiOutlineRectangleStack,
+      component: ClassificationTab,
+      required: true,
+      description: "Category, priority, and urgency settings",
+    },
+    {
+      value: "provider",
+      label: "Provider Details",
+      icon: HiOutlineUser,
+      component: ProviderDetailsTab,
+      required: true,
+      description: "Information about the case submitter",
+    },
+    {
+      value: "location",
+      label: "Location & Context",
+      icon: HiOutlineMapPin,
+      component: LocationTab,
+      required: false,
+      description: "Geographic and contextual information",
+    },
+    {
+      value: "advanced",
+      label: "Advanced Settings",
+      icon: HiOutlineCog6Tooth,
+      component: AdvancedTab,
+      required: false,
+      description: "Assignment, projects, and privacy settings",
+    },
+  ];
+
+  // Get nested fields for proper data handling
+  const getNestedFields = () => [
     "category",
     "feedbackChannel",
     "providerType",
@@ -237,12 +318,15 @@ function FeedbackForm({
     "assignedTo",
     "assignedBy",
     "submittedBy",
+    "programmeId",
+    "projectId",
+    "activityId",
   ];
 
   // Load existing data when editing
   useEffect(() => {
-    if (isEditing && (existingFeedback || initialData)) {
-      const dataToLoad = initialData || existingFeedback;
+    if (isEditing && (existingCase || initialData)) {
+      const dataToLoad = initialData || existingCase;
 
       // Populate form with existing data
       Object.entries(dataToLoad).forEach(([key, value]) => {
@@ -251,11 +335,24 @@ function FeedbackForm({
           if (key === "feedbackDate" && value) {
             const date = new Date(value);
             setValue(key, date.toISOString().slice(0, 10));
-          } else if (getNestedField().includes(key) && value) {
+          }
+          // Handle nested objects (get ID)
+          else if (
+            getNestedFields().includes(key) &&
+            typeof value === "object" &&
+            value.id
+          ) {
             setValue(key, value.id);
-          } else if (key === "community" && !value) {
-            setValue(key, ""); // Ensure empty string for community
-          } else {
+          }
+          // Handle direct values
+          else if (
+            getNestedFields().includes(key) &&
+            typeof value !== "object"
+          ) {
+            setValue(key, value);
+          }
+          // Handle other fields
+          else {
             setValue(key, value);
           }
         }
@@ -265,22 +362,69 @@ function FeedbackForm({
     } else if (!isEditing) {
       setIsFormReady(true);
     }
-  }, [existingFeedback, initialData, isEditing, setValue]);
+  }, [existingCase, initialData, isEditing, setValue]);
 
   // Calculate tab errors for visual indicators
   useEffect(() => {
     const newTabErrors = {};
 
-    // Check for errors in each tab's fields
     tabs.forEach((tab) => {
       const tabFieldErrors = getTabFieldErrors(tab.value, errors);
       newTabErrors[tab.value] = Object.keys(tabFieldErrors).length > 0;
     });
 
-    // console.log("Tab errors:", newTabErrors);
-
     setTabErrors(newTabErrors);
   }, [errors]);
+
+  // Get field errors for a specific tab
+  const getTabFieldErrors = (tabValue, allErrors) => {
+    const tabFieldMappings = {
+      basic: [
+        "title",
+        "description",
+        "feedbackDate",
+        "caseType",
+        "urgency",
+        "impactDescription",
+      ],
+      classification: [
+        "category",
+        "priority",
+        "status",
+        "feedbackChannel",
+        "severity",
+      ],
+      provider: [
+        "providerType",
+        "providerName",
+        "providerEmail",
+        "providerPhone",
+        "individualProviderGender",
+        "individualProviderAgeGroup",
+        "groupProviderNumberOfIndividuals",
+        "dataSharingConsent",
+        "consentToFollowUp",
+        "followUpContactMethod",
+      ],
+      location: ["community", "location", "latitude", "longitude"],
+      advanced: [
+        "programmeId",
+        "projectId",
+        "activityId",
+        "submittedBy",
+        "assignedTo",
+        "assignedBy",
+        "isSensitive",
+        "privacyPolicyAccepted",
+        "tags",
+      ],
+    };
+
+    const tabFields = tabFieldMappings[tabValue] || [];
+    return Object.fromEntries(
+      Object.entries(allErrors).filter(([key]) => tabFields.includes(key))
+    );
+  };
 
   // Handle form submission
   const onSubmit = async (data) => {
@@ -305,8 +449,7 @@ function FeedbackForm({
         await createMutation.mutateAsync(cleanedData);
       }
     } catch (error) {
-      console.error("Form submission error:", error);
-      // Error handling is done in the mutation hooks
+      console.error("Case submission error:", error);
     }
   };
 
@@ -334,6 +477,7 @@ function FeedbackForm({
         "submittedBy",
         "assignedTo",
         "assignedBy",
+        "providerType",
       ];
 
       if (numberFields.includes(key) && cleaned[key]) {
@@ -363,125 +507,125 @@ function FeedbackForm({
     }
   };
 
-  // Handle save as draft (placeholder for future implementation)
-  const handleSaveDraft = () => {
-    console.log("Save draft functionality to be implemented");
+  // Handle save as draft
+  const handleSaveDraft = async () => {
+    try {
+      const formData = watch();
+      const cleanedData = { ...cleanFormData(formData), status: "draft" };
+
+      if (isEditing) {
+        await updateMutation.mutateAsync({ id: feedbackId, data: cleanedData });
+      } else {
+        await createMutation.mutateAsync(cleanedData);
+      }
+    } catch (error) {
+      console.error("Save draft error:", error);
+    }
   };
 
-  // Tab configuration
-  const tabs = [
-    {
-      value: "basic",
-      label: "Basic Information",
-      icon: HiOutlineInformationCircle,
-      component: BasicInfoTab,
-      required: true,
-    },
-    {
-      value: "provider",
-      label: "Provider Details",
-      icon: HiOutlineUser,
-      component: ProviderDetailsTab,
-      required: true,
-    },
-    {
-      value: "location",
-      label: "Location",
-      icon: HiOutlineMapPin,
-      component: LocationTab,
-      required: false,
-    },
-    {
-      value: "advanced",
-      label: "Advanced Settings",
-      icon: HiOutlineCog6Tooth,
-      component: AdvancedTab,
-      required: false,
-    },
-  ];
+  // Handle tab navigation with validation
+  const handleTabChange = async (newTab) => {
+    const currentTabFields = getTabFieldErrors(activeTab, errors);
+    const hasCurrentTabErrors = Object.keys(currentTabFields).length > 0;
 
-  // Get field errors for a specific tab
-  const getTabFieldErrors = (tabValue, allErrors) => {
-    const tabFieldMappings = {
-      basic: [
-        "title",
-        "description",
-        "category",
-        "priority",
-        "status",
-        "feedbackChannel",
-        "feedbackDate",
-        "impactDescription",
-      ],
-      provider: [
-        "providerType",
-        "providerName",
-        "providerEmail",
-        "providerPhone",
-        "individualProviderGender",
-        "individualProviderAgeGroup",
-        "groupProviderNumberOfIndividuals",
-        "dataSharingConsent",
-      ],
-      location: ["community", "location", "latitude", "longitude"],
-      advanced: [
-        "programmeId",
-        "projectId",
-        "activityId",
-        "submittedBy",
-        "assignedTo",
-        "assignedBy",
-        "tags",
-      ],
-    };
+    // If moving forward and current tab has errors, trigger validation
+    const currentIndex = tabs.findIndex((t) => t.value === activeTab);
+    const newIndex = tabs.findIndex((t) => t.value === newTab);
 
-    const tabFields = tabFieldMappings[tabValue] || [];
-    return Object.fromEntries(
-      Object.entries(allErrors).filter(([key]) => tabFields.includes(key))
-    );
+    if (newIndex > currentIndex && hasCurrentTabErrors) {
+      await trigger();
+      return; // Don't change tab if there are errors
+    }
+
+    setActiveTab(newTab);
   };
 
   // Loading states
-  if (feedbackLoading || optionsLoading || !isFormReady) {
+  if (caseLoading || optionsLoading || !isFormReady) {
     return (
       <FormContainer className={className}>
-        <div style={{ padding: "var(--spacing-8)", textAlign: "center" }}>
-          <Text>Loading form data...</Text>
-        </div>
+        <LoadingContainer>
+          <Text size="lg">Loading case data...</Text>
+          <Text size="sm" color="muted">
+            Preparing form components and validation rules
+          </Text>
+        </LoadingContainer>
       </FormContainer>
     );
   }
 
   // Error state
-  if (feedbackError) {
+  if (caseError) {
     return (
       <FormContainer className={className}>
-        <div style={{ padding: "var(--spacing-8)", textAlign: "center" }}>
-          <Text color="error">
-            Failed to load feedback data. Please try again.
+        <ErrorSummary>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "var(--spacing-2)",
+            }}
+          >
+            <HiOutlineExclamationTriangle size={20} />
+            <Text weight="semibold">Failed to load case data</Text>
+          </div>
+          <Text size="sm" style={{ marginTop: "var(--spacing-2)" }}>
+            {caseError.message ||
+              "An unexpected error occurred. Please try again."}
           </Text>
-        </div>
+        </ErrorSummary>
       </FormContainer>
     );
   }
 
   const isLoading =
     createMutation.isLoading || updateMutation.isLoading || isSubmitting;
+  const hasErrors = Object.keys(errors).length > 0;
 
   return (
     <FormContainer className={className}>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <FormContent>
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
+        {/* Error Summary */}
+        {hasErrors && (
+          <ErrorSummary>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "var(--spacing-2)",
+              }}
+            >
+              <HiOutlineExclamationTriangle size={20} />
+              <Text weight="semibold">
+                Please review and correct the following issues:
+              </Text>
+            </div>
+            <ul
+              style={{
+                marginTop: "var(--spacing-2)",
+                paddingLeft: "var(--spacing-5)",
+              }}
+            >
+              {Object.entries(errors).map(([field, error]) => (
+                <li key={field}>
+                  <Text size="sm">{error.message}</Text>
+                </li>
+              ))}
+            </ul>
+          </ErrorSummary>
+        )}
+
+        <FormContent aria-label="Case Management Form">
+          <Tabs value={activeTab} onValueChange={handleTabChange}>
             <TabsList>
               {tabs.map((tab) => (
                 <TabsTrigger
                   key={tab.value}
                   value={tab.value}
                   icon={tab.icon}
-                  data-label={tab.label.charAt(0)} // First letter for mobile fallback
-                  hasError={tabErrors[tab.value]}
+                  $hasError={tabErrors[tab.value]}
                   disabled={isLoading}
+                  title={tab.description}
                 >
                   {tab.label}
                   {tab.required && (
@@ -520,35 +664,33 @@ function FeedbackForm({
                 />
               </TabsContent>
             ))}
-            {/* Add navigation at the bottom of tabs */}
+
+            {/* Enhanced Navigation */}
             <TabsNavigation
               showProgress={true}
               previousLabel="Previous"
               nextLabel="Next"
               onNext={async () => {
-                // Validate current tab before moving to next
-                const currentTabFields = getTabFieldErrors(activeTab, errors);
-                const isCurrentTabValid =
-                  Object.keys(currentTabFields).length === 0;
-                // console.log("Current tab validation:", isCurrentTabValid);
-
-                if (!isCurrentTabValid) {
-                  await trigger(); // Trigger validation to show errors
-                  return; // Don't proceed to next tab
+                const currentIndex = tabs.findIndex(
+                  (t) => t.value === activeTab
+                );
+                if (currentIndex < tabs.length - 1) {
+                  await handleTabChange(tabs[currentIndex + 1].value);
                 }
-                // Move to next tab (handled by TabsNavigation internally)
-                setActiveTab((prev) => {
-                  const currentIndex = tabs.findIndex((t) => t.value === prev);
-                  if (currentIndex < tabs.length - 1) {
-                    return tabs[currentIndex + 1].value;
-                  }
-                  return prev; // Stay on last tab
-                });
+              }}
+              onPrevious={() => {
+                const currentIndex = tabs.findIndex(
+                  (t) => t.value === activeTab
+                );
+                if (currentIndex > 0) {
+                  setActiveTab(tabs[currentIndex - 1].value);
+                }
               }}
             />
           </Tabs>
         </FormContent>
 
+        {/* Enhanced Actions */}
         <FormActions>
           <ActionGroup>
             <Button
@@ -562,8 +704,16 @@ function FeedbackForm({
 
             <StatusIndicator>
               {isDirty && (
-                <Text size="sm" color="warning">
-                  • Unsaved changes
+                <>
+                  <HiOutlineExclamationTriangle />
+                  <Text size="sm" color="warning">
+                    Unsaved changes
+                  </Text>
+                </>
+              )}
+              {!isDirty && isEditing && (
+                <Text size="sm" color="success">
+                  All changes saved
                 </Text>
               )}
             </StatusIndicator>
@@ -587,7 +737,7 @@ function FeedbackForm({
               loading={isLoading}
             >
               <HiOutlineCheck />
-              {isEditing ? "Update Feedback" : "Create Feedback"}
+              {isEditing ? "Update Case" : "Create Case"}
             </Button>
           </ActionGroup>
         </FormActions>
@@ -596,7 +746,7 @@ function FeedbackForm({
   );
 }
 
-FeedbackForm.propTypes = {
+CaseForm.propTypes = {
   feedbackId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   onSuccess: PropTypes.func,
   onCancel: PropTypes.func,
@@ -604,4 +754,4 @@ FeedbackForm.propTypes = {
   className: PropTypes.string,
 };
 
-export default FeedbackForm;
+export default CaseForm;

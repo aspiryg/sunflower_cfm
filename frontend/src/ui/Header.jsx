@@ -87,7 +87,7 @@ function Header({ onToggleSidebar, $sidebarOpen }) {
           <HiOutlineBars3 />
         </IconButton>
 
-        <PageTitle size="lg">CFM Dashboard</PageTitle>
+        <PageTitle size="lg">Complaint Dashboard</PageTitle>
       </HeaderLeft>
 
       <HeaderRight>

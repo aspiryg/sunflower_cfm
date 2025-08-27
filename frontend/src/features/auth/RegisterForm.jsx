@@ -580,7 +580,7 @@ function RegisterForm() {
     // Phone validation (optional but if provided should be valid)
     if (formData.phone.trim()) {
       const phoneRegex = /^[+]?[1-9][\d]{0,15}$/;
-      if (!phoneRegex.test(formData.phone.trim().replace(/[\s\-\(\)]/g, ""))) {
+      if (!phoneRegex.test(formData.phone.trim().replace(/[\s\-()]/g, ""))) {
         errors.phone = "Please enter a valid phone number";
       }
     }

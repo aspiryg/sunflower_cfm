@@ -114,6 +114,19 @@ const Textarea = styled.textarea`
     resize: none;
   }
 
+  /* Handle variant prop with $ prefix */
+  ${(props) =>
+    props.$variant === "error" &&
+    css`
+      border-color: var(--color-error-500);
+
+      &:focus {
+        border-color: var(--color-error-500);
+        box-shadow: 0 0 0 3px var(--color-error-100);
+      }
+    `}
+
+  /* Handle hasError prop with $ prefix */
   ${(props) =>
     props.$hasError &&
     css`
@@ -122,6 +135,23 @@ const Textarea = styled.textarea`
       &:focus {
         border-color: var(--color-error-500);
         box-shadow: 0 0 0 3px var(--color-error-100);
+      }
+    `}
+
+  /* Handle rows prop */
+  ${(props) =>
+    props.rows &&
+    css`
+      min-height: ${props.rows * 1.5}rem;
+    `}
+
+  /* Handle maxLength styling */
+  ${(props) =>
+    props.maxLength &&
+    css`
+      /* Visual indicator when approaching max length */
+      &:focus {
+        /* Add subtle styling when focused */
       }
     `}
 
