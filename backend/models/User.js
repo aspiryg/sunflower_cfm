@@ -770,12 +770,12 @@ export class User {
 
     const emailCheck = await pool
       .request()
-      .input("email", sql.NVarChar, email.toLowerCase().trim())
+      .input("email", sql.NVarChar, email?.toLowerCase().trim())
       .query("SELECT COUNT(*) as count FROM Users WHERE LOWER(email) = @email");
 
     const usernameCheck = await pool
       .request()
-      .input("username", sql.NVarChar, username.toLowerCase().trim())
+      .input("username", sql.NVarChar, username?.toLowerCase().trim())
       .query(
         "SELECT COUNT(*) as count FROM Users WHERE LOWER(username) = @username"
       );

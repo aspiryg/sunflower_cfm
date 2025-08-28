@@ -97,15 +97,15 @@ const PriorityCard = styled.div`
   background: ${(props) => {
     switch (props.$priority) {
       case "urgent":
-        return "linear-gradient(135deg, var(--color-error-25), var(--color-error-50))";
+        return "linear-gradient(135deg, var(--color-error-50), var(--color-error-100))";
       case "high":
-        return "linear-gradient(135deg, var(--color-warning-25), var(--color-warning-50))";
+        return "linear-gradient(135deg, var(--color-warning-50), var(--color-warning-100))";
       case "medium":
-        return "linear-gradient(135deg, var(--color-info-25), var(--color-info-50))";
+        return "linear-gradient(135deg, var(--color-info-50), var(--color-info-100))";
       case "low":
-        return "linear-gradient(135deg, var(--color-success-25), var(--color-success-50))";
+        return "linear-gradient(135deg, var(--color-success-50), var(--color-success-100))";
       default:
-        return "linear-gradient(135deg, var(--color-grey-25), var(--color-grey-50))";
+        return "linear-gradient(135deg, var(--color-grey-50), var(--color-grey-100))";
     }
   }};
   border: 1px solid

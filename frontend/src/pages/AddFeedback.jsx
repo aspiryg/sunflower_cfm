@@ -17,27 +17,24 @@ import { useFeedback } from "../features/feedback/useFeedback";
 const PageContainer = styled.div`
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-4);
-  max-width: var(--container-xl);
+  gap: var(--spacing-6);
+  max-width: var(--container-2xl);
   margin: 0 auto;
-  min-height: 100vh;
-  padding: var(--spacing-4);
+  padding: var(--spacing-0);
 
   @media (max-width: 768px) {
-    gap: var(--spacing-3);
-    padding: var(--spacing-2);
+    gap: var(--spacing-4);
+    padding: var(--spacing-0);
   }
 `;
 
 const PageHeader = styled.div`
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-4);
-  padding: var(--spacing-4) 0;
+  gap: var(--spacing-2);
 
   @media (max-width: 768px) {
-    padding: var(--spacing-3) 0;
-    gap: var(--spacing-3);
+    gap: var(--spacing-1);
   }
 `;
 
@@ -130,9 +127,9 @@ function AddFeedback() {
   };
 
   // Handle back navigation
-  const handleBack = () => {
-    navigate("/feedback");
-  };
+  // const handleBack = () => {
+  //   navigate("/feedback");
+  // };
 
   return (
     <PageContainer>
@@ -142,24 +139,24 @@ function AddFeedback() {
 
         {/* Page Title and Description */}
         <HeaderTop>
-          <IconButton
+          {/* <IconButton
             variant="ghost"
             size="medium"
             onClick={handleBack}
             aria-label="Go back to cases list"
           >
             <HiOutlineArrowLeft />
-          </IconButton>
+          </IconButton> */}
 
           <CaseIcon>
             <HiOutlineDocumentText />
           </CaseIcon>
 
           <HeaderContent>
-            <Heading as="h1" size="h1">
+            <Heading as="h2" size="h1">
               {isEditing ? "Edit Case" : "Create New Case"}
             </Heading>
-            <Text size="lg" color="muted">
+            <Text size="md" color="muted">
               {isEditing
                 ? `Editing case ${
                     existingFeedback?.feedbackNumber || "#" + feedbackId

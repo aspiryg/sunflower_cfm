@@ -602,6 +602,7 @@ StyledSelect.propTypes = {
   responsive: PropTypes.bool,
   disabled: PropTypes.bool,
   className: PropTypes.string,
+  $hasError: PropTypes.bool,
 };
 
 export default StyledSelect;

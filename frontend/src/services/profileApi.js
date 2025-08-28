@@ -24,6 +24,7 @@ export async function getCurrentProfile() {
  * Update user profile
  */
 export async function updateProfile(profileData) {
+  console.log("Updating profile with data:", profileData);
   try {
     const response = await profileApi.put("/me", profileData);
     return response.data;

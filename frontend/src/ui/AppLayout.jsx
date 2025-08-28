@@ -36,11 +36,11 @@ const ContentArea = styled.div`
   flex: 1;
   padding: var(--spacing-6);
   overflow-y: auto;
-  /* background: linear-gradient(
+  background: linear-gradient(
     135deg,
-    var(--color-brand-50) 0%,
-    var(--color-brand-100) 100%
-  ); */
+    var(--color-grey-50) 0%,
+    var(--color-grey-100) 100%
+  );
 
   @media (max-width: 768px) {
     padding: var(--spacing-4);

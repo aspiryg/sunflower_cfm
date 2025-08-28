@@ -155,7 +155,7 @@ const ModalBody = styled.div`
 
   @media (max-width: 768px) {
     padding: var(--spacing-4);
-    max-height: calc(95vh - 16rem);
+    max-height: calc(95vh - 25rem);
   }
 `;
 

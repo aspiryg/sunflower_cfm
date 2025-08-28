@@ -5,7 +5,7 @@ import {
   HiOutlinePlus,
   HiMiniArrowPath,
   HiOutlineChatBubbleLeftRight,
-  HiOutlineDocumentText,
+  // HiOutlineDocumentText,
 } from "react-icons/hi2";
 
 import Heading from "../ui/Heading";
@@ -33,21 +33,21 @@ const PageContainer = styled.div`
   gap: var(--spacing-6);
   max-width: var(--container-2xl);
   margin: 0 auto;
-  padding: var(--spacing-4);
+  padding: var(--spacing-0);
 
   @media (max-width: 768px) {
     gap: var(--spacing-4);
-    padding: var(--spacing-2);
+    padding: var(--spacing-0);
   }
 `;
 
 const PageHeader = styled.div`
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-4);
+  gap: var(--spacing-2);
 
   @media (max-width: 768px) {
-    gap: var(--spacing-3);
+    gap: var(--spacing-1);
   }
 `;
 
@@ -265,10 +265,10 @@ function Feedback() {
               <HiOutlineChatBubbleLeftRight />
             </CaseIcon>
             <PageHeaderText>
-              <Heading as="h1" size="h1">
+              <Heading as="h2" size="h1">
                 Case Management
               </Heading>
-              <Text size="lg" color="muted">
+              <Text size="md" color="muted">
                 Track and manage beneficiary complaints, suggestions, and
                 feedback
               </Text>

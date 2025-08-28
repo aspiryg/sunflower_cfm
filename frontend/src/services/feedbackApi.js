@@ -56,6 +56,8 @@ export const createFeedback = async (feedbackData) => {
  * @returns
  */
 export const updateFeedback = async (feedbackId, feedbackData) => {
+  // transform the data to remove fields that should not be updated
+
   // take out createdBy, createdAt, updatedAt, updatedBy
   const updatedData = { ...feedbackData };
   delete updatedData.createdBy;

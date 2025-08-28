@@ -17,7 +17,7 @@ import Heading from "../../ui/Heading";
 import Button from "../../ui/Button";
 import Input from "../../ui/Input";
 import IconButton from "../../ui/IconButton";
-import { useUpdateContactInfo } from "./useProfile";
+import { useUpdateContactInfo, useUpdateEmail } from "./useProfile";
 
 const EditCard = styled(Card)`
   padding: var(--spacing-5);

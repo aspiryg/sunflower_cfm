@@ -124,7 +124,7 @@ function Breadcrumb({ items = [], className = "", ...props }) {
   const breadcrumbItems =
     items[0]?.to === "/"
       ? items
-      : [{ label: "Dashboard", to: "/dashboard", icon: HomeIcon }, ...items];
+      : [{ label: "Home", to: "/dashboard", icon: HomeIcon }, ...items];
 
   return (
     <BreadcrumbContainer

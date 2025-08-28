@@ -12,6 +12,7 @@ import Button from "../../../ui/Button";
 import FormField, { Select, Textarea } from "../../../ui/FormField";
 import StatusBadge from "../../../ui/StatusBadge";
 import Avatar from "../../../ui/Avatar";
+import UserSelect from "../../../ui/UserSelect";
 import StyledSelect from "../../../ui/StyledSelect";
 import { useAssignFeedback } from "../useFeedback";
 import { useFeedbackUsers } from "../useFeedbackUsers";
@@ -342,7 +343,7 @@ function AssignFeedbackModal({ isOpen = false, onClose, feedback, onSuccess }) {
               {
                 value: "",
                 label: usersLoading ? "Loading users..." : "Select a user...",
-                isDisabled: true,
+                disabled: true,
               },
               ...assignableUsers.map((user) => ({
                 value: user.id.toString(),
@@ -355,6 +356,18 @@ function AssignFeedbackModal({ isOpen = false, onClose, feedback, onSuccess }) {
               })),
             ]}
           ></StyledSelect>
+
+          {/* <UserSelect
+            value={selectedUserId}
+            users={assignableUsers}
+            currentlyAssignedUserId={feedback.assignedTo?.id}
+            onChange={(value) => {
+              setSelectedUserId(value);
+              setErrors((prev) => ({ ...prev, user: "" }));
+            }}
+            $hasError={!!errors.user}
+            disabled={assignMutation.isPending || usersLoading}
+          /> */}
         </FormField>
         {selectedUser && (
           <UserPreview>

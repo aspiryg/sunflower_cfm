@@ -29,6 +29,7 @@ import {
   useFeedback,
 } from "./useFeedback";
 import { useFeedbackFormOptions } from "./useFeedbackData";
+import { useFeedbackUsers } from "./useFeedbackUsers";
 
 // Import tab components
 import BasicInfoTab from "./form/BasicInfoTab";
@@ -169,6 +170,10 @@ function CaseForm({
     communities,
     isLoading: optionsLoading,
   } = useFeedbackFormOptions();
+
+  // Load users for assignment
+  const { data: usersData, isLoading: usersLoading } = useFeedbackUsers();
+  const users = usersData || [];
 
   // Mutations for create/update
   const createMutation = useCreateFeedback({
@@ -463,6 +468,15 @@ function CaseForm({
         delete cleaned[key];
       }
 
+      // check if it an object
+      if (typeof cleaned[key] === "object" && cleaned[key].id !== null) {
+        cleaned[key] = cleaned[key].id;
+      }
+
+      if (typeof cleaned[key] === "object" && cleaned[key].id === null) {
+        delete cleaned[key];
+      }
+
       // Convert number fields
       const numberFields = [
         "groupProviderNumberOfIndividuals",
@@ -541,7 +555,7 @@ function CaseForm({
   };
 
   // Loading states
-  if (caseLoading || optionsLoading || !isFormReady) {
+  if (caseLoading || optionsLoading || usersLoading || !isFormReady) {
     return (
       <FormContainer className={className}>
         <LoadingContainer>
@@ -660,6 +674,7 @@ function CaseForm({
                     projects: projects.data || [],
                     activities: activities.data || [],
                     communities: communities.data || [],
+                    users: users.data || [],
                   }}
                 />
               </TabsContent>

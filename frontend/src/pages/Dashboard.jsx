@@ -26,11 +26,11 @@ const PageContainer = styled.div`
   max-width: var(--container-2xl);
   margin: 0 auto;
   width: 100%;
-  padding: 0 var(--spacing-4);
+  padding: 0 var(--spacing-0);
 
   @media (max-width: 768px) {
     gap: var(--spacing-4);
-    padding: 0 var(--spacing-2);
+    padding: 0 var(--spacing-0);
   }
 `;
 

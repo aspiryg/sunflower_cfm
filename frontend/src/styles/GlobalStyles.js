@@ -444,6 +444,7 @@ const GlobalStyles = createGlobalStyle`
   --font-weight-bold: 700;
 
   /* Spacing */
+  --spacing-0: 0rem;
   --spacing-1: 0.4rem;
   --spacing-2: 0.8rem;
   --spacing-3: 1.2rem;

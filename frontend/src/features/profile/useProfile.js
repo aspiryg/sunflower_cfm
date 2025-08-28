@@ -95,6 +95,26 @@ export function useUpdateProfile(options = {}) {
   });
 }
 
+// export function useChangePassword() {
+//   const queryClient = useQueryClient();
+
+//   return useMutation({
+//     mutationFn: ({ currentPassword, newPassword }) =>
+//       changePassword(currentPassword, newPassword),
+//     onSuccess: () => {
+//       toast.success("Password changed successfully");
+
+//       // Invalidate profile queries
+//       queryClient.invalidateQueries({
+//         queryKey: ["profile"],
+//       });
+//     },
+//     onError: (error) => {
+//       toast.error(error.message || "Failed to change password");
+//     },
+//   });
+// }
+
 /**
  * Hook to update contact information
  */

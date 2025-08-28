@@ -101,13 +101,7 @@ const ImportantNote = styled.div`
  * Enhanced Basic Information Tab Component
  * Handles core case information with modern terminology and improved UX
  */
-function BasicInfoTab({
-  control,
-  errors,
-  watch,
-  formOptions,
-  isLoading = false,
-}) {
+function BasicInfoTab({ control, errors, watch, isLoading = false }) {
   // Watch for conditional fields
   const caseType = watch("caseType");
   const urgency = watch("urgency");

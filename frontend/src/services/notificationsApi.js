@@ -40,6 +40,7 @@ export const getNotificationById = async (id) => {
 };
 
 export const markNotificationAsRead = async (id) => {
+  console.log("Marking notification as read:", id);
   try {
     const response = await notificationsApi.put(`/markAsRead/${id}`);
     return response.data;
