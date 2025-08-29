@@ -13,6 +13,9 @@ import {
   HiOutlineChatBubbleLeft,
   HiOutlineMapPin,
   HiOutlineCog6Tooth,
+  HiOutlineUsers,
+  HiOutlineDocumentText,
+  HiOutlineChatBubbleLeftRight,
 } from "react-icons/hi2";
 
 import { useFeedback } from "../features/feedback/useFeedback";
@@ -24,9 +27,11 @@ import StatusBadge from "../ui/StatusBadge";
 import LoadingSpinner from "../ui/LoadingSpinner";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../ui/Tabs";
 import ContextMenu from "../ui/ContextMenu";
+import Breadcrumb from "../ui/Breadcrumb";
 
 // Import detail components (we'll create these)
 import FeedbackOverview from "../features/feedback/details/FeedbackOverview";
+import FeedbackAssignment from "../features/feedback/details/FeedbackAssignment";
 import FeedbackTimeline from "../features/feedback/details/FeedbackTimeline";
 import FeedbackComments from "../features/feedback/details/FeedbackComments";
 import FeedbackLocation from "../features/feedback/details/FeedbackLocation";
@@ -46,7 +51,7 @@ const PageContainer = styled.div`
   min-height: 100vh;
   width: 100%;
   min-width: 0; /* Allow shrinking */
-  padding: 0 var(--spacing-4);
+  padding: var(--spacing-0);
 
   @media (max-width: 768px) {
     gap: var(--spacing-4);
@@ -55,14 +60,18 @@ const PageContainer = styled.div`
 
   @media (max-width: 600px) {
     gap: var(--spacing-3);
-    padding: 0 var(--spacing-1);
+    padding: 0 var(--spacing-0);
   }
 `;
 
 const PageHeader = styled.div`
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-4);
+  gap: var(--spacing-2);
+
+  @media (max-width: 768px) {
+    gap: var(--spacing-1);
+  }
 `;
 
 const HeaderTop = styled.div`
@@ -130,7 +139,7 @@ const MetadataGrid = styled.div`
   padding: var(--spacing-4);
   background-color: var(--color-grey-25);
   border-radius: var(--border-radius-lg);
-  border: 1px solid var(--color-grey-200);
+  border: 1px solid var(--color-info-200);
 `;
 
 const MetadataItem = styled.div`
@@ -236,6 +245,19 @@ function FeedbackDetails() {
     navigate(`/feedback/edit/${feedbackId}`);
   };
 
+  // Build breadcrumb items
+  const breadcrumbItems = [
+    {
+      label: "Cases",
+      to: "/feedback",
+      icon: HiOutlineChatBubbleLeftRight,
+    },
+    {
+      label: "Case Details",
+      icon: HiOutlineDocumentText,
+    },
+  ];
+
   // Action handlers
   const handleDelete = () => {
     setDeleteModal({ isOpen: true, feedback });
@@ -314,6 +336,12 @@ function FeedbackDetails() {
       component: FeedbackOverview,
     },
     {
+      value: "assignment",
+      label: "Assignment",
+      icon: HiOutlineUsers,
+      component: FeedbackAssignment,
+    },
+    {
       value: "timeline",
       label: "Timeline",
       icon: HiOutlineClock,
@@ -384,15 +412,7 @@ function FeedbackDetails() {
     <PageContainer>
       {/* Header Section */}
       <PageHeader>
-        <BackButton
-          variant="outline"
-          size="small"
-          onClick={handleBack}
-          aria-label="Go back to feedback list"
-        >
-          <HiOutlineArrowLeft />
-          Back to Feedback
-        </BackButton>
+        <Breadcrumb items={breadcrumbItems} />
 
         <HeaderTop>
           {/* <HeaderContent>
@@ -410,9 +430,7 @@ function FeedbackDetails() {
               <FeedbackNumber size="sm" weight="medium">
                 {feedback.feedbackNumber}
               </FeedbackNumber>
-              <Heading as="h1" size="h1">
-                {feedback.title}
-              </Heading>
+              <Heading as="h3">{feedback.title}</Heading>
             </TitleSection>
 
             <StatusSection>

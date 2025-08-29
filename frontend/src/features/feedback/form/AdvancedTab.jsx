@@ -2,16 +2,18 @@ import { Controller } from "react-hook-form";
 import styled from "styled-components";
 import PropTypes from "prop-types";
 import {
-  HiOutlineCog6Tooth,
+  // HiOutlineCog6Tooth,
   HiOutlineUserGroup,
-  HiOutlineRectangleStack,
+  // HiOutlineRectangleStack,
   HiOutlineShieldCheck,
   HiOutlineInformationCircle,
-  HiOutlineEye,
-  HiOutlineEyeSlash,
+  // HiOutlineEye,
+  // HiOutlineEyeSlash,
   HiOutlineTag,
   HiOutlineBriefcase,
 } from "react-icons/hi2";
+
+import { useAuth } from "../../../contexts/AuthContext";
 
 import FormField, { Textarea } from "../../../ui/FormField";
 import Input from "../../../ui/Input";
@@ -263,6 +265,9 @@ function AdvancedTab({
   const assignedTo = watch("assignedTo");
   // const submittedBy = watch("submittedBy");
 
+  // current user
+  const currentUser = useAuth().user;
+
   // Filter projects based on selected programme
   const filteredProjects = programmeId
     ? projects.filter(
@@ -343,6 +348,7 @@ function AdvancedTab({
                 <UserSelect
                   {...field}
                   users={users}
+                  value={field.value || currentUser?.id || ""}
                   placeholder="Select data entry officer..."
                   $hasError={!!errors.submittedBy}
                   disabled={isLoading}

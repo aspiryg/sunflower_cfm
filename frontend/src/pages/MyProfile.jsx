@@ -3,12 +3,12 @@ import styled from "styled-components";
 import {
   HiOutlineUser,
   HiOutlineEnvelope,
-  HiOutlinePhone,
-  HiOutlineMapPin,
+  // HiOutlinePhone,
+  // HiOutlineMapPin,
   HiOutlineLockClosed,
   HiOutlineShieldCheck,
   HiOutlinePencil,
-  HiOutlineCamera,
+  // HiOutlineCamera,
   HiArrowPath,
   HiOutlineUserCircle,
 } from "react-icons/hi2";
@@ -226,20 +226,6 @@ function MyProfile() {
       icon: HiOutlineUserCircle,
     },
   ];
-
-  const getUserDisplayName = () => {
-    if (currentUser?.firstName && currentUser?.lastName) {
-      return `${currentUser.firstName} ${currentUser.lastName}`;
-    }
-    if (currentUser?.username) {
-      return currentUser.username;
-    }
-    return "User";
-  };
-
-  const handleProfilePictureSuccess = () => {
-    handleRefresh();
-  };
 
   const handlePersonalInfoSuccess = () => {
     handleRefresh();

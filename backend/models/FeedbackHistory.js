@@ -417,11 +417,13 @@ export class FeedbackHistory {
         ub.firstName as updatedByFirstName,
         ub.lastName as updatedByLastName,
         ub.email as updatedByEmail,
+        ub.role as updatedByRole,
         ub.profilePicture as updatedByProfilePicture,
         at.username as assignedToUsername,
         at.firstName as assignedToFirstName,
         at.lastName as assignedToLastName,
         at.email as assignedToEmail,
+        at.role as assignedToRole,
         at.profilePicture as assignedToProfilePicture
       FROM FeedbackHistory fh
       LEFT JOIN Feedback f ON fh.feedbackId = f.id
@@ -584,6 +586,7 @@ export class FeedbackHistory {
             firstName: result.assignedToFirstName,
             lastName: result.assignedToLastName,
             email: result.assignedToEmail,
+            role: result.assignedToRole,
             profilePicture: result.assignedToProfilePicture,
           }
         : null,
@@ -593,6 +596,7 @@ export class FeedbackHistory {
         firstName: result.updatedByFirstName,
         lastName: result.updatedByLastName,
         email: result.updatedByEmail,
+        role: result.updatedByRole,
         profilePicture: result.updatedByProfilePicture,
       },
       updatedAt: result.updatedAt,

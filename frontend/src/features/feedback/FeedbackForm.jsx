@@ -199,7 +199,7 @@ function CaseForm({
     watch,
     setValue,
     trigger,
-    reset,
+    // reset,
     formState: { errors, isDirty, isValid, isSubmitting },
   } = useForm({
     mode: "onChange",

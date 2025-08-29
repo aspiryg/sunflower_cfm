@@ -157,10 +157,10 @@ export const selectFeedbackQuery = `
     fc.arabicDescription AS categoryArabicDescription,
 
     -- Feedback channel details
-    fc.name AS feedbackChannelName,
-    fc.arabicName AS feedbackChannelArabicName,
-    fc.description AS feedbackChannelDescription,
-    fc.arabicDescription AS feedbackChannelArabicDescription,
+    fch.name AS feedbackChannelName,
+    fch.arabicName AS feedbackChannelArabicName,
+    fch.description AS feedbackChannelDescription,
+    fch.arabicDescription AS feedbackChannelArabicDescription,
 
     -- program details
     p.name AS programName,
