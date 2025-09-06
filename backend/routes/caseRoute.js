@@ -279,7 +279,7 @@ router.get(
  */
 router.get(
   "/statuses",
-  requirePermission(RESOURCES.CASE_STATUSES, ACTIONS.READ),
+  requirePermission(RESOURCES.CATEGORIES, ACTIONS.READ),
   caseController.getCaseStatuses
 );
 

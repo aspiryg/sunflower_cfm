@@ -226,6 +226,219 @@ export class EmailController {
     }
   }
 
+  // ...existing code above...
+
+  /**
+   * Send case resolution notification
+   */
+  static async sendCaseResolutionNotification(
+    userId,
+    caseData,
+    resolvedBy,
+    resolutionSummary
+  ) {
+    try {
+      const user = await User.findUserByIdAsync(userId);
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      const emailData = {
+        to: user.email,
+        subject: `Case Resolved - ${caseData.caseNumber || caseData.number}`,
+        html: EmailTemplates.caseResolved(
+          user,
+          caseData,
+          resolvedBy,
+          resolutionSummary,
+          emailConfig.templates
+        ),
+      };
+
+      const result = await emailService.sendEmail(emailData);
+
+      console.log(`✅ Case resolution notification sent to ${user.email}`);
+      return result;
+    } catch (error) {
+      console.error(`❌ Failed to send case resolution notification:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Send weekly summary report
+   */
+  static async sendWeeklySummaryReport(userId, summaryData, weekInfo) {
+    try {
+      const user = await User.findUserByIdAsync(userId);
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      const emailData = {
+        to: user.email,
+        subject: `Weekly Report - ${weekInfo.startDate} to ${weekInfo.endDate}`,
+        html: EmailTemplates.weeklySummaryReport(
+          user,
+          summaryData,
+          weekInfo,
+          emailConfig.templates
+        ),
+      };
+
+      const result = await emailService.sendEmail(emailData);
+
+      console.log(`✅ Weekly summary report sent to ${user.email}`);
+      return result;
+    } catch (error) {
+      console.error(`❌ Failed to send weekly summary report:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Send system notification
+   */
+  static async sendSystemNotification(userId, notification) {
+    try {
+      const user = await User.findUserByIdAsync(userId);
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      const emailData = {
+        to: user.email,
+        subject: notification.title || "System Notification",
+        html: EmailTemplates.systemNotification(
+          user,
+          notification,
+          emailConfig.templates
+        ),
+      };
+
+      const result = await emailService.sendEmail(emailData);
+
+      console.log(`✅ System notification sent to ${user.email}`);
+      return result;
+    } catch (error) {
+      console.error(`❌ Failed to send system notification:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Send bulk weekly reports to all eligible users
+   */
+  static async sendBulkWeeklyReports(summaryData, weekInfo) {
+    try {
+      // Get all active users who should receive weekly reports
+      const users = await User.getUsersForWeeklyReports();
+
+      const results = [];
+      for (const user of users) {
+        try {
+          // Customize summary data based on user role/access
+          const userSummaryData = await this._customizeSummaryForUser(
+            user,
+            summaryData
+          );
+
+          const result = await this.sendWeeklySummaryReport(
+            user.id,
+            userSummaryData,
+            weekInfo
+          );
+          results.push({ userId: user.id, success: true, result });
+
+          // Add delay between emails to avoid rate limiting
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+        } catch (error) {
+          results.push({
+            userId: user.id,
+            success: false,
+            error: error.message,
+          });
+        }
+      }
+
+      console.log(
+        `✅ Weekly reports sent to ${results.filter((r) => r.success).length}/${
+          users.length
+        } users`
+      );
+      return results;
+    } catch (error) {
+      console.error(`❌ Failed to send bulk weekly reports:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Send system notification to all users
+   */
+  static async broadcastSystemNotification(notification) {
+    try {
+      const users = await User.getAllActiveUsers();
+
+      const results = [];
+      for (const user of users) {
+        try {
+          const result = await this.sendSystemNotification(
+            user.id,
+            notification
+          );
+          results.push({ userId: user.id, success: true, result });
+
+          // Add delay between emails
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+        } catch (error) {
+          results.push({
+            userId: user.id,
+            success: false,
+            error: error.message,
+          });
+        }
+      }
+
+      console.log(
+        `✅ System notification broadcast to ${
+          results.filter((r) => r.success).length
+        }/${users.length} users`
+      );
+      return results;
+    } catch (error) {
+      console.error(`❌ Failed to broadcast system notification:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Customize summary data based on user permissions and role
+   * @private
+   */
+  static async _customizeSummaryForUser(user, summaryData) {
+    // Customize based on user role and permissions
+    const customizedData = { ...summaryData };
+
+    // Staff members see only their own cases
+    if (user.role === "staff") {
+      customizedData.personalCases = summaryData.userSpecific?.[user.id] || {};
+      customizedData.topPerformers = null; // Hide performance comparisons
+    }
+
+    // Managers see team performance
+    if (user.role === "manager") {
+      customizedData.teamPerformance = summaryData.teamData || {};
+    }
+
+    // Admins see full system data
+    if (["admin", "super_admin"].includes(user.role)) {
+      customizedData.systemMetrics = summaryData.systemWide || {};
+    }
+
+    return customizedData;
+  }
+
   /**
    * Send notification email based on notification data
    */
