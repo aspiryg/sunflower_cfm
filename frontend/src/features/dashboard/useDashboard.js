@@ -3,9 +3,9 @@ import { useState, useMemo } from "react";
 export function useDashboardFilters() {
   const [filters, setFilters] = useState({
     dateRange: "30d",
-    status: "all",
-    priority: "all",
-    category: "all",
+    statusId: "all",
+    priorityId: "all",
+    categoryId: "all",
   });
 
   const updateFilter = (key, value) => {
@@ -18,14 +18,14 @@ export function useDashboardFilters() {
   const resetFilters = () => {
     setFilters({
       dateRange: "30d",
-      status: "all",
-      priority: "all",
-      category: "all",
+      statusId: "all",
+      priorityId: "all",
+      categoryId: "all",
     });
   };
 
   /**
-   * Convert dashboard filters to format expected by useFeedbackStats
+   * Convert dashboard filters to format expected by useCaseStats
    * Converts dateRange to dateFrom/dateTo and removes "all" values
    */
   const statsFilters = useMemo(() => {
@@ -39,16 +39,16 @@ export function useDashboardFilters() {
     }
 
     // Add other filters if they're not "all"
-    if (filters.status && filters.status !== "all") {
-      converted.status = filters.status;
+    if (filters.statusId && filters.statusId !== "all") {
+      converted.statusId = filters.statusId;
     }
 
-    if (filters.priority && filters.priority !== "all") {
-      converted.priority = filters.priority;
+    if (filters.priorityId && filters.priorityId !== "all") {
+      converted.priorityId = filters.priorityId;
     }
 
-    if (filters.category && filters.category !== "all") {
-      converted.category = filters.category;
+    if (filters.categoryId && filters.categoryId !== "all") {
+      converted.categoryId = filters.categoryId;
     }
 
     return converted;

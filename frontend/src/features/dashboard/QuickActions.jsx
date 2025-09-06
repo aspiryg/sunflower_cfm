@@ -110,21 +110,22 @@ const StatItem = styled.div`
   border-radius: var(--border-radius-sm);
 `;
 
-function QuickActions({ stats, onCreateFeedback, onViewAll }) {
+function QuickActions({ stats, onCreateCase, onViewAll }) {
   const navigate = useNavigate();
+
   const actions = [
     {
       id: "create",
-      title: "New Feedback",
-      description: "Submit new feedback entry",
+      title: "New Case",
+      description: "Submit new case entry",
       icon: HiOutlinePlus,
       variant: "primary",
-      onClick: onCreateFeedback,
+      onClick: onCreateCase,
     },
     {
       id: "view-all",
-      title: "View All Feedback",
-      description: "Browse all feedback entries",
+      title: "View All Cases",
+      description: "Browse all case entries",
       icon: HiOutlineClipboardDocumentList,
       variant: "secondary",
       onClick: onViewAll,
@@ -141,7 +142,7 @@ function QuickActions({ stats, onCreateFeedback, onViewAll }) {
     {
       id: "settings",
       title: "System Settings",
-      description: "Configure feedback system",
+      description: "Configure case management system",
       icon: HiOutlineCog6Tooth,
       variant: "ghost",
       onClick: () => navigate("/settings"),
@@ -150,22 +151,32 @@ function QuickActions({ stats, onCreateFeedback, onViewAll }) {
 
   // Helper function to calculate average processing time in days
   const getAverageProcessingDays = () => {
-    if (!stats || stats.caseProcessed === 0) return 0;
-    const avgMs = stats.totalProcessingTime / stats.caseProcessed;
+    if (!stats || stats.casesProcessed === 0) return 0;
+    const avgMs = stats.totalProcessingTime / stats.casesProcessed;
     return Math.round(avgMs / (1000 * 60 * 60 * 24));
+  };
+
+  // Helper function to get today's submissions
+  const getTodaySubmissions = () => {
+    if (!stats?.dailySubmissions) return 0;
+    const today = new Date().toDateString();
+    return stats.dailySubmissions[today] || 0;
   };
 
   const quickStats = [
     {
       label: "Open Cases",
-      value: stats?.byStatus?.open || 0,
+      value:
+        (stats?.byStatus?.new || 0) +
+        (stats?.byStatus?.open || 0) +
+        (stats?.byStatus?.["in review"] || 0),
     },
     {
       label: "Today's Submissions",
-      value: stats?.dailySubmissions?.[new Date().toDateString()] || 0,
+      value: getTodaySubmissions(),
     },
     {
-      label: "Average Processing Time (Days)",
+      label: "Avg. Processing (Days)",
       value: getAverageProcessingDays(),
     },
     {
@@ -213,7 +224,9 @@ function QuickActions({ stats, onCreateFeedback, onViewAll }) {
               {stat.label}
             </Text>
             <Text size="sm" weight="semibold">
-              {stat.value}
+              {typeof stat.value === "number"
+                ? stat.value.toLocaleString()
+                : stat.value}
             </Text>
           </StatItem>
         ))}
@@ -224,7 +237,7 @@ function QuickActions({ stats, onCreateFeedback, onViewAll }) {
 
 QuickActions.propTypes = {
   stats: PropTypes.object,
-  onCreateFeedback: PropTypes.func.isRequired,
+  onCreateCase: PropTypes.func.isRequired,
   onViewAll: PropTypes.func.isRequired,
 };
 

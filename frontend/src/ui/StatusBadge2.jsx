@@ -118,6 +118,15 @@ const StyledBadge = styled.span`
       border-color: ${variant.border};
     `;
   }}
+  ${(props) => {
+    if (props.$fitContent) {
+      return css`
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      `;
+    }
+  }}
 `;
 
 function StatusBadge({
@@ -125,6 +134,7 @@ function StatusBadge({
   variant,
   size = "md",
   className = "",
+  fitContent = false,
   ...props
 }) {
   // Auto-detect variant from content if not provided
@@ -136,6 +146,7 @@ function StatusBadge({
       $variant={detectedVariant}
       $size={size}
       className={className}
+      $fitContent={fitContent}
       {...props}
     >
       {content}

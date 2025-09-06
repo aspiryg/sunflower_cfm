@@ -19,7 +19,7 @@ export const getAllNotifications = async (params = {}) => {
 
 export const getUserNotifications = async (params = {}) => {
   try {
-    const response = await notificationsApi.get("/user", { params });
+    const response = await notificationsApi.get("/", { params });
     return (
       response.data || { data: [], summary: { total: 0, unread: 0, isRead: 0 } }
     );
@@ -42,7 +42,7 @@ export const getNotificationById = async (id) => {
 export const markNotificationAsRead = async (id) => {
   console.log("Marking notification as read:", id);
   try {
-    const response = await notificationsApi.put(`/markAsRead/${id}`);
+    const response = await notificationsApi.patch(`/${id}/read`);
     return response.data;
   } catch (error) {
     console.error("Error marking notification as read:", error);
@@ -53,7 +53,7 @@ export const markNotificationAsRead = async (id) => {
 export const markMultipleNotificationsAsRead = async (notificationIds) => {
   console.log("Marking multiple notifications as read:", notificationIds);
   try {
-    const response = await notificationsApi.put("/markMultipleAsRead", {
+    const response = await notificationsApi.patch("/mark-read", {
       notificationIds,
     });
     return response.data;

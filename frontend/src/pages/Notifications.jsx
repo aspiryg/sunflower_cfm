@@ -85,6 +85,11 @@ const FiltersSection = styled.div`
   border: 1px solid var(--color-grey-200);
   border-radius: var(--border-radius-lg);
 
+  @media (max-width: 992px) {
+    flex-wrap: wrap;
+    gap: var(--spacing-3);
+  }
+
   @media (max-width: 768px) {
     flex-wrap: wrap;
     gap: var(--spacing-3);
@@ -95,11 +100,11 @@ const FilterGroup = styled.div`
   display: flex;
   align-items: center;
   gap: var(--spacing-2);
-  min-width: 0;
+  min-width: fit-content;
 
   @media (max-width: 640px) {
     flex: 1;
-    min-width: 0;
+    min-width: fit-content;
   }
 `;
 
@@ -268,7 +273,7 @@ const NotificationMeta = styled.div`
   margin-top: var(--spacing-1);
 `;
 
-const FeedbackNumber = styled(Badge)`
+const CaseNumber = styled(Badge)`
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
 `;
@@ -377,6 +382,8 @@ function Notifications() {
     refetch,
   } = useUserNotifications();
 
+  // console.log("Notifications Data:", notificationsData);
+
   const markAsReadMutation = useMarkNotificationAsRead();
   const markAllAsReadMutation = useMarkAllNotificationsAsRead();
   const deleteNotificationMutation = useDeleteNotification();
@@ -416,7 +423,7 @@ function Notifications() {
       markAsReadMutation.mutate(notification.id);
     }
 
-    navigate(`/feedback/view/${notification.feedbackId}`);
+    navigate(`/cases/view/${notification.caseId}`);
   };
 
   const handleMarkAsRead = (notificationId, event) => {
@@ -469,10 +476,14 @@ function Notifications() {
     ],
     type: [
       { value: "all", label: "All Types" },
-      { value: "FEEDBACK_SUBMITTED", label: "Feedback Submitted" },
-      { value: "FEEDBACK_ASSIGNED", label: "Feedback Assigned" },
-      { value: "FEEDBACK_STATUS_CHANGED", label: "Status Changed" },
-      { value: "FEEDBACK_UNASSIGNED", label: "Feedback Unassigned" },
+      { value: "case_updated", label: "Case Updated" },
+      { value: "case_created", label: "Case Created" },
+      { value: "case_assigned", label: "Case Assigned" },
+      { value: "assignment_transferred", label: "Assignment Transferred" },
+      { value: "case_status_changed", label: "Case Status Changed" },
+      { value: "case_resolved", label: "Case Resolved" },
+      { value: "escalation", label: "Escalation" },
+      { value: "comment_added", label: "Comment Added" },
     ],
     priority: [
       { value: "all", label: "All Priorities" },
@@ -614,6 +625,7 @@ function Notifications() {
             options={filterOptions.isRead}
             size="small"
             placeholder="Select status..."
+            style={{ minWidth: "18rem" }}
           />
         </FilterGroup>
 
@@ -627,6 +639,7 @@ function Notifications() {
             options={filterOptions.type}
             size="small"
             placeholder="Select type..."
+            style={{ minWidth: "18rem" }}
           />
         </FilterGroup>
 
@@ -640,6 +653,7 @@ function Notifications() {
             options={filterOptions.priority}
             size="small"
             placeholder="Select priority..."
+            style={{ minWidth: "18rem" }}
           />
         </FilterGroup>
       </FiltersSection>
@@ -742,11 +756,11 @@ function Notifications() {
                       </NotificationMessage>
 
                       <NotificationMeta>
-                        {notification.metadata?.feedbackNumber && (
-                          <FeedbackNumber
+                        {notification.metadata?.caseNumber && (
+                          <CaseNumber
                             variant="secondary"
                             size="sm"
-                            content={notification.metadata.feedbackNumber}
+                            content={notification.metadata.caseNumber}
                           />
                         )}
 

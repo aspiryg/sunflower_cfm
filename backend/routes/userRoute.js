@@ -8,34 +8,36 @@ import {
   updateUserRoleAsync,
 } from "../controllers/userController.js";
 import {
-  validateUserRegistration,
+  validateUserCreation,
+  validateProfileUpdate,
+  validateRoleUpdate,
   handleValidationErrors,
 } from "../middlewares/validation.js";
 import { authenticateToken } from "../middlewares/auth.js";
-
 import { requirePermission } from "../middlewares/autherization.js";
 import { ResourceHelpers } from "../utils/resourceHelpers.js";
 import { RESOURCES, ACTIONS } from "../config/rolesConfig.js";
 
 const router = Router();
 
-/** * @route POST /users
- * @description Create a new user
- * @access Public
+/**
+ * @route POST /api/users
+ * @description Create a new user (Admin functionality)
+ * @access Private - Admin only
  */
 router.post(
   "/",
-  validateUserRegistration(),
-  handleValidationErrors,
   authenticateToken,
   requirePermission(RESOURCES.USERS, ACTIONS.CREATE),
+  validateUserCreation(),
+  handleValidationErrors,
   createUserAsync
 );
 
 /**
- * @route GET /users
- * @description Get all users (filtered by role)
- * @access Private
+ * @route GET /api/users
+ * @description Get all users with filtering and pagination
+ * @access Private - Staff and above
  */
 router.get(
   "/",
@@ -45,8 +47,8 @@ router.get(
 );
 
 /**
- * @route GET /users/:id
- * @description Get user by ID
+ * @route GET /api/users/:id
+ * @description Get user by ID with proper access control
  * @access Private
  */
 router.get(
@@ -59,8 +61,8 @@ router.get(
 );
 
 /**
- * @route PUT /users/:id
- * @description Update user
+ * @route PUT /api/users/:id
+ * @description Update user profile and information
  * @access Private
  */
 router.put(
@@ -69,25 +71,31 @@ router.put(
   requirePermission(RESOURCES.USERS, ACTIONS.UPDATE, {
     getResource: ResourceHelpers.getUser,
   }),
+  validateProfileUpdate(),
+  handleValidationErrors,
   updateUserAsync
 );
 
 /**
- * @route PATCH /users/:id/role
- * @description Update user role
+ * @route PATCH /api/users/:id/role
+ * @description Update user role (Admin functionality)
  * @access Private - Admin only
  */
 router.patch(
   "/:id/role",
   authenticateToken,
-  requirePermission(RESOURCES.USERS, ACTIONS.UPDATE),
+  requirePermission(RESOURCES.USERS, ACTIONS.UPDATE, {
+    getResource: ResourceHelpers.getUser,
+  }),
+  validateRoleUpdate(),
+  handleValidationErrors,
   updateUserRoleAsync
 );
 
 /**
- * @route SOFT DELETE /users/:id
- * @description Soft delete user (set isActive to false)
- * @access Private
+ * @route DELETE /api/users/:id
+ * @description Soft delete user (deactivate account)
+ * @access Private - Admin only
  */
 router.delete(
   "/:id",

@@ -58,7 +58,6 @@ export class ResourceHelpers {
     // TODO: Implement when Comment model is ready
     const comment = await FeedbackComments.getCommentById(commentId);
     if (!comment) throw new Error("Comment not found");
-    return comment;
 
     // Placeholder for now
     return {
@@ -66,5 +65,87 @@ export class ResourceHelpers {
       content: "Sample Comment",
       createdBy: { id: 1 }, // For ownership testing
     };
+  }
+
+  /**
+   * Get case from request parameters
+   */
+  static async getCase(req) {
+    const caseId = req.params.id || req.params.caseId;
+    if (!caseId) throw new Error("Case ID not found");
+
+    // Import Case model (add this import at the top of the file)
+    const { Case } = await import("../models/Case.js");
+
+    const caseData = await Case.findCaseByIdFlatAsync(caseId);
+    if (!caseData) throw new Error("Case not found");
+
+    return caseData;
+  }
+
+  /**
+   * Get case by case number from request parameters
+   */
+  static async getCaseByCaseNumber(req) {
+    const caseNumber = req.params.caseNumber;
+    if (!caseNumber) throw new Error("Case number not found");
+
+    // Import Case model
+    const { Case } = await import("../models/Case.js");
+
+    const caseData = await Case.findCaseByIdFlatAsync(null, caseNumber);
+    if (!caseData) throw new Error("Case not found");
+
+    return caseData;
+  }
+
+  /**
+   * Get case comment from request parameters
+   */
+  static async getCaseComment(req) {
+    const commentId = req.params.commentId || req.params.id;
+    if (!commentId) throw new Error("Comment ID not found");
+
+    // Import CaseComments model
+    const { CaseComments } = await import("../models/CaseComments.js");
+
+    const comment = await CaseComments.getCommentById(commentId);
+    if (!comment) throw new Error("Case comment not found");
+
+    return comment;
+  }
+
+  /**
+   * Get case history entry from request parameters
+   */
+  static async getCaseHistoryEntry(req) {
+    const historyId = req.params.historyId || req.params.id;
+    if (!historyId) throw new Error("History ID not found");
+
+    // Import CaseHistory model
+    const { CaseHistory } = await import("../models/CaseHistory.js");
+
+    const historyEntry = await CaseHistory.getHistoryEntryAsync(historyId);
+    if (!historyEntry) throw new Error("Case history entry not found");
+
+    return historyEntry;
+  }
+
+  /**
+   * Get notification from request parameters
+   */
+  static async getNotification(req) {
+    const notificationId = req.params.id || req.params.notificationId;
+    if (!notificationId) throw new Error("Notification ID not found");
+
+    // Import CaseNotification model
+    const { CaseNotification } = await import("../models/CaseNotification.js");
+
+    const notification = await CaseNotification.getNotificationByIdAsync(
+      notificationId
+    );
+    if (!notification) throw new Error("Notification not found");
+
+    return notification;
   }
 }

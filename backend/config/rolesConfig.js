@@ -23,12 +23,17 @@ const ACTIONS = {
 
 const RESOURCES = {
   FEEDBACK: "feedback",
+  CASES: "cases", // New case resource
+  CASE_HISTORY: "case_history", // New case history resource
+  CASE_COMMENTS: "case_comments", // New case comments resource
   USERS: "users",
   CATEGORIES: "categories",
-  NOTIFICATIONS: "notifications",
-  SYSTEM: "system",
+  CASE_STATUSES: "case_statuses", // New case statuses resource
   COMMENTS: "comments",
   FEEDBACK_HISTORY: "feedback_history",
+  NOTIFICATIONS: "notifications",
+  ANALYTICS: "analytics",
+  SYSTEM: "system",
 };
 
 const ACTION_RESTRICTIONS = {
@@ -63,6 +68,20 @@ const ROLE_PERMISSIONS = {
       [ACTIONS.UPDATE]: ACTION_RESTRICTIONS.OWN, // Can update own comments
       [ACTIONS.DELETE]: ACTION_RESTRICTIONS.OWN, // Can delete own comments
     },
+    [RESOURCES.CASES]: {
+      [ACTIONS.CREATE]: ACTION_RESTRICTIONS.ALL, // Can create any case
+      [ACTIONS.READ]: ACTION_RESTRICTIONS.OWN, // Can only read own cases
+      [ACTIONS.UPDATE]: ACTION_RESTRICTIONS.OWN, // Can only update own cases
+    },
+    [RESOURCES.CASE_HISTORY]: {
+      [ACTIONS.READ]: ACTION_RESTRICTIONS.OWN, // Can read own case history
+    },
+    [RESOURCES.CASE_COMMENTS]: {
+      [ACTIONS.CREATE]: ACTION_RESTRICTIONS.ALL, // Can comment on any case
+      [ACTIONS.READ]: ACTION_RESTRICTIONS.ALL, // Can read comments
+      [ACTIONS.UPDATE]: ACTION_RESTRICTIONS.OWN, // Can update own comments
+      [ACTIONS.DELETE]: ACTION_RESTRICTIONS.OWN, // Can delete own comments
+    },
   },
 
   staff: {
@@ -84,6 +103,20 @@ const ROLE_PERMISSIONS = {
       [ACTIONS.CREATE]: ACTION_RESTRICTIONS.ALL, // Can create notifications
     },
     [RESOURCES.COMMENTS]: {
+      [ACTIONS.CREATE]: ACTION_RESTRICTIONS.ALL,
+      [ACTIONS.READ]: ACTION_RESTRICTIONS.ALL,
+      [ACTIONS.UPDATE]: ACTION_RESTRICTIONS.ALL, // Can update any comments
+      [ACTIONS.DELETE]: ACTION_RESTRICTIONS.OWN, // Can only delete own comments
+    },
+    [RESOURCES.CASES]: {
+      [ACTIONS.CREATE]: ACTION_RESTRICTIONS.ALL,
+      [ACTIONS.READ]: ACTION_RESTRICTIONS.ASSIGNED, // Can read assigned cases
+      [ACTIONS.UPDATE]: ACTION_RESTRICTIONS.ASSIGNED, // Can update assigned cases
+    },
+    [RESOURCES.CASE_HISTORY]: {
+      [ACTIONS.READ]: ACTION_RESTRICTIONS.ASSIGNED, // Can read assigned case history
+    },
+    [RESOURCES.CASE_COMMENTS]: {
       [ACTIONS.CREATE]: ACTION_RESTRICTIONS.ALL,
       [ACTIONS.READ]: ACTION_RESTRICTIONS.ALL,
       [ACTIONS.UPDATE]: ACTION_RESTRICTIONS.ALL, // Can update any comments
@@ -114,6 +147,21 @@ const ROLE_PERMISSIONS = {
       [ACTIONS.DELETE]: ACTION_RESTRICTIONS.OWN,
     },
     [RESOURCES.COMMENTS]: {
+      [ACTIONS.CREATE]: ACTION_RESTRICTIONS.ALL,
+      [ACTIONS.READ]: ACTION_RESTRICTIONS.ALL,
+      [ACTIONS.UPDATE]: ACTION_RESTRICTIONS.ALL,
+      [ACTIONS.DELETE]: ACTION_RESTRICTIONS.OWN, // Can delete own comments
+    },
+    [RESOURCES.CASES]: {
+      [ACTIONS.CREATE]: ACTION_RESTRICTIONS.ALL,
+      [ACTIONS.READ]: ACTION_RESTRICTIONS.ALL,
+      [ACTIONS.UPDATE]: ACTION_RESTRICTIONS.ALL,
+      [ACTIONS.ASSIGN]: ACTION_RESTRICTIONS.ALL, // Can assign cases
+    },
+    [RESOURCES.CASE_HISTORY]: {
+      [ACTIONS.READ]: ACTION_RESTRICTIONS.ALL,
+    },
+    [RESOURCES.CASE_COMMENTS]: {
       [ACTIONS.CREATE]: ACTION_RESTRICTIONS.ALL,
       [ACTIONS.READ]: ACTION_RESTRICTIONS.ALL,
       [ACTIONS.UPDATE]: ACTION_RESTRICTIONS.ALL,
@@ -154,6 +202,23 @@ const ROLE_PERMISSIONS = {
       [ACTIONS.UPDATE]: ACTION_RESTRICTIONS.OWN,
       [ACTIONS.DELETE]: ACTION_RESTRICTIONS.OWN,
     },
+    [RESOURCES.CASES]: {
+      [ACTIONS.CREATE]: ACTION_RESTRICTIONS.ALL,
+      [ACTIONS.READ]: ACTION_RESTRICTIONS.ALL,
+      [ACTIONS.UPDATE]: ACTION_RESTRICTIONS.ALL,
+      [ACTIONS.DELETE]: ACTION_RESTRICTIONS.ALL, // Can delete cases
+      [ACTIONS.ASSIGN]: ACTION_RESTRICTIONS.ALL,
+    },
+    [RESOURCES.CASE_HISTORY]: {
+      [ACTIONS.READ]: ACTION_RESTRICTIONS.ALL,
+      [ACTIONS.DELETE]: ACTION_RESTRICTIONS.ALL, // Can delete history entries
+    },
+    [RESOURCES.CASE_COMMENTS]: {
+      [ACTIONS.CREATE]: ACTION_RESTRICTIONS.ALL,
+      [ACTIONS.READ]: ACTION_RESTRICTIONS.ALL,
+      [ACTIONS.UPDATE]: ACTION_RESTRICTIONS.ALL,
+      [ACTIONS.DELETE]: ACTION_RESTRICTIONS.ALL, // Can delete any comments
+    },
   },
 
   super_admin: {
@@ -179,6 +244,12 @@ const ROLE_PERMISSIONS = {
       [ACTIONS.UPDATE]: ACTION_RESTRICTIONS.ALL,
       [ACTIONS.DELETE]: ACTION_RESTRICTIONS.ALL,
     },
+    [RESOURCES.CASE_STATUSES]: {
+      [ACTIONS.READ]: ACTION_RESTRICTIONS.ALL,
+      [ACTIONS.CREATE]: ACTION_RESTRICTIONS.ALL,
+      [ACTIONS.UPDATE]: ACTION_RESTRICTIONS.ALL,
+      [ACTIONS.DELETE]: ACTION_RESTRICTIONS.ALL,
+    },
     [RESOURCES.NOTIFICATIONS]: {
       [ACTIONS.READ]: ACTION_RESTRICTIONS.ALL,
       [ACTIONS.CREATE]: ACTION_RESTRICTIONS.ALL,
@@ -196,6 +267,26 @@ const ROLE_PERMISSIONS = {
       [ACTIONS.UPDATE]: ACTION_RESTRICTIONS.ALL,
       [ACTIONS.MANAGE_SETTINGS]: ACTION_RESTRICTIONS.ALL,
     },
+    [RESOURCES.CASES]: {
+      [ACTIONS.CREATE]: ACTION_RESTRICTIONS.ALL,
+      [ACTIONS.READ]: ACTION_RESTRICTIONS.ALL,
+      [ACTIONS.UPDATE]: ACTION_RESTRICTIONS.ALL,
+      [ACTIONS.DELETE]: ACTION_RESTRICTIONS.ALL,
+      [ACTIONS.ASSIGN]: ACTION_RESTRICTIONS.ALL,
+      [ACTIONS.EXPORT]: ACTION_RESTRICTIONS.ALL,
+      [ACTIONS.IMPORT]: ACTION_RESTRICTIONS.ALL,
+    },
+    [RESOURCES.CASE_HISTORY]: {
+      [ACTIONS.READ]: ACTION_RESTRICTIONS.ALL,
+      [ACTIONS.UPDATE]: ACTION_RESTRICTIONS.ALL,
+      [ACTIONS.DELETE]: ACTION_RESTRICTIONS.ALL,
+    },
+    [RESOURCES.CASE_COMMENTS]: {
+      [ACTIONS.CREATE]: ACTION_RESTRICTIONS.ALL,
+      [ACTIONS.READ]: ACTION_RESTRICTIONS.ALL,
+      [ACTIONS.UPDATE]: ACTION_RESTRICTIONS.ALL,
+      [ACTIONS.DELETE]: ACTION_RESTRICTIONS.ALL,
+    },
   },
 };
 
@@ -209,13 +300,29 @@ const OWNERSHIP_FIELDS = {
     ownerField: "id", // Users own their own user record
   },
   [RESOURCES.NOTIFICATIONS]: {
-    ownerField: "userId",
+    ownerField: "userId", // User who receives the notification
+    assigneeField: "triggerUserId", // User who triggered the notification
   },
   [RESOURCES.COMMENTS]: {
     ownerField: "createdBy.id",
   },
   [RESOURCES.CATEGORIES]: {
     // Categories don't have individual ownership - they're system-wide
+  },
+  [RESOURCES.CASE_STATUSES]: {
+    // Case statuses don't have individual ownership - they're system-wide
+  },
+  [RESOURCES.CASES]: {
+    ownerField: "createdBy", // Field that identifies the case creator
+    assigneeField: "assignedTo", // Field that identifies assignee (for staff access)
+  },
+  [RESOURCES.CASE_HISTORY]: {
+    ownerField: "createdBy", // History entries are owned by who created them
+    caseField: "caseId", // Link to parent case for access control
+  },
+  [RESOURCES.CASE_COMMENTS]: {
+    ownerField: "createdBy", // Comments are owned by who created them
+    caseField: "caseId", // Link to parent case for access control
   },
 };
 

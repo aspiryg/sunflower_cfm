@@ -389,7 +389,7 @@ export function ConfirmationModal({
     <Modal
       {...modalProps}
       onClose={onClose}
-      size="sm"
+      size="lg"
       footer={footer}
       closeOnOverlayClick={!isLoading}
       closeOnEscape={!isLoading}

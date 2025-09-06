@@ -1,14 +1,13 @@
 import styled from "styled-components";
 import PropTypes from "prop-types";
 import {
-  HiOutlineClipboardDocumentList,
+  HiOutlineScale,
   HiOutlineClock,
   HiOutlineCheckCircle,
   HiOutlineExclamationTriangle,
-  HiOutlineChartBarSquare,
   HiOutlineCalendarDays,
+  HiOutlineShieldExclamation,
 } from "react-icons/hi2";
-
 import { HiOutlineClipboardList } from "react-icons/hi";
 import Card from "../../ui/Card";
 import Text from "../../ui/Text";
@@ -101,6 +100,11 @@ const StatIcon = styled.div`
           background-color: var(--color-blue-100);
           color: var(--color-blue-600);
         `;
+      case "sensitive":
+        return `
+          background-color: var(--color-orange-100);
+          color: var(--color-orange-600);
+        `;
       default:
         return `
           background-color: var(--color-grey-100);
@@ -162,9 +166,9 @@ function DashboardStats({ stats, isLoading, error }) {
     {
       id: "total",
       variant: "total",
-      icon: HiOutlineClipboardDocumentList,
+      icon: HiOutlineScale,
       value: stats?.total || 0,
-      label: "Total Feedback",
+      label: "Total Cases",
       trend: null,
     },
     {
@@ -173,15 +177,15 @@ function DashboardStats({ stats, isLoading, error }) {
       icon: HiOutlineClipboardList,
       value: stats?.active || 0,
       label: "Active Cases",
-      trend: null,
+      trend: "In progress",
     },
     {
       id: "open",
       variant: "open",
       icon: HiOutlineClock,
-      value: stats?.byStatus?.open || 0,
-      label: "Open Cases",
-      trend: "Pending review",
+      value: stats?.byStatus?.new || stats?.byStatus?.open || 0,
+      label: "New Cases",
+      trend: "Awaiting review",
     },
     {
       id: "resolved",
@@ -195,9 +199,20 @@ function DashboardStats({ stats, isLoading, error }) {
       id: "urgent",
       variant: "urgent",
       icon: HiOutlineExclamationTriangle,
-      value: stats?.byPriority?.high || stats?.byPriority?.urgent || 0,
+      value:
+        (stats?.byPriority?.high || 0) +
+        (stats?.byPriority?.urgent || 0) +
+        (stats?.byPriority?.critical || 0),
       label: "High Priority",
       trend: "Needs attention",
+    },
+    {
+      id: "sensitive",
+      variant: "sensitive",
+      icon: HiOutlineShieldExclamation,
+      value: stats?.sensitive || 0,
+      label: "Sensitive Cases",
+      trend: "Protected data",
     },
     {
       id: "today",

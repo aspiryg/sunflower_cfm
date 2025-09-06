@@ -8,6 +8,8 @@ import {
   HiOutlineMapPin,
 } from "react-icons/hi2";
 
+import { getIndividualAgeGroup } from "../../../utils/userUtils";
+
 import Text from "../../../ui/Text";
 import Card from "../../../ui/Card";
 import StatusBadge from "../../../ui/StatusBadge";
@@ -190,7 +192,7 @@ function FeedbackOverview({ feedback }) {
               <Field>
                 <FieldLabel size="sm">Age Group</FieldLabel>
                 <FieldValue size="sm" weight="medium">
-                  {feedback.individualProviderAgeGroup}
+                  {getIndividualAgeGroup(feedback.individualProviderAgeGroup)}
                 </FieldValue>
               </Field>
             )}

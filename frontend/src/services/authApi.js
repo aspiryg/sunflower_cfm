@@ -54,7 +54,7 @@ export async function logout() {
 
 export async function getCurrentUser() {
   try {
-    const response = await authApi.get("/profile");
+    const response = await authApi.get("/me");
     return response.data;
   } catch (error) {
     throw error.response?.data || error;

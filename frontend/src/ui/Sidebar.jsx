@@ -369,24 +369,24 @@ const navigation = [
     items: [
       {
         name: "Cases",
-        to: "/feedback",
+        to: "/cases",
         icon: HiOutlineChatBubbleLeftRight,
         hasSubItems: true,
         defaultOpen: true,
         subItems: [
           {
             name: "All Cases",
-            to: "/feedback",
+            to: "/cases",
             icon: HiOutlineChatBubbleLeftRight,
           },
           {
             name: "Assigned To Me",
-            to: "/feedback/assigned-to-me",
+            to: "/cases/assigned-to-me",
             icon: HiOutlineUserGroup,
           },
           {
             name: "Created By Me",
-            to: "/feedback/created-by-me",
+            to: "/cases/created-by-me",
             icon: HiOutlinePlusCircle,
           },
         ],

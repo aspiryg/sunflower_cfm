@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import styled from "styled-components";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import Text from "../../../ui/Text";
+import { useCaseStatuses } from "../../cases/useCaseData";
 
 const ChartContainer = styled.div`
   width: 100%;
@@ -144,6 +145,25 @@ const STATUS_LABELS = {
 };
 
 function StatusDistributionChart({ stats }) {
+  // Status data
+  const { data: statuses } = useCaseStatuses();
+  const getStatusLabel = (status) => {
+    const statusObj = statuses?.activeOptions?.find(
+      (s) => s.label.toLowerCase() === status.toLowerCase()
+    );
+    return statusObj ? statusObj.label : status;
+  };
+
+  const getStatusColor = (status) => {
+    const statusObj = statuses?.activeOptions?.find(
+      (s) => s.label.toLowerCase() === status.toLowerCase()
+    );
+    const baseColor = statusObj?.color.split("-")[3] || "grey";
+    return statusObj
+      ? `var(--color-${baseColor}-400)`
+      : "var(--color-grey-200)";
+  };
+
   const { chartData /*total*/ } = useMemo(() => {
     if (!stats?.byStatus) return { chartData: [], total: 0 };
 
@@ -156,7 +176,7 @@ function StatusDistributionChart({ stats }) {
     const data = Object.entries(statusData)
       .filter(([_, count]) => count > 0)
       .map(([status, count]) => ({
-        name: STATUS_LABELS[status] || status,
+        name: getStatusLabel(status),
         value: count,
         status: status,
         percentage:
@@ -200,7 +220,7 @@ function StatusDistributionChart({ stats }) {
       <LegendContainer>
         {chartData.map((entry) => (
           <StatusItem key={entry.status}>
-            <StatusIndicator $color={STATUS_COLORS[entry.status]} />
+            <StatusIndicator $color={getStatusColor(entry.status)} />
             <StatusContent>
               <StatusLabel size="sm">{entry.name}</StatusLabel>
               <StatusValue>{entry.value}</StatusValue>
@@ -225,7 +245,7 @@ function StatusDistributionChart({ stats }) {
               {chartData.map((entry, index) => (
                 <Cell
                   key={`cell-${index}`}
-                  fill={STATUS_COLORS[entry.status]}
+                  fill={getStatusColor(entry.status)}
                 />
               ))}
             </Pie>

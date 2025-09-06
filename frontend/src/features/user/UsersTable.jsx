@@ -11,7 +11,7 @@ import {
 } from "react-icons/hi2";
 
 import Text from "../../ui/Text";
-import StatusBadge from "../../ui/StatusBadge";
+import StatusBadge from "../../ui/StatusBadge2";
 import ContextMenu from "../../ui/ContextMenu";
 import Avatar from "../../ui/Avatar";
 import { formatRelativeTime } from "../../utils/dateUtils";

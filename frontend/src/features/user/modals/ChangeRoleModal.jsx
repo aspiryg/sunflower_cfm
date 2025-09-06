@@ -22,6 +22,7 @@ import { useChangeUserRole } from "../useUsers";
 import { useAuth } from "../../../contexts/AuthContext";
 import { getUserDisplayName } from "../../../utils/userUtils";
 import { ROLES_HIERARCHY } from "../../../services/permissionService";
+import { ROLE_DEFINITIONS } from "../../../utils/userUtils";
 
 const UserInfoSection = styled.div`
   background-color: var(--color-grey-50);
@@ -212,64 +213,6 @@ const ActionButtons = styled.div`
     }
   }
 `;
-
-// Enhanced role configurations with hierarchy and permissions
-const ROLE_DEFINITIONS = {
-  user: {
-    label: "User",
-    level: 1,
-    color: "green",
-    description: "Standard user with basic feedback submission rights",
-    permissions: [
-      "Submit feedback entries",
-      "View own feedback history",
-      "Update personal profile",
-      "Add comments to own feedback",
-    ],
-  },
-  staff: {
-    label: "Staff Member",
-    level: 2,
-    color: "blue",
-    description: "Staff member with assigned feedback management capabilities",
-    permissions: [
-      "All User permissions",
-      "View and manage assigned feedback",
-      "Update feedback status",
-      "Add comments to any feedback",
-      "Access team collaboration tools",
-    ],
-  },
-  manager: {
-    label: "Manager",
-    level: 3,
-    color: "orange",
-    description:
-      "Manager with comprehensive feedback oversight and team management",
-    permissions: [
-      "All Staff permissions",
-      "View and manage all feedback entries",
-      "Assign feedback to team members",
-      "Generate reports and analytics",
-      "Manage staff assignments",
-      "Access advanced filtering options",
-    ],
-  },
-  admin: {
-    label: "Administrator",
-    level: 4,
-    color: "red",
-    description: "Administrator with full system access and user management",
-    permissions: [
-      "All Manager permissions",
-      "Manage user accounts and roles",
-      "Access system configuration",
-      "View audit logs and system reports",
-      "Manage system categories and settings",
-      "Bulk operations on feedback and users",
-    ],
-  },
-};
 
 function ChangeRoleModal({ isOpen = false, onClose, user, onSuccess }) {
   const { user: currentUser } = useAuth();

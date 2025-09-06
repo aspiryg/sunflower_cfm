@@ -5,7 +5,7 @@ import Card from "../../ui/Card";
 import Text from "../../ui/Text";
 import LoadingSpinner from "../../ui/LoadingSpinner";
 import {
-  FeedbackTrendChart,
+  CaseTrendChart,
   StatusDistributionChart,
   CategoryBreakdownChart,
 } from "./charts";
@@ -103,12 +103,12 @@ function DashboardCharts({ stats, filters, isLoading, error }) {
 
   return (
     <ChartsContainer>
-      {/* Feedback Trend Chart */}
+      {/* Case Trend Chart */}
       <ChartCard>
         <ChartHeader>
           <ChartTitle>
             <TrendingUp />
-            Feedback Trend
+            Case Submission Trend
           </ChartTitle>
         </ChartHeader>
         <ChartContent>
@@ -118,7 +118,7 @@ function DashboardCharts({ stats, filters, isLoading, error }) {
               <Text color="grey-400">Loading trend data...</Text>
             </LoadingState>
           ) : (
-            <FeedbackTrendChart stats={stats} filters={filters} />
+            <CaseTrendChart stats={stats} filters={filters} />
           )}
         </ChartContent>
       </ChartCard>

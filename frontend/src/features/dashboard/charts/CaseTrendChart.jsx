@@ -57,10 +57,10 @@ const EmptyState = styled.div`
   border-radius: var(--border-radius-md);
 `;
 
-function FeedbackTrendChart({ stats /*filters*/ }) {
-  // console.log("FeedbackTrendChart - stats:", stats);
+function CaseTrendChart({ stats /*filters*/ }) {
+  // console.log("CaseTrendChart - stats:", stats);
   // console.log(
-  //   "FeedbackTrendChart - dailySubmissions:",
+  //   "CaseTrendChart - dailySubmissions:",
   //   stats?.dailySubmissions
   // );
   const chartData = useMemo(() => {
@@ -98,7 +98,7 @@ function FeedbackTrendChart({ stats /*filters*/ }) {
     // console.log("Processed chartData:", chartData);
     return chartData;
   }, [stats?.dailySubmissions]);
-  // console.log("FeedbackTrendChart - chartData:", chartData);
+  // console.log("CaseTrendChart - chartData:", chartData);
 
   const CustomTooltipContent = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
@@ -182,4 +182,4 @@ function FeedbackTrendChart({ stats /*filters*/ }) {
   );
 }
 
-export default FeedbackTrendChart;
+export default CaseTrendChart;

@@ -1,7 +1,29 @@
-import { forwardRef, useState } from "react";
+// Create this file: /frontend/src/ui/DatePicker.jsx
+import { useState, useRef, useEffect } from "react";
 import styled, { css } from "styled-components";
 import PropTypes from "prop-types";
-import { HiOutlineCalendarDays, HiOutlineXMark } from "react-icons/hi2";
+import {
+  HiOutlineCalendarDays,
+  HiOutlineChevronLeft,
+  HiOutlineChevronRight,
+  HiOutlineXMark,
+} from "react-icons/hi2";
+
+import Input from "./Input";
+import Text from "./Text";
+import { useEscapeKey } from "../hooks/useEscapeKey";
+
+const sizes = {
+  small: css`
+    font-size: var(--font-size-xs);
+  `,
+  medium: css`
+    font-size: var(--font-size-sm);
+  `,
+  large: css`
+    font-size: var(--font-size-base);
+  `,
+};
 
 const DatePickerContainer = styled.div`
   position: relative;
@@ -9,106 +31,91 @@ const DatePickerContainer = styled.div`
   width: 100%;
 `;
 
-const DatePickerInput = styled.input`
-  width: 100%;
-  border: 1px solid var(--color-grey-300);
-  border-radius: var(--border-radius-md);
+const DatePickerInput = styled(Input)`
+  cursor: pointer;
+
+  input {
+    cursor: pointer;
+  }
+`;
+
+const CalendarDropdown = styled.div`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: var(--z-popover);
+  margin-top: var(--spacing-1);
   background-color: var(--color-grey-0);
-  font-family: inherit;
-  transition: all var(--duration-normal) var(--ease-in-out);
+  border: 1px solid var(--color-grey-200);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition: all var(--duration-fast) var(--ease-in-out);
+  min-width: 28rem;
 
-  /* Size variations */
-  ${(props) => {
-    switch (props.$size) {
-      case "small":
-        return css`
-          height: var(--input-height-sm);
-          padding: 0 var(--spacing-8) 0 var(--spacing-3);
-          font-size: var(--font-size-sm);
-        `;
-      case "large":
-        return css`
-          height: var(--input-height-lg);
-          padding: 0 var(--spacing-12) 0 var(--spacing-5);
-          font-size: var(--font-size-lg);
-        `;
-      default:
-        return css`
-          height: var(--input-height-md);
-          padding: 0 var(--spacing-10) 0 var(--spacing-4);
-          font-size: var(--font-size-base);
-        `;
-    }
-  }}
+  ${(props) =>
+    props.$isOpen &&
+    css`
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    `}
 
-  /* States */
-  &:hover:not(:disabled) {
-    border-color: var(--color-grey-400);
+  @media (max-width: 768px) {
+    min-width: 26rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(-8px);
+
+    ${(props) =>
+      props.$isOpen &&
+      css`
+        transform: translateX(-50%) translateY(0);
+      `}
   }
 
-  &:focus {
-    outline: none;
-    border-color: var(--color-brand-500);
-    box-shadow: 0 0 0 3px var(--color-brand-100);
+  @media (prefers-reduced-motion: reduce) {
+    transition: opacity var(--duration-fast) ease;
+  }
+`;
+
+const CalendarHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-4);
+  background-color: var(--color-grey-50);
+  border-bottom: 1px solid var(--color-grey-200);
+`;
+
+const CalendarNavButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.2rem;
+  height: 3.2rem;
+  background: none;
+  border: none;
+  border-radius: var(--border-radius-md);
+  color: var(--color-grey-600);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-in-out);
+
+  &:hover {
+    background-color: var(--color-grey-100);
+    color: var(--color-grey-800);
   }
 
   &:disabled {
-    background-color: var(--color-grey-100);
-    border-color: var(--color-grey-200);
-    color: var(--color-grey-400);
+    opacity: 0.5;
     cursor: not-allowed;
   }
 
-  /* Error state */
-  ${(props) =>
-    props.$hasError &&
-    css`
-      border-color: var(--color-error-500);
-      background-color: var(--color-error-25);
-
-      &:focus {
-        border-color: var(--color-error-500);
-        box-shadow: 0 0 0 3px var(--color-error-100);
-      }
-    `}
-
-  /* Success state */
-  ${(props) =>
-    props.$hasValue &&
-    !props.$hasError &&
-    css`
-      border-color: var(--color-success-400);
-    `}
-
-  /* Custom date input styling */
-  &::-webkit-calendar-picker-indicator {
-    opacity: 0;
-    position: absolute;
-    right: var(--spacing-3);
-    width: 2rem;
-    height: 2rem;
-    cursor: pointer;
-  }
-
-  &::-webkit-datetime-edit {
-    padding: 0;
-  }
-
-  /* Remove default browser styling */
-  &::-webkit-outer-spin-button,
-  &::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-
-  /* Firefox date input */
-  &[type="date"] {
-    -moz-appearance: textfield;
-  }
-
-  /* Placeholder color when no date selected */
-  &:invalid {
-    color: var(--color-grey-500);
+  svg {
+    width: 1.6rem;
+    height: 1.6rem;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -116,226 +123,499 @@ const DatePickerInput = styled.input`
   }
 `;
 
-const IconContainer = styled.div`
-  position: absolute;
-  right: var(--spacing-3);
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-1);
-  pointer-events: none;
-  color: var(--color-grey-500);
+const CalendarTitle = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--spacing-2) var(--spacing-3);
+  border-radius: var(--border-radius-md);
+  transition: background-color var(--duration-fast) var(--ease-in-out);
 
-  ${(props) =>
-    props.$size === "small" &&
-    css`
-      right: var(--spacing-2);
-    `}
-  ${(props) =>
-    props.$size === "large" &&
-    css`
-      right: var(--spacing-4);
-    `}
+  &:hover {
+    background-color: var(--color-grey-100);
+  }
 `;
 
-const CalendarIcon = styled(HiOutlineCalendarDays)`
-  width: 1.8rem;
-  height: 1.8rem;
-  flex-shrink: 0;
+const CalendarGrid = styled.div`
+  padding: var(--spacing-3);
+`;
 
+const WeekDaysHeader = styled.div`
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--spacing-1);
+  margin-bottom: var(--spacing-2);
+`;
+
+const WeekDay = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 3.2rem;
+  color: var(--color-grey-500);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  text-transform: uppercase;
+`;
+
+const DaysGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--spacing-1);
+`;
+
+const DayButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 3.2rem;
+  background: none;
+  border: none;
+  border-radius: var(--border-radius-md);
+  color: var(--color-grey-700);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-in-out);
+  position: relative;
+
+  ${(props) => sizes[props.$size]}
+
+  &:hover {
+    background-color: var(--color-brand-100);
+    color: var(--color-brand-700);
+  }
+
+  &:disabled {
+    color: var(--color-grey-300);
+    cursor: not-allowed;
+
+    &:hover {
+      background: none;
+      color: var(--color-grey-300);
+    }
+  }
+
+  /* Selected day */
   ${(props) =>
-    props.$size === "small" &&
+    props.$isSelected &&
     css`
-      width: 1.6rem;
-      height: 1.6rem;
+      background-color: var(--color-brand-500);
+      color: var(--color-grey-0);
+      font-weight: var(--font-weight-semibold);
+
+      &:hover {
+        background-color: var(--color-brand-600);
+        color: var(--color-grey-0);
+      }
     `}
 
+  /* Today indicator */
   ${(props) =>
-    props.$size === "large" &&
+    props.$isToday &&
+    !props.$isSelected &&
     css`
-      width: 2rem;
-      height: 2rem;
+      position: relative;
+
+      &::after {
+        content: "";
+        position: absolute;
+        bottom: 2px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 4px;
+        height: 4px;
+        background-color: var(--color-brand-500);
+        border-radius: 50%;
+      }
     `}
+
+  /* Different month days */
+  ${(props) =>
+    props.$isOtherMonth &&
+    css`
+      color: var(--color-grey-300);
+    `}
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+`;
+
+const CalendarFooter = styled.div`
+  padding: var(--spacing-3) var(--spacing-4);
+  background-color: var(--color-grey-50);
+  border-top: 1px solid var(--color-grey-200);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-3);
+`;
+
+const QuickActions = styled.div`
+  display: flex;
+  gap: var(--spacing-2);
+`;
+
+const QuickActionButton = styled.button`
+  padding: var(--spacing-1) var(--spacing-2);
+  background: none;
+  border: 1px solid var(--color-grey-300);
+  border-radius: var(--border-radius-sm);
+  color: var(--color-grey-600);
+  cursor: pointer;
+  font-size: var(--font-size-xs);
+  transition: all var(--duration-fast) var(--ease-in-out);
+
+  &:hover {
+    background-color: var(--color-grey-100);
+    color: var(--color-grey-800);
+  }
 `;
 
 const ClearButton = styled.button`
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 1.6rem;
-  height: 1.6rem;
-  border: none;
+  gap: var(--spacing-1);
+  padding: var(--spacing-1) var(--spacing-2);
   background: none;
-  border-radius: var(--border-radius-sm);
-  color: var(--color-grey-500);
+  border: none;
+  color: var(--color-error-600);
   cursor: pointer;
-  pointer-events: auto;
+  font-size: var(--font-size-xs);
+  border-radius: var(--border-radius-sm);
   transition: all var(--duration-fast) var(--ease-in-out);
 
   &:hover {
-    background-color: var(--color-grey-100);
-    color: var(--color-grey-700);
-  }
-
-  &:focus {
-    outline: none;
-    background-color: var(--color-brand-100);
-    color: var(--color-brand-700);
+    background-color: var(--color-error-50);
   }
 
   svg {
     width: 1.2rem;
     height: 1.2rem;
   }
-
-  @media (prefers-reduced-motion: reduce) {
-    transition: none;
-  }
 `;
 
-const HelperText = styled.div`
-  margin-top: var(--spacing-1);
-  font-size: var(--font-size-xs);
-  color: var(--color-grey-600);
-  line-height: 1.4;
-
-  ${(props) =>
-    props.$error &&
-    css`
-      color: var(--color-error-600);
-    `}
-`;
+const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const MONTHS = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
 
 /**
- * Enhanced DatePicker Component
+ * DatePicker Component
  *
- * Features:
- * - Clean, modern design matching the app's UI system
- * - Multiple sizes (small, medium, large)
- * - Error and success states
- * - Clear button when date is selected
- * - Proper accessibility
- * - Custom calendar icon
- * - Helper text support
- * - Min/max date validation
+ * A comprehensive date picker with calendar dropdown, keyboard navigation,
+ * and accessibility features
  */
-const DatePicker = forwardRef(function DatePicker(
-  {
-    value,
-    onChange,
-    onClear,
-    placeholder = "Select date...",
-    size = "medium",
-    disabled = false,
-    readOnly = false,
-    hasError = false,
-    showClearButton = true,
-    helperText,
-    min,
-    max,
-    className = "",
-    ...props
-  },
-  ref
-) {
-  const [isFocused, setIsFocused] = useState(false);
+function DatePicker({
+  value,
+  onChange,
+  placeholder = "Select date...",
+  size = "medium",
+  disabled = false,
+  error = false,
+  min,
+  max,
+  showClearButton = true,
+  showQuickActions = true,
+  className = "",
+  ...props
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [currentMonth, setCurrentMonth] = useState(() => {
+    if (value) {
+      const date = new Date(value);
+      return new Date(date.getFullYear(), date.getMonth(), 1);
+    }
+    return new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  });
 
-  const hasValue = value && value.trim() !== "";
+  const containerRef = useRef(null);
+  const inputRef = useRef(null);
 
-  const handleChange = (event) => {
-    const newValue = event.target.value;
-    if (onChange) {
-      onChange(event);
+  // Close calendar on escape key
+  useEscapeKey(() => {
+    if (isOpen) {
+      setIsOpen(false);
+      inputRef.current?.focus();
+    }
+  }, isOpen);
+
+  // Close calendar when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("touchstart", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [isOpen]);
+
+  // Format date for display
+  const formatDate = (date) => {
+    if (!date) return "";
+    return new Date(date).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+  };
+
+  // Parse date string
+  const parseDate = (dateString) => {
+    if (!dateString) return null;
+    const date = new Date(dateString);
+    return isNaN(date.getTime()) ? null : date;
+  };
+
+  // Check if date is today
+  const isToday = (date) => {
+    const today = new Date();
+    return (
+      date.getDate() === today.getDate() &&
+      date.getMonth() === today.getMonth() &&
+      date.getFullYear() === today.getFullYear()
+    );
+  };
+
+  // Check if date is selected
+  const isSelected = (date) => {
+    if (!value) return false;
+    const selectedDate = parseDate(value);
+    if (!selectedDate) return false;
+
+    return (
+      date.getDate() === selectedDate.getDate() &&
+      date.getMonth() === selectedDate.getMonth() &&
+      date.getFullYear() === selectedDate.getFullYear()
+    );
+  };
+
+  // Check if date is disabled
+  const isDateDisabled = (date) => {
+    if (min) {
+      const minDate = parseDate(min);
+      if (minDate && date < minDate) return true;
+    }
+
+    if (max) {
+      const maxDate = parseDate(max);
+      if (maxDate && date > maxDate) return true;
+    }
+
+    return false;
+  };
+
+  // Generate calendar days
+  const generateCalendarDays = () => {
+    const days = [];
+    const startOfMonth = new Date(currentMonth);
+    const endOfMonth = new Date(
+      currentMonth.getFullYear(),
+      currentMonth.getMonth() + 1,
+      0
+    );
+    const startDate = new Date(startOfMonth);
+    startDate.setDate(startDate.getDate() - startOfMonth.getDay());
+
+    // Generate 42 days (6 weeks)
+    for (let i = 0; i < 42; i++) {
+      const date = new Date(startDate);
+      date.setDate(startDate.getDate() + i);
+
+      const isCurrentMonth = date.getMonth() === currentMonth.getMonth();
+      const isOtherMonth = !isCurrentMonth;
+
+      days.push({
+        date,
+        isCurrentMonth,
+        isOtherMonth,
+        isToday: isToday(date),
+        isSelected: isSelected(date),
+        isDisabled: isDateDisabled(date),
+      });
+    }
+
+    return days;
+  };
+
+  // Handle input click
+  const handleInputClick = () => {
+    if (!disabled) {
+      setIsOpen(!isOpen);
     }
   };
 
-  const handleClear = (event) => {
-    event.preventDefault();
-    event.stopPropagation();
+  // Handle date selection
+  const handleDateSelect = (date) => {
+    if (isDateDisabled(date)) return;
 
-    if (onClear) {
-      onClear();
-    } else if (onChange) {
-      // Create synthetic event for consistency
-      const syntheticEvent = {
-        target: { value: "" },
-        type: "change",
-      };
-      onChange(syntheticEvent);
-    }
+    const isoString = date.toISOString().split("T")[0];
+    onChange(isoString);
+    setIsOpen(false);
+    inputRef.current?.focus();
   };
 
-  const handleFocus = (event) => {
-    setIsFocused(true);
-    if (props.onFocus) {
-      props.onFocus(event);
-    }
+  // Handle month navigation
+  const handlePreviousMonth = () => {
+    setCurrentMonth(
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1)
+    );
   };
 
-  const handleBlur = (event) => {
-    setIsFocused(false);
-    if (props.onBlur) {
-      props.onBlur(event);
-    }
+  const handleNextMonth = () => {
+    setCurrentMonth(
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1)
+    );
   };
+
+  // Handle quick actions
+  const handleToday = () => {
+    const today = new Date();
+    handleDateSelect(today);
+  };
+
+  const handleClear = () => {
+    onChange("");
+    setIsOpen(false);
+    inputRef.current?.focus();
+  };
+
+  const calendarDays = generateCalendarDays();
 
   return (
-    <DatePickerContainer className={className}>
+    <DatePickerContainer ref={containerRef} className={className}>
       <DatePickerInput
-        {...props}
-        ref={ref}
-        type="date"
-        value={value || ""}
-        onChange={handleChange}
-        onFocus={handleFocus}
-        onBlur={handleBlur}
-        disabled={disabled}
-        readOnly={readOnly}
-        min={min}
-        max={max}
-        $size={size}
-        $hasError={hasError}
-        $hasValue={hasValue}
-        $isFocused={isFocused}
+        ref={inputRef}
+        value={formatDate(value)}
+        onClick={handleInputClick}
         placeholder={placeholder}
+        disabled={disabled}
+        variant={error ? "error" : "default"}
+        size={size}
+        readOnly
+        rightIcon={<HiOutlineCalendarDays />}
+        {...props}
       />
 
-      <IconContainer $size={size}>
-        {hasValue && showClearButton && !disabled && !readOnly && (
-          <ClearButton
+      <CalendarDropdown $isOpen={isOpen}>
+        {/* Calendar Header */}
+        <CalendarHeader>
+          <CalendarNavButton
+            onClick={handlePreviousMonth}
+            disabled={disabled}
             type="button"
-            onClick={handleClear}
-            aria-label="Clear date"
-            tabIndex={-1}
           >
-            <HiOutlineXMark />
-          </ClearButton>
-        )}
-        <CalendarIcon $size={size} />
-      </IconContainer>
+            <HiOutlineChevronLeft />
+          </CalendarNavButton>
 
-      {helperText && <HelperText $error={hasError}>{helperText}</HelperText>}
+          <CalendarTitle type="button">
+            <Text size="md" weight="semibold">
+              {MONTHS[currentMonth.getMonth()]} {currentMonth.getFullYear()}
+            </Text>
+          </CalendarTitle>
+
+          <CalendarNavButton
+            onClick={handleNextMonth}
+            disabled={disabled}
+            type="button"
+          >
+            <HiOutlineChevronRight />
+          </CalendarNavButton>
+        </CalendarHeader>
+
+        {/* Calendar Grid */}
+        <CalendarGrid>
+          {/* Week days header */}
+          <WeekDaysHeader>
+            {WEEKDAYS.map((day) => (
+              <WeekDay key={day}>
+                <Text size="xs" weight="medium">
+                  {day}
+                </Text>
+              </WeekDay>
+            ))}
+          </WeekDaysHeader>
+
+          {/* Days grid */}
+          <DaysGrid>
+            {calendarDays.map(
+              (
+                { date, isOtherMonth, isToday, isSelected, isDisabled },
+                index
+              ) => (
+                <DayButton
+                  key={index}
+                  type="button"
+                  onClick={() => handleDateSelect(date)}
+                  disabled={isDisabled}
+                  $isSelected={isSelected}
+                  $isToday={isToday}
+                  $isOtherMonth={isOtherMonth}
+                  $size={size}
+                >
+                  {date.getDate()}
+                </DayButton>
+              )
+            )}
+          </DaysGrid>
+        </CalendarGrid>
+
+        {/* Calendar Footer */}
+        <CalendarFooter>
+          {showQuickActions && (
+            <QuickActions>
+              <QuickActionButton type="button" onClick={handleToday}>
+                Today
+              </QuickActionButton>
+            </QuickActions>
+          )}
+
+          {showClearButton && value && (
+            <ClearButton type="button" onClick={handleClear}>
+              <HiOutlineXMark />
+              Clear
+            </ClearButton>
+          )}
+        </CalendarFooter>
+      </CalendarDropdown>
     </DatePickerContainer>
   );
-});
+}
 
 DatePicker.propTypes = {
   value: PropTypes.string,
-  onChange: PropTypes.func,
-  onClear: PropTypes.func,
+  onChange: PropTypes.func.isRequired,
   placeholder: PropTypes.string,
   size: PropTypes.oneOf(["small", "medium", "large"]),
   disabled: PropTypes.bool,
-  readOnly: PropTypes.bool,
-  hasError: PropTypes.bool,
-  showClearButton: PropTypes.bool,
-  helperText: PropTypes.string,
+  error: PropTypes.bool,
   min: PropTypes.string,
   max: PropTypes.string,
+  showClearButton: PropTypes.bool,
+  showQuickActions: PropTypes.bool,
   className: PropTypes.string,
-  onFocus: PropTypes.func,
-  onBlur: PropTypes.func,
 };
 
 export default DatePicker;

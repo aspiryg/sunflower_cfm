@@ -306,7 +306,7 @@ function EditPersonalInfoModal({ isOpen, onClose, user, onSuccess }) {
               >
                 <DatePicker
                   {...field}
-                  hasError={!!errors.dateOfBirth}
+                  error={!!errors.dateOfBirth}
                   disabled={isSubmitting}
                   max={new Date().toISOString().split("T")[0]} // Today's date
                   placeholder="Select your date of birth"

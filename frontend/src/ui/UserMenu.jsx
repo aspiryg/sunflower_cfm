@@ -11,6 +11,7 @@ import Avatar from "./Avatar";
 import Text from "./Text";
 import { useLogout } from "../features/auth/useAuth";
 import { useNavigate } from "react-router-dom";
+import { getUserDisplayName, getUserRole } from "../utils/userUtils";
 
 const UserMenuContainer = styled.div`
   position: relative;
@@ -184,6 +185,8 @@ function UserMenu({ user, className = "" }) {
   const navigate = useNavigate();
   const { logout, isPending: isLoggingOut } = useLogout();
 
+  // console.log("User: ", user);
+
   // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -277,7 +280,7 @@ function UserMenu({ user, className = "" }) {
         />
         <UserInfo>
           <Text size="sm" weight="medium" color="default">
-            {user?.fullName || user?.firstName || user?.username || "User"}
+            {getUserDisplayName(user) || "User"}
           </Text>
           <Text size="xs" color="muted">
             {user?.email || "user@example.com"}
@@ -289,7 +292,7 @@ function UserMenu({ user, className = "" }) {
       <DropdownMenu ref={menuRef} $isOpen={isOpen} role="menu">
         <DropdownHeader>
           <Avatar
-            src={user?.avatar}
+            src={user?.profilePicture}
             name={user?.fullName || user?.username}
             size="md"
             status={user?.isOnline ? "online" : "offline"}
@@ -297,13 +300,13 @@ function UserMenu({ user, className = "" }) {
           />
           <DropdownHeaderInfo>
             <Text size="sm" weight="semibold">
-              {user?.fullName || user?.firstName || user?.username || "User"}
+              {getUserDisplayName(user) || "User"}
             </Text>
             <Text size="xs" color="muted">
               {user?.email || "user@example.com"}
             </Text>
             <Text size="xs" color="muted">
-              {user?.role || "User"}
+              {getUserRole(user) || "Member"}
             </Text>
           </DropdownHeaderInfo>
         </DropdownHeader>

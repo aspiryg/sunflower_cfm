@@ -5,12 +5,15 @@ import {
   HiOutlineXMark,
 } from "react-icons/hi2";
 
-// Hooks
-import { useFeedbackCategories } from "../feedback/useFeedbackData";
+// Import case data hooks instead of feedback hooks
+import {
+  useCaseCategories,
+  useCaseStatuses,
+  useCasePriorities,
+} from "../cases/useCaseData";
 
 import Card from "../../ui/Card";
 import Text from "../../ui/Text";
-// Import the new styled select with beautiful dropdown
 import StyledSelect from "../../ui/StyledSelect";
 import Button from "../../ui/Button";
 
@@ -50,9 +53,12 @@ const FilterLabel = styled(Text)`
 `;
 
 function DashboardFilters({ filters, onFilterChange, onReset }) {
-  // get categories from useFeedbackCategories
+  // Get case data from useCaseData hooks
   const { data: categories, isLoading: isLoadingCategories } =
-    useFeedbackCategories();
+    useCaseCategories();
+  const { data: statuses, isLoading: isLoadingStatuses } = useCaseStatuses();
+  const { data: priorities, isLoading: isLoadingPriorities } =
+    useCasePriorities();
 
   const dateRangeOptions = [
     { value: "7d", label: "Last 7 days" },
@@ -63,32 +69,28 @@ function DashboardFilters({ filters, onFilterChange, onReset }) {
     { value: "all", label: "All time" },
   ];
 
-  const statusOptions = [
-    { value: "all", label: "All Statuses" },
-    { value: "open", label: "Open" },
-    { value: "in_progress", label: "In Progress" },
-    { value: "resolved", label: "Resolved" },
-    { value: "closed", label: "Closed" },
-    { value: "pending", label: "Pending" },
-  ];
+  // Create status options with loading state handling
+  const statusOptions = isLoadingStatuses
+    ? [{ value: "loading", label: "Loading statuses...", disabled: true }]
+    : [
+        { value: "all", label: "All Statuses" },
+        ...(statuses?.activeOptions?.sort((a, b) => a.value - b.value) || []),
+      ];
 
-  const priorityOptions = [
-    { value: "all", label: "All Priorities" },
-    { value: "low", label: "Low" },
-    { value: "medium", label: "Medium" },
-    { value: "high", label: "High" },
-    { value: "urgent", label: "Urgent" },
-  ];
+  // Create priority options with loading state handling
+  const priorityOptions = isLoadingPriorities
+    ? [{ value: "loading", label: "Loading priorities...", disabled: true }]
+    : [
+        { value: "all", label: "All Priorities" },
+        ...(priorities?.activeOptions?.sort((a, b) => a.value - b.value) || []),
+      ];
 
   // Create category options with loading state handling
   const categoryOptions = isLoadingCategories
     ? [{ value: "loading", label: "Loading categories...", disabled: true }]
     : [
         { value: "all", label: "All Categories" },
-        ...(categories?.map((category) => ({
-          value: category.id,
-          label: category.name,
-        })) || []),
+        ...(categories?.activeOptions?.sort((a, b) => a.value - b.value) || []),
       ];
 
   const hasActiveFilters = Object.values(filters).some(
@@ -152,30 +154,34 @@ function DashboardFilters({ filters, onFilterChange, onReset }) {
         <FilterField>
           <FilterLabel size="sm">Status</FilterLabel>
           <StyledSelect
-            value={filters.status}
-            onChange={(value) => onFilterChange("status", value)}
+            value={filters.statusId}
+            onChange={(value) => onFilterChange("statusId", value)}
             options={statusOptions}
             placeholder="Select status"
             size="medium"
+            disabled={isLoadingStatuses}
+            emptyMessage="No statuses found"
           />
         </FilterField>
 
         <FilterField>
           <FilterLabel size="sm">Priority</FilterLabel>
           <StyledSelect
-            value={filters.priority}
-            onChange={(value) => onFilterChange("priority", value)}
+            value={filters.priorityId}
+            onChange={(value) => onFilterChange("priorityId", value)}
             options={priorityOptions}
             placeholder="Select priority"
             size="medium"
+            disabled={isLoadingPriorities}
+            emptyMessage="No priorities found"
           />
         </FilterField>
 
         <FilterField>
           <FilterLabel size="sm">Category</FilterLabel>
           <StyledSelect
-            value={filters.category}
-            onChange={(value) => onFilterChange("category", value)}
+            value={filters.categoryId}
+            onChange={(value) => onFilterChange("categoryId", value)}
             options={categoryOptions}
             placeholder="Select category"
             size="medium"

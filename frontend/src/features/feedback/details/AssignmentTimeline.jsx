@@ -610,8 +610,7 @@ function AssignmentTimeline({
             nextAssignment
           );
           const isCreation = assignment.actionType === "CREATION";
-          const isCurrent =
-            index === filteredAssignments.length - 1 && currentAssignee;
+          const isCurrent = index === 0 && currentAssignee;
 
           return (
             <TimelineItem key={assignment.id}>

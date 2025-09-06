@@ -14,7 +14,12 @@ export class User {
 
     try {
       // Validate required fields
-      this._validateRequiredFields(userData, ["username", "email", "password"]);
+      this._validateRequiredFields(userData, [
+        "email",
+        "password",
+        "firstName",
+        "lastName",
+      ]);
 
       // Check for existing user
       const existingUser = await this._checkUserExistence(
@@ -24,17 +29,20 @@ export class User {
       if (existingUser.emailExists) {
         throw new Error("Email already exists");
       }
-      if (existingUser.usernameExists) {
+      if (userData.username && existingUser.usernameExists) {
         throw new Error("Username already exists");
       }
 
+      // Generate username from email if not provided
+      const username = userData.username || userData.email.split("@")[0];
+
       // Prepare user data with defaults and security enhancements
       const userEntry = {
-        username: userData.username.toLowerCase().trim(),
+        username: username.toLowerCase().trim(),
         email: userData.email.toLowerCase().trim(),
         password: await this._hashPassword(userData.password),
-        firstName: userData.firstName?.trim() || null,
-        lastName: userData.lastName?.trim() || null,
+        firstName: userData.firstName?.trim(),
+        lastName: userData.lastName?.trim(),
         profilePicture: userData.profilePicture || null,
         bio: userData.bio || null,
         dateOfBirth: userData.dateOfBirth
@@ -49,14 +57,26 @@ export class User {
         role: userData.role || "user",
         organization: userData.organization || null,
         isActive: userData.isActive !== undefined ? userData.isActive : true,
+        isOnline: false,
+        lastLogin: null,
         isEmailVerified: false,
+        emailVerifiedAt: null,
         emailVerificationToken: crypto.randomBytes(32).toString("hex"),
         emailVerificationExpires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
         twoFactorEnabled: false,
+        twoFactorSecret: null,
         loginAttempts: 0,
         lockUntil: null,
+        passwordChangedAt: new Date(),
+        passwordResetToken: null,
+        passwordResetExpires: null,
         createdAt: new Date(),
         updatedAt: new Date(),
+        createdBy: null, // Will be set after creation for self-reference
+        updatedBy: null,
+        isDeleted: false,
+        deletedAt: null,
+        deletedBy: null,
       };
 
       // Build dynamic insert query
@@ -71,12 +91,24 @@ export class User {
       const result = await request.query(query);
       const insertedId = result.recordset?.[0]?.id;
 
+      if (!insertedId) {
+        throw new Error("Failed to get inserted user ID");
+      }
+
+      // Update the user to set createdBy and updatedBy to itself (self-reference)
+      await pool
+        .request()
+        .input("userId", sql.Int, insertedId)
+        .query(
+          "UPDATE Users SET createdBy = @userId, updatedBy = @userId WHERE id = @userId"
+        );
+
       console.log(`✅ User created successfully: ${userEntry.email}`);
 
       // Return the created user
       return await this.findUserByIdAsync(insertedId);
     } catch (error) {
-      console.error(" ❌ Failed to create user:", error);
+      console.error("❌ Failed to create user:", error);
       throw new Error(`Failed to create user: ${error.message}`);
     }
   }
@@ -96,7 +128,7 @@ export class User {
       }
 
       const query = this._buildSelectQuery({
-        where: "LOWER(u.email) = @email AND u.isActive = 1",
+        where: "LOWER(u.email) = @email AND u.isActive = 1 AND u.isDeleted = 0",
         includePassword,
       });
 
@@ -112,7 +144,7 @@ export class User {
 
       return null;
     } catch (error) {
-      console.error(" ❌ Failed to find user by email:", error);
+      console.error("❌ Failed to find user by email:", error);
       throw new Error(`Failed to find user by email: ${error.message}`);
     }
   }
@@ -132,7 +164,7 @@ export class User {
       }
 
       const query = this._buildSelectQuery({
-        where: "u.id = @userId AND u.isActive = 1",
+        where: "u.id = @userId AND u.isActive = 1 AND u.isDeleted = 0",
         includePassword,
       });
 
@@ -148,7 +180,7 @@ export class User {
 
       return null;
     } catch (error) {
-      console.error(" ❌ Failed to find user by ID:", error);
+      console.error("❌ Failed to find user by ID:", error);
       throw new Error(`Failed to find user by ID: ${error.message}`);
     }
   }
@@ -168,7 +200,8 @@ export class User {
       }
 
       const query = this._buildSelectQuery({
-        where: "LOWER(u.username) = @username AND u.isActive = 1",
+        where:
+          "LOWER(u.username) = @username AND u.isActive = 1 AND u.isDeleted = 0",
         includePassword,
       });
 
@@ -184,7 +217,7 @@ export class User {
 
       return null;
     } catch (error) {
-      console.error(" ❌ Failed to find user by username:", error);
+      console.error("❌ Failed to find user by username:", error);
       throw new Error(`Failed to find user by username: ${error.message}`);
     }
   }
@@ -233,6 +266,7 @@ export class User {
           },
         };
       }
+
       // Build filter conditions
       const { whereClause, parameters } = this._buildUserFilterConditions({
         id, // Permission filter for "own" access
@@ -291,7 +325,7 @@ export class User {
       );
       return result;
     } catch (error) {
-      console.error(" ❌ Failed to retrieve users:", error);
+      console.error("❌ Failed to retrieve users:", error);
       throw new Error(`Failed to retrieve users: ${error.message}`);
     }
   }
@@ -351,13 +385,13 @@ export class User {
         throw new Error("No rows were updated");
       }
     } catch (error) {
-      console.error(` ❌ Failed to update user ${userId}:`, error);
+      console.error(`❌ Failed to update user ${userId}:`, error);
       throw new Error(`Failed to update user: ${error.message}`);
     }
   }
 
   /**
-   * Soft deletes a user by setting isActive to false.
+   * Soft deletes a user by setting isActive to false and isDeleted to true.
    * @param {number} userId - The user ID to delete.
    * @param {number} [deletedBy] - The ID of the user performing the deletion.
    * @returns {Promise<boolean>} True if deletion was successful.
@@ -374,11 +408,14 @@ export class User {
 
       const updateData = {
         isActive: false,
+        isDeleted: true,
+        deletedAt: new Date(),
         updatedAt: new Date(),
       };
 
       if (deletedBy) {
         updateData.updatedBy = deletedBy;
+        updateData.deletedBy = deletedBy;
       }
 
       const { query, parameters } = this._buildUpdateQuery(userId, updateData);
@@ -397,7 +434,7 @@ export class User {
         throw new Error("No rows were affected during deletion");
       }
     } catch (error) {
-      console.error(` ❌ Failed to delete user ${userId}:`, error);
+      console.error(`❌ Failed to delete user ${userId}:`, error);
       throw new Error(`Failed to delete user: ${error.message}`);
     }
   }
@@ -455,7 +492,7 @@ export class User {
         isValid: true,
       };
     } catch (error) {
-      console.error(" ❌ Failed to validate credentials:", error);
+      console.error("❌ Failed to validate credentials:", error);
       throw error;
     }
   }
@@ -488,7 +525,7 @@ export class User {
       const result = await request.query(query);
       return result.rowsAffected[0] > 0;
     } catch (error) {
-      console.error(" ❌ Failed to update login details:", error);
+      console.error("❌ Failed to update login details:", error);
       throw new Error(`Failed to update login details: ${error.message}`);
     }
   }
@@ -533,7 +570,7 @@ export class User {
 
       throw new Error("Failed to update password");
     } catch (error) {
-      console.error(" ❌ Failed to change password:", error);
+      console.error("❌ Failed to change password:", error);
       throw error;
     }
   }
@@ -555,7 +592,7 @@ export class User {
 
       const query = this._buildSelectQuery({
         where:
-          "u.emailVerificationToken = @token AND u.emailVerificationExpires > @now AND u.isActive = 1",
+          "u.emailVerificationToken = @token AND u.emailVerificationExpires > @now AND u.isActive = 1 AND u.isDeleted = 0",
         includePassword: false,
       });
 
@@ -582,7 +619,7 @@ export class User {
       console.log(`✅ Email verified successfully for user ${user.email}`);
       return await this.findUserByIdAsync(user.id);
     } catch (error) {
-      console.error(" ❌ Failed to verify email:", error);
+      console.error("❌ Failed to verify email:", error);
       throw error;
     }
   }
@@ -605,7 +642,7 @@ export class User {
       console.log(`✅ Email verification token generated for user ${userId}`);
       return token;
     } catch (error) {
-      console.error(" ❌ Failed to generate verification token:", error);
+      console.error("❌ Failed to generate verification token:", error);
       throw error;
     }
   }
@@ -638,13 +675,13 @@ export class User {
         resetToken,
       };
     } catch (error) {
-      console.error(" ❌ Failed to generate reset token:", error);
+      console.error("❌ Failed to generate reset token:", error);
       throw error;
     }
   }
 
   /**
-   * Alternative password reset method with direct SQL update
+   * Resets password using token with comprehensive validation.
    * @param {string} token - The reset token.
    * @param {string} newPassword - The new password.
    * @returns {Promise<Object>} The updated user object.
@@ -657,16 +694,17 @@ export class User {
         throw new Error("Reset token and new password are required");
       }
 
-      console.log("🔍 Starting direct password reset process...");
+      console.log("🔍 Starting password reset process...");
 
       // First, find the user with the reset token
       const findUserQuery = `
-      SELECT id, email, username, firstName, lastName 
-      FROM Users 
-      WHERE passwordResetToken = @token 
-        AND passwordResetExpires > @now 
-        AND isActive = 1
-    `;
+        SELECT id, email, username, firstName, lastName 
+        FROM Users 
+        WHERE passwordResetToken = @token 
+          AND passwordResetExpires > @now 
+          AND isActive = 1 
+          AND isDeleted = 0
+      `;
 
       const userResult = await pool
         .request()
@@ -685,19 +723,19 @@ export class User {
       const hashedPassword = await this._hashPassword(newPassword);
       console.log("🔐 Password hashed successfully");
 
-      // Direct SQL update
+      // Update password and clear reset token
       const updateQuery = `
-      UPDATE Users 
-      SET 
-        password = @password,
-        passwordResetToken = NULL,
-        passwordResetExpires = NULL,
-        passwordChangedAt = @passwordChangedAt,
-        loginAttempts = 0,
-        lockUntil = NULL,
-        updatedAt = @updatedAt
-      WHERE id = @userId
-    `;
+        UPDATE Users 
+        SET 
+          password = @password,
+          passwordResetToken = NULL,
+          passwordResetExpires = NULL,
+          passwordChangedAt = @passwordChangedAt,
+          loginAttempts = 0,
+          lockUntil = NULL,
+          updatedAt = @updatedAt
+        WHERE id = @userId
+      `;
 
       const updateResult = await pool
         .request()
@@ -740,10 +778,11 @@ export class User {
       console.log(`✅ Password reset successfully for user ${user.email}`);
       return await this.findUserByIdAsync(user.id);
     } catch (error) {
-      console.error(" ❌ Failed to reset password:", error);
+      console.error("❌ Failed to reset password:", error);
       throw error;
     }
   }
+
   // ============= PRIVATE HELPER METHODS =============
 
   /**
@@ -771,18 +810,24 @@ export class User {
     const emailCheck = await pool
       .request()
       .input("email", sql.NVarChar, email?.toLowerCase().trim())
-      .query("SELECT COUNT(*) as count FROM Users WHERE LOWER(email) = @email");
-
-    const usernameCheck = await pool
-      .request()
-      .input("username", sql.NVarChar, username?.toLowerCase().trim())
       .query(
-        "SELECT COUNT(*) as count FROM Users WHERE LOWER(username) = @username"
+        "SELECT COUNT(*) as count FROM Users WHERE LOWER(email) = @email AND isDeleted = 0"
       );
+
+    let usernameExists = false;
+    if (username) {
+      const usernameCheck = await pool
+        .request()
+        .input("username", sql.NVarChar, username?.toLowerCase().trim())
+        .query(
+          "SELECT COUNT(*) as count FROM Users WHERE LOWER(username) = @username AND isDeleted = 0"
+        );
+      usernameExists = usernameCheck.recordset[0].count > 0;
+    }
 
     return {
       emailExists: emailCheck.recordset[0].count > 0,
-      usernameExists: usernameCheck.recordset[0].count > 0,
+      usernameExists,
     };
   }
 
@@ -947,21 +992,26 @@ export class User {
         u.role,
         u.organization,
         u.isActive,
+        u.isOnline,
+        u.lastLogin,
         u.isEmailVerified,
         u.emailVerifiedAt,
+        u.emailVerificationToken,
+        u.emailVerificationExpires,
         u.twoFactorEnabled,
-        u.lastLogin,
-        u.isOnline,
+        u.twoFactorSecret,
         u.loginAttempts,
         u.lockUntil,
         u.passwordChangedAt,
-        u.emailVerificationToken,
-        u.emailVerificationExpires,
         u.passwordResetToken,
         u.passwordResetExpires,
         u.createdAt,
         u.updatedAt,
-        u.updatedBy${passwordField}
+        u.createdBy,
+        u.updatedBy,
+        u.isDeleted,
+        u.deletedAt,
+        u.deletedBy${passwordField}
       FROM Users u
     `;
 
@@ -991,8 +1041,7 @@ export class User {
    * @private
    */
   static _buildUserFilterConditions(filters) {
-    // console .log("🔍 Building user filter conditions:", filters)
-    const conditions = [];
+    const conditions = ["u.isDeleted = 0"]; // Always filter out deleted users
     const parameters = {};
     let paramCounter = 0;
 
@@ -1052,40 +1101,8 @@ export class User {
       conditions.push(`u.isEmailVerified = @${verifiedParam}`);
     }
 
-    // // Handle any additional permission filters
-    // Object.entries(filters).forEach(([key, value]) => {
-    //   // Skip already handled fields and null/undefined values
-    //   if (
-    //     [
-    //       "id",
-    //       "search",
-    //       "role",
-    //       "organization",
-    //       "isActive",
-    //       "isEmailVerified",
-    //       "limit",
-    //       "offset",
-    //       "orderBy",
-    //     ].includes(key) ||
-    //     value === null ||
-    //     value === undefined
-    //   ) {
-    //     return;
-    //   }
-
-    //   const paramName = `filter${paramCounter++}`;
-
-    //   // Determine the appropriate SQL type and field name
-    //   const fieldType = this._getFieldTypeForFilter(key);
-    //   parameters[paramName] = {
-    //     value: this._convertValueByType(value, fieldType, key),
-    //     type: fieldType,
-    //   };
-    //   conditions.push(`u.${key} = @${paramName}`);
-    // });
-
     return {
-      whereClause: conditions.length > 0 ? conditions.join(" AND ") : "1=1",
+      whereClause: conditions.join(" AND "),
       parameters,
     };
   }
@@ -1154,7 +1171,7 @@ export class User {
       lastName: { type: sql.NVarChar },
       profilePicture: { type: sql.NVarChar },
       bio: { type: sql.NVarChar },
-      dateOfBirth: { type: sql.DateTime },
+      dateOfBirth: { type: sql.Date },
       phone: { type: sql.NVarChar },
       address: { type: sql.NVarChar },
       city: { type: sql.NVarChar },
@@ -1164,14 +1181,14 @@ export class User {
       role: { type: sql.NVarChar },
       organization: { type: sql.NVarChar },
       isActive: { type: sql.Bit },
+      isOnline: { type: sql.Bit },
+      lastLogin: { type: sql.DateTime },
       isEmailVerified: { type: sql.Bit },
       emailVerifiedAt: { type: sql.DateTime },
       emailVerificationToken: { type: sql.NVarChar },
       emailVerificationExpires: { type: sql.DateTime },
       twoFactorEnabled: { type: sql.Bit },
       twoFactorSecret: { type: sql.NVarChar },
-      lastLogin: { type: sql.DateTime },
-      isOnline: { type: sql.Bit },
       loginAttempts: { type: sql.Int },
       lockUntil: { type: sql.DateTime },
       passwordChangedAt: { type: sql.DateTime },
@@ -1179,7 +1196,11 @@ export class User {
       passwordResetExpires: { type: sql.DateTime },
       createdAt: { type: sql.DateTime },
       updatedAt: { type: sql.DateTime },
+      createdBy: { type: sql.Int },
       updatedBy: { type: sql.Int },
+      isDeleted: { type: sql.Bit },
+      deletedAt: { type: sql.DateTime },
+      deletedBy: { type: sql.Int },
     };
   }
 
@@ -1190,7 +1211,7 @@ export class User {
   static _convertValueByType(value, sqlType, fieldName) {
     try {
       if (sqlType === sql.Int) {
-        const intValue = parseInt(value, 10); // ✅ Add this missing line
+        const intValue = parseInt(value, 10);
         if (isNaN(intValue)) {
           throw new Error(
             `Invalid integer value for field ${fieldName}: ${value}`
@@ -1201,7 +1222,7 @@ export class User {
         return (
           value === true || value === "true" || value === "1" || value === 1
         );
-      } else if (sqlType === sql.DateTime) {
+      } else if (sqlType === sql.DateTime || sqlType === sql.Date) {
         const dateValue = value instanceof Date ? value : new Date(value);
         if (isNaN(dateValue.getTime())) {
           throw new Error(
@@ -1217,15 +1238,6 @@ export class User {
         `Type conversion error for field ${fieldName}: ${error.message}`
       );
     }
-  }
-
-  /**
-   * Helper method to get SQL type for filter fields
-   * @private
-   */
-  static _getFieldTypeForFilter(fieldName) {
-    const fieldMappings = this._getFieldMappings();
-    return fieldMappings[fieldName]?.type || sql.NVarChar;
   }
 
   /**
@@ -1254,18 +1266,26 @@ export class User {
       role: result.role,
       organization: result.organization,
       isActive: result.isActive,
+      isOnline: result.isOnline,
+      lastLogin: result.lastLogin,
       isEmailVerified: result.isEmailVerified,
       emailVerifiedAt: result.emailVerifiedAt,
-      emailVerificationToken: result.emailVerificationToken, // TODO: Send it separately when registering
+      emailVerificationToken: result.emailVerificationToken,
+      emailVerificationExpires: result.emailVerificationExpires,
       twoFactorEnabled: result.twoFactorEnabled,
-      lastLogin: result.lastLogin,
-      isOnline: result.isOnline,
+      twoFactorSecret: result.twoFactorSecret,
       loginAttempts: result.loginAttempts,
       lockUntil: result.lockUntil,
       passwordChangedAt: result.passwordChangedAt,
+      passwordResetToken: result.passwordResetToken,
+      passwordResetExpires: result.passwordResetExpires,
       createdAt: result.createdAt,
       updatedAt: result.updatedAt,
+      createdBy: result.createdBy,
       updatedBy: result.updatedBy,
+      isDeleted: result.isDeleted,
+      deletedAt: result.deletedAt,
+      deletedBy: result.deletedBy,
     };
   }
 }

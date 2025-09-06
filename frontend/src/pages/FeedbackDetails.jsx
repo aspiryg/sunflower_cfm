@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import {
-  HiOutlineArrowLeft,
+  // HiOutlineArrowLeft,
   HiOutlinePencil,
   HiOutlineTrash,
   HiOutlineUserPlus,
@@ -290,8 +290,8 @@ function FeedbackDetails() {
 
   // Success handlers
   const handleModalSuccess = (data, originalFeedback) => {
-    console.log("Modal operation successful:", { data, originalFeedback });
-    // Refresh data or handle navigation if needed
+    // console.log("Modal operation successful:", { data, originalFeedback });
+    refetch();
   };
 
   // Get context menu items

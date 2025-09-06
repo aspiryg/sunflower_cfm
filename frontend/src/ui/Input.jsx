@@ -36,8 +36,7 @@ const variants = {
   `,
   error: css`
     border: 1px solid var(--color-error-500);
-    background-color: var(--color-error-50);
-
+    background-color: var(--color-grey-0);
     &:hover:not(:disabled) {
       border-color: var(--color-error-600);
     }

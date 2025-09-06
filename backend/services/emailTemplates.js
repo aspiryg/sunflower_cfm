@@ -466,4 +466,352 @@ export class EmailTemplates {
       config
     );
   }
+
+  /**
+   * Case assignment notification template
+   */
+  static caseAssigned(user, caseData, assignedBy, config) {
+    const caseUrl = `${config.baseUrl}/cases/${caseData.id}`;
+
+    const content = `
+      <h2>Case Assigned to You</h2>
+      <p>Hello ${user.firstName || user.username},</p>
+      <p>A case has been assigned to you for review and action.</p>
+      
+      <div class="details-box">
+        <h4>Case Details:</h4>
+        <p><strong>Case Number:</strong> ${caseData.number}</p>
+        <p><strong>Title:</strong> ${caseData.title}</p>
+        <p><strong>Category:</strong> ${
+          caseData.category?.name || "Not specified"
+        }</p>
+        <p><strong>Priority:</strong> <span style="color: ${
+          caseData.urgencyLevel === "urgent" ||
+          caseData.priority?.name?.toLowerCase().includes("urgent")
+            ? "#dc3545"
+            : caseData.urgencyLevel === "high" ||
+              caseData.priority?.name?.toLowerCase().includes("high")
+            ? "#fd7e14"
+            : "#28a745"
+        };">${
+      caseData.priority?.name || caseData.urgencyLevel || "Normal"
+    }</span></p>
+        <p><strong>Status:</strong> ${caseData.status?.name || "Open"}</p>
+        <p><strong>Assigned By:</strong> ${assignedBy.firstName} ${
+      assignedBy.lastName
+    }</p>
+        <p><strong>Assigned On:</strong> ${new Date().toLocaleString()}</p>
+      </div>
+      
+      <div style="text-align: center;">
+        <a href="${caseUrl}" class="btn">View & Handle Case</a>
+      </div>
+      
+      ${
+        caseData.urgencyLevel === "urgent" ||
+        caseData.priority?.name?.toLowerCase().includes("urgent")
+          ? `
+        <div class="alert alert-warning">
+          <strong>Urgent Priority:</strong> This case requires immediate attention and action.
+        </div>
+      `
+          : ""
+      }
+      
+      <p>Please review the case details and take appropriate action as needed.</p>
+      
+      <p>Best regards,<br>The ${config.companyName} Team</p>
+    `;
+
+    return this._getBaseTemplate(content, "Case Assigned", config);
+  }
+
+  /**
+   * Case status change notification template
+   */
+  static caseStatusChanged(
+    user,
+    caseData,
+    oldStatus,
+    newStatus,
+    changedBy,
+    config
+  ) {
+    const caseUrl = `${config.baseUrl}/cases/${caseData.id}`;
+
+    const content = `
+      <h2>Case Status Updated</h2>
+      <p>Hello ${user.firstName || user.username},</p>
+      <p>The status of case "${caseData.title}" has been updated.</p>
+      
+      <div class="details-box">
+        <h4>Status Change Details:</h4>
+        <p><strong>Case Number:</strong> ${caseData.number}</p>
+        <p><strong>Title:</strong> ${caseData.title}</p>
+        <p><strong>Previous Status:</strong> ${oldStatus}</p>
+        <p><strong>New Status:</strong> <span style="color: ${
+          newStatus.toLowerCase().includes("resolved") ||
+          newStatus.toLowerCase().includes("closed")
+            ? "#28a745"
+            : newStatus.toLowerCase().includes("progress") ||
+              newStatus.toLowerCase().includes("active")
+            ? "#fd7e14"
+            : "#6c757d"
+        };">${newStatus}</span></p>
+        <p><strong>Changed By:</strong> ${changedBy.firstName} ${
+      changedBy.lastName
+    }</p>
+        <p><strong>Changed On:</strong> ${new Date().toLocaleString()}</p>
+      </div>
+      
+      <div style="text-align: center;">
+        <a href="${caseUrl}" class="btn">View Case Update</a>
+      </div>
+      
+      ${
+        newStatus.toLowerCase().includes("resolved") ||
+        newStatus.toLowerCase().includes("closed")
+          ? `
+        <div class="alert alert-success">
+          <strong>Great News!</strong> This case has been resolved. Please review the resolution.
+        </div>
+      `
+          : ""
+      }
+      
+      <p>You can view the complete case details and history using the link above.</p>
+      
+      <p>Best regards,<br>The ${config.companyName} Team</p>
+    `;
+
+    return this._getBaseTemplate(content, "Case Status Updated", config);
+  }
+
+  /**
+   * Case escalation notification template
+   */
+  static caseEscalated(user, caseData, escalatedBy, escalationReason, config) {
+    const caseUrl = `${config.baseUrl}/cases/${caseData.id}`;
+
+    const content = `
+      <h2>Case Escalated</h2>
+      <p>Hello ${user.firstName || user.username},</p>
+      <p>A case has been escalated and requires your immediate attention.</p>
+      
+      <div class="details-box">
+        <h4>Escalation Details:</h4>
+        <p><strong>Case Number:</strong> ${caseData.number}</p>
+        <p><strong>Title:</strong> ${caseData.title}</p>
+        <p><strong>Escalation Level:</strong> ${
+          caseData.escalationLevel || "Level 1"
+        }</p>
+        <p><strong>Escalation Reason:</strong> ${escalationReason}</p>
+        <p><strong>Escalated By:</strong> ${escalatedBy.firstName} ${
+      escalatedBy.lastName
+    }</p>
+        <p><strong>Escalated On:</strong> ${new Date().toLocaleString()}</p>
+        <p><strong>Current Priority:</strong> ${
+          caseData.priority?.name || caseData.urgencyLevel || "Normal"
+        }</p>
+      </div>
+      
+      <div style="text-align: center;">
+        <a href="${caseUrl}" class="btn">Handle Escalation</a>
+      </div>
+      
+      <div class="alert alert-warning">
+        <strong>Escalated Case:</strong> This case requires priority handling due to escalation.
+      </div>
+      
+      <p>Please review the escalation details and take immediate action as required.</p>
+      
+      <p>Best regards,<br>The ${config.companyName} Team</p>
+    `;
+
+    return this._getBaseTemplate(content, "Case Escalated", config);
+  }
+
+  /**
+   * Case comment notification template
+   */
+  static caseCommentAdded(user, caseData, comment, commentBy, config) {
+    const caseUrl = `${config.baseUrl}/cases/${caseData.id}#comment-${comment.id}`;
+
+    const content = `
+      <h2>New ${comment.commentType || "Case"} Comment</h2>
+      <p>Hello ${user.firstName || user.username},</p>
+      <p>A new ${
+        comment.commentType || "case"
+      } comment has been added to case "${caseData.title}".</p>
+      
+      <div class="details-box">
+        <h4>Comment Details:</h4>
+        <p><strong>Case Number:</strong> ${caseData.number}</p>
+        <p><strong>Case Title:</strong> ${caseData.title}</p>
+        <p><strong>Comment Type:</strong> ${
+          comment.commentType || "General"
+        }</p>
+        <p><strong>Comment By:</strong> ${commentBy.firstName} ${
+      commentBy.lastName
+    }</p>
+        <p><strong>Posted On:</strong> ${new Date(
+          comment.createdAt || new Date()
+        ).toLocaleString()}</p>
+        ${
+          comment.requiresFollowUp
+            ? "<p><strong>Follow-up Required:</strong> Yes</p>"
+            : ""
+        }
+      </div>
+
+      <div class="details-box" style="background-color: #f8f9fa; border-left: 4px solid #0066cc;">
+        <h4>Comment:</h4>
+        <p style="font-style: italic;">"${
+          comment.comment || comment.content
+        }"</p>
+      </div>
+      
+      <div style="text-align: center;">
+        <a href="${caseUrl}" class="btn">View Comment</a>
+      </div>
+      
+      ${
+        comment.requiresFollowUp
+          ? `
+        <div class="alert alert-info">
+          <strong>Follow-up Required:</strong> This comment requires your follow-up action.
+        </div>
+      `
+          : ""
+      }
+      
+      <p>You can view the complete comment and respond using the link above.</p>
+      
+      <p>Best regards,<br>The ${config.companyName} Team</p>
+    `;
+
+    return this._getBaseTemplate(
+      content,
+      `New ${comment.commentType || "Case"} Comment`,
+      config
+    );
+  }
+
+  /**
+   * Case resolved notification template
+   */
+  static caseResolved(user, caseData, resolvedBy, resolutionSummary, config) {
+    const caseUrl = `${config.baseUrl}/cases/${caseData.id}`;
+
+    const content = `
+      <h2>Case Resolved</h2>
+      <p>Hello ${user.firstName || user.username},</p>
+      <p>Case "${caseData.title}" has been marked as resolved.</p>
+      
+      <div class="details-box">
+        <h4>Resolution Details:</h4>
+        <p><strong>Case Number:</strong> ${caseData.number}</p>
+        <p><strong>Title:</strong> ${caseData.title}</p>
+        <p><strong>Resolved By:</strong> ${resolvedBy.firstName} ${
+      resolvedBy.lastName
+    }</p>
+        <p><strong>Resolved On:</strong> ${new Date().toLocaleString()}</p>
+        <p><strong>Final Status:</strong> ${
+          caseData.status?.name || "Resolved"
+        }</p>
+      </div>
+
+      ${
+        resolutionSummary
+          ? `
+      <div class="details-box" style="background-color: #d4edda; border-left: 4px solid #28a745;">
+        <h4>Resolution Summary:</h4>
+        <p>${resolutionSummary}</p>
+      </div>
+      `
+          : ""
+      }
+      
+      <div style="text-align: center;">
+        <a href="${caseUrl}" class="btn">View Resolution</a>
+      </div>
+      
+      <div class="alert alert-success">
+        <strong>Case Completed:</strong> This case has been successfully resolved.
+      </div>
+      
+      <p>You can view the complete resolution details using the link above.</p>
+      
+      <p>Best regards,<br>The ${config.companyName} Team</p>
+    `;
+
+    return this._getBaseTemplate(content, "Case Resolved", config);
+  }
+
+  /**
+   * Generic case notification template
+   */
+  static caseNotification(user, notification, config) {
+    const content = `
+      <h2>${notification.title}</h2>
+      <p>Hello ${user.firstName || user.username},</p>
+      <p>${notification.message}</p>
+      
+      ${
+        notification.case
+          ? `
+      <div class="details-box">
+        <h4>Case Details:</h4>
+        <p><strong>Case Number:</strong> ${notification.case.number}</p>
+        <p><strong>Title:</strong> ${notification.case.title}</p>
+        ${
+          notification.case.status
+            ? `<p><strong>Status:</strong> ${notification.case.status}</p>`
+            : ""
+        }
+        ${
+          notification.case.priority
+            ? `<p><strong>Priority:</strong> ${notification.case.priority}</p>`
+            : ""
+        }
+        ${
+          notification.case.urgencyLevel
+            ? `<p><strong>Urgency:</strong> ${notification.case.urgencyLevel}</p>`
+            : ""
+        }
+      </div>
+      `
+          : ""
+      }
+      
+      ${
+        notification.actionUrl
+          ? `
+      <div style="text-align: center;">
+        <a href="${notification.actionUrl}" class="btn">
+          ${notification.actionText || "View Details"}
+        </a>
+      </div>
+      `
+          : ""
+      }
+      
+      ${
+        notification.metadata
+          ? `
+      <div class="details-box" style="background-color: #e7f3ff; border-left: 4px solid #0066cc;">
+        <p><strong>Additional Information:</strong></p>
+        ${Object.entries(notification.metadata)
+          .map(([key, value]) => `<p><strong>${key}:</strong> ${value}</p>`)
+          .join("")}
+      </div>
+      `
+          : ""
+      }
+      
+      <p>Best regards,<br>The ${config.companyName} Team</p>
+    `;
+
+    return this._getBaseTemplate(content, notification.title, config);
+  }
 }

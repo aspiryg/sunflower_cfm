@@ -120,6 +120,16 @@ const GlobalStyles = createGlobalStyle`
     --color-red-800: #991b1b;
     --color-red-900: #7f1d1d;
 
+    /* ===== BROWN (100, 200, 700) ===== */
+    --color-brown-100: #d6cfcf;
+    --color-brown-200: #b8a8a0;
+    --color-brown-700: #4e3b3b;
+
+    /* ===== TEAL (100, 200, 700) ===== */
+    --color-teal-100: #ccfbf1;
+    --color-teal-200: #99f6e4;
+    --color-teal-700: #0d9488;
+
     /* ===== BRAND COLORS (INDIGO) (0-900) ===== */
     --color-brand-0: #ffffff;
     --color-brand-50: #eef2ff;
@@ -336,6 +346,17 @@ const GlobalStyles = createGlobalStyle`
     --color-red-800: #fef2f2;
     --color-red-900: #ffffff;
 
+    /* ===== BROWN - DARK MODE ===== */
+    --color-brown-0: #3f2515;
+    --color-brown-50: #4b3b30;
+    --color-brown-100: #6f4c3e;
+    --color-brown-200: #8b5b4a;
+    --color-brown-300: #a76d5b;
+    --color-brown-400: #c19e8a;
+    --color-brown-500: #d6cfcf;
+    --color-brown-600: #b8a8a0;
+    --color-brown-700: #4e3b3b;
+
     /* ===== BRAND COLORS - DARK MODE ===== */
     --color-brand-0: #312e81;
     --color-brand-50: #3730a3;
@@ -402,6 +423,8 @@ const GlobalStyles = createGlobalStyle`
     --color-info-700: var(--color-blue-700);
     --color-info-800: var(--color-blue-800);
     --color-info-900: var(--color-blue-900);
+
+    
 
     /* ===== DARK MODE SPECIFIC OVERRIDES ===== */
     --backdrop-color: rgba(0, 0, 0, 0.6);

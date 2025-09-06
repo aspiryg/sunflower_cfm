@@ -9,15 +9,10 @@ import LoadingSpinner from "../ui/LoadingSpinner";
 import DashboardStats from "../features/dashboard/DashboardStats";
 import DashboardFilters from "../features/dashboard/DashboardFilters";
 import DashboardCharts from "../features/dashboard/DashboardCharts";
-import RecentFeedback from "../features/dashboard/RecentFeedback";
+import RecentCases from "../features/dashboard/RecentCases";
 import QuickActions from "../features/dashboard/QuickActions";
-import {
-  useFeedbackStats,
-  useFeedbacks,
-} from "../features/feedback/useFeedback";
+import { useCaseStats, useCases } from "../features/cases/useCase";
 import { useDashboardFilters } from "../features/dashboard/useDashboard";
-
-// DashboardHeader
 
 const PageContainer = styled.div`
   display: flex;
@@ -128,29 +123,21 @@ function Dashboard() {
   const { filters, updateFilter, resetFilters, statsFilters } =
     useDashboardFilters();
 
-  // Debug: Log current filters (remove in production)
-  // console.log("Current Dashboard Filters:", filters);
-
   // Fetch stats with applied filters
   const {
     data: stats,
     isLoading: statsLoading,
     error: statsError,
     refetch: refetchStats,
-  } = useFeedbackStats({
-    filters: statsFilters, // Pass converted filters to useFeedbackStats
+  } = useCaseStats({
+    filters: statsFilters, // Pass converted filters to useCaseStats
   });
 
-  // console.log("Dashboard - stats data:", stats);
-  // console.log("Dashboard - statsFilters:", statsFilters);
-  // console.log("Dashboard - isLoading:", statsLoading);
-  // console.log("Dashboard - error:", statsError);
-
-  // Fetch recent feedback with applied filters (except date range for recent items)
-  const recentFeedbackFilters = {
-    ...(filters.status !== "all" && { status: filters.status }),
-    ...(filters.priority !== "all" && { priority: filters.priority }),
-    ...(filters.category !== "all" && { category: filters.category }),
+  // Fetch recent cases with applied filters (except date range for recent items)
+  const recentCasesFilters = {
+    ...(filters.statusId !== "all" && { statusId: filters.statusId }),
+    ...(filters.priorityId !== "all" && { priorityId: filters.priorityId }),
+    ...(filters.categoryId !== "all" && { categoryId: filters.categoryId }),
   };
 
   const {
@@ -158,32 +145,32 @@ function Dashboard() {
     isLoading: recentLoading,
     error: recentError,
     refetch: refetchRecent,
-  } = useFeedbacks({
-    filters: recentFeedbackFilters,
+  } = useCases({
+    ...recentCasesFilters,
     limit: 10,
     sortBy: "createdAt",
     sortOrder: "desc",
   });
 
-  const recentFeedback = recentResponse?.data?.data || [];
+  const recentCases = recentResponse?.data || [];
 
   const handleRefresh = () => {
     refetchStats();
     refetchRecent();
   };
 
-  const handleCreateFeedback = () => {
-    navigate("/feedback/add");
+  const handleCreateCase = () => {
+    navigate("/cases/add");
   };
 
-  const handleViewFeedback = (feedback) => {
-    navigate(`/feedback/view/${feedback.id}`);
+  const handleViewCase = (caseItem) => {
+    navigate(`/cases/view/${caseItem.id}`);
   };
 
   const isLoading = statsLoading || recentLoading;
   const hasError = statsError || recentError;
 
-  if (hasError && !stats && !recentFeedback.length) {
+  if (hasError && !stats && !recentCases.length) {
     return (
       <PageContainer>
         <ErrorContainer>
@@ -221,7 +208,7 @@ function Dashboard() {
             Dashboard
           </Heading>
           <Text size="lg" color="muted">
-            Overview of feedback activity and key metrics
+            Overview of case management activity and key metrics
           </Text>
         </HeaderContent>
 
@@ -236,19 +223,15 @@ function Dashboard() {
             <HiOutlineArrowPath />
           </IconButton>
 
-          <Button
-            variant="primary"
-            size="medium"
-            onClick={handleCreateFeedback}
-          >
+          <Button variant="primary" size="medium" onClick={handleCreateCase}>
             <HiOutlinePlus />
-            New Feedback
+            New Case
           </Button>
         </HeaderActions>
       </PageHeader>
 
       {/* Main Content */}
-      {isLoading && !stats && !recentFeedback.length ? (
+      {isLoading && !stats && !recentCases.length ? (
         <LoadingContainer>
           <LoadingSpinner size="large" />
           <Text size="lg" color="muted">
@@ -279,20 +262,19 @@ function Dashboard() {
           <ChartsArea>
             <DashboardCharts
               stats={stats}
-              // recentFeedback={recentFeedback}
               filters={filters}
               isLoading={statsLoading}
               error={statsError}
             />
           </ChartsArea>
 
-          {/* Recent Feedback */}
+          {/* Recent Cases */}
           <RecentArea>
-            <RecentFeedback
-              feedback={recentFeedback}
+            <RecentCases
+              cases={recentCases}
               isLoading={recentLoading}
               error={recentError}
-              onViewFeedback={handleViewFeedback}
+              onViewCase={handleViewCase}
               onRefresh={refetchRecent}
             />
           </RecentArea>
@@ -301,8 +283,8 @@ function Dashboard() {
           <ActionsArea>
             <QuickActions
               stats={stats}
-              onCreateFeedback={handleCreateFeedback}
-              onViewAll={() => navigate("/feedback")}
+              onCreateCase={handleCreateCase}
+              onViewAll={() => navigate("/cases")}
             />
           </ActionsArea>
         </ContentGrid>

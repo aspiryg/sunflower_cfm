@@ -98,6 +98,7 @@ const Textarea = styled.textarea`
   transition: all var(--duration-normal) var(--ease-in-out);
 
   &::placeholder {
+    font-size: var(--font-size-xs);
     color: var(--color-grey-400);
   }
 

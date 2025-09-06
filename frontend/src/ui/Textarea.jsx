@@ -112,6 +112,7 @@ const StyledTextarea = styled.textarea`
 
   /* Placeholder styling */
   &::placeholder {
+    font-size: var(--font-size-xs);
     color: var(--color-grey-500);
     opacity: 1;
   }

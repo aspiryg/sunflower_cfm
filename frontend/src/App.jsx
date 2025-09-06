@@ -18,9 +18,6 @@ import Dashboard from "./pages/Dashboard";
 import Settings from "./pages/Settings";
 import Users from "./pages/Users";
 import MyProfile from "./pages/MyProfile";
-import Feedback from "./pages/Feedback";
-import AddFeedback from "./pages/AddFeedback";
-import FeedbackDetails from "./pages/FeedbackDetails";
 import Notifications from "./pages/Notifications";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -32,6 +29,11 @@ import PageNotFound from "./pages/PageNotFound";
 // Import sub pages
 import AssignedToMe from "./features/feedback/AssignedToMe";
 import CreatedByMe from "./features/feedback/CreatedByMe";
+
+// Import CasePages
+import Case from "./pages/Case";
+import AddCase from "./pages/AddCase";
+import CaseDetails from "./pages/CaseDetails";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -112,43 +114,46 @@ function App() {
                 </Route>
                 {/* Catch all route */}
 
-                <Route
-                  path="/feedback"
-                  element={
-                    <ProtectedRoute requireAuth={true} requiredRole={"user"}>
-                      <AppLayout />
-                    </ProtectedRoute>
-                  }
-                >
-                  <Route index element={<Feedback />} />
+                {
                   <Route
-                    path="add"
+                    path="/cases"
                     element={
-                      <ProtectedRoute>
-                        <AddFeedback />
+                      <ProtectedRoute requireAuth={true} requiredRole={"user"}>
+                        <AppLayout />
                       </ProtectedRoute>
                     }
-                  />
-                  <Route
-                    path="edit/:id"
-                    element={
-                      <ProtectedRoute>
-                        <AddFeedback />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="view/:feedbackId"
-                    element={
-                      <ProtectedRoute>
-                        <FeedbackDetails />
-                      </ProtectedRoute>
-                    }
-                  />
-                  {/* Sub pages */}
-                  <Route path="assigned-to-me" element={<AssignedToMe />} />
-                  <Route path="created-by-me" element={<CreatedByMe />} />
-                </Route>
+                  >
+                    <Route index element={<Case />} />
+                    <Route
+                      path="add"
+                      element={
+                        <ProtectedRoute>
+                          <AddCase />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="edit/:id"
+                      element={
+                        <ProtectedRoute>
+                          <AddCase />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="view/:caseId"
+                      element={
+                        <ProtectedRoute>
+                          <CaseDetails />
+                        </ProtectedRoute>
+                      }
+                    />
+                    {/* Sub pages */}
+                    <Route path="assigned-to-me" element={<AssignedToMe />} />
+                    <Route path="created-by-me" element={<CreatedByMe />} />
+                  </Route>
+                }
+
                 {/*Users route */}
                 <Route
                   path="/users"

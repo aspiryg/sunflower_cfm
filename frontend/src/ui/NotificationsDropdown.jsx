@@ -179,8 +179,8 @@ const NotificationContent = styled.div`
   min-width: 0;
 `;
 
-// Feedback number
-const FeedbackNumber = styled(Text)`
+// Case number
+const CaseNumber = styled(Text)`
   background-color: var(--color-grey-100);
   color: var(--color-grey-600);
   border-radius: var(--border-radius-md);
@@ -246,10 +246,10 @@ const ViewAllButton = styled.button`
 
 // Types of Notification
 /*
-  FEEDBACK_SUBMITTED:
-  FEEDBACK_ASSIGNED: 
-  FEEDBACK_UNASSIGNED: 
-  FEEDBACK_STATUS_CHANGED: 
+  CASE_SUBMITTED:
+  CASE_ASSIGNED: 
+  CASE_UNASSIGNED: 
+  CASE_STATUS_CHANGED: 
 */
 
 function NotificationsDropdown({ className = "" }) {
@@ -407,9 +407,9 @@ function NotificationsDropdown({ className = "" }) {
     // Close dropdown
     setIsOpen(false);
 
-    // Navigate to feedback page
-    if (notification.feedbackId) {
-      navigate(`/feedback/view/${notification.feedbackId}`);
+    // Navigate to case page
+    if (notification.caseId) {
+      navigate(`/cases/view/${notification.caseId}`);
     } else if (notification.actionUrl) {
       navigate(notification.actionUrl);
     }
@@ -490,7 +490,7 @@ function NotificationsDropdown({ className = "" }) {
           ) : (
             displayNotifications.map((notification) => {
               const metadata = notification.metadata;
-              const feedbackNumber = metadata?.feedbackNumber || "";
+              const caseNumber = metadata?.caseNumber || "";
               const IconComponent =
                 notificationsIcons[notification.type] ||
                 HiOutlineInformationCircle;
@@ -513,10 +513,10 @@ function NotificationsDropdown({ className = "" }) {
                     <Text size="sm" weight="medium">
                       {notification.title}
                     </Text>
-                    {feedbackNumber && (
-                      <FeedbackNumber size="sm" color="muted">
-                        {feedbackNumber}
-                      </FeedbackNumber>
+                    {caseNumber && (
+                      <CaseNumber size="sm" color="muted">
+                        {caseNumber}
+                      </CaseNumber>
                     )}
                     <Text size="sm" color="muted">
                       {notification.message}

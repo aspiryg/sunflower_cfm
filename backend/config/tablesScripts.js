@@ -133,6 +133,55 @@ export const feedbackCategoriesTableScript = `
   END
 `;
 
+// Feedback Status table script
+export const feedbackStatusTableScript = `
+  IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='FeedbackStatus' AND xtype='U')
+  BEGIN
+    CREATE TABLE FeedbackStatus (
+      id INT IDENTITY(1,1) PRIMARY KEY,
+      name NVARCHAR(100) NOT NULL UNIQUE,
+      color NVARCHAR(7) NOT NULL,
+      arabicName NVARCHAR(100) NULL,
+      description NVARCHAR(255) NULL,
+      arabicDescription NVARCHAR(255) NULL,
+      createdAt DATETIME NOT NULL DEFAULT GETDATE(),
+      updatedAt DATETIME NOT NULL DEFAULT GETDATE(),
+      isActive BIT NOT NULL DEFAULT 1
+    );
+
+    PRINT '✅ FeedbackStatus table created successfully';
+  END
+  ELSE
+  BEGIN
+    PRINT 'ℹ️  FeedbackStatus table already exists';
+  END
+`;
+
+// Feedback Priority table script
+export const feedbackPriorityTableScript = `
+
+  IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='FeedbackPriority' AND xtype='U')
+  BEGIN
+    CREATE TABLE FeedbackPriority (
+      id INT IDENTITY(1,1) PRIMARY KEY,
+      name NVARCHAR(100) NOT NULL UNIQUE,
+      color NVARCHAR(7) NOT NULL,
+      arabicName NVARCHAR(100) NULL,
+      description NVARCHAR(255) NULL,
+      arabicDescription NVARCHAR(255) NULL,
+      createdAt DATETIME NOT NULL DEFAULT GETDATE(),
+      updatedAt DATETIME NOT NULL DEFAULT GETDATE(),
+      isActive BIT NOT NULL DEFAULT 1
+    );
+
+    PRINT '✅ FeedbackPriority table created successfully';
+  END
+  ELSE
+  BEGIN
+    PRINT 'ℹ️  FeedbackPriority table already exists';
+  END
+`;
+
 // Regions table script
 export const regionsTableScript = `
 
@@ -403,7 +452,7 @@ export const feedbackTableScript = `
           longitude FLOAT NULL,
 
           -- Additional fields
-          tags NVARCHAR(255) NULL,
+          tags NVARCHAR(512) NULL,
           attachments NVARCHAR(MAX) NULL,
           
           -- data privacy and security
@@ -828,4 +877,25 @@ BEGIN
     ALTER TABLE Feedback ADD deletedAt DATETIME NULL;
     PRINT '✅ Added deletedAt column to Feedback';
 END
+
+-- Add feedbackStatusId column
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'Feedback' AND COLUMN_NAME = 'feedbackStatusId')
+BEGIN
+    ALTER TABLE Feedback ADD feedbackStatusId INT NULL;
+    PRINT '✅ Added feedbackStatusId column to Feedback';
+END
+
+-- Add feedbackPriorityId column
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'Feedback' AND COLUMN_NAME = 'feedbackPriorityId')
+BEGIN
+    ALTER TABLE Feedback ADD feedbackPriorityId INT NULL;
+    PRINT '✅ Added feedbackPriorityId column to Feedback';
+END
+
+-- Add foreign key constraints
+ALTER TABLE Feedback
+ADD CONSTRAINT FK_Feedback_FeedbackStatus FOREIGN KEY (feedbackStatusId) REFERENCES FeedbackStatus(id);
+
+ALTER TABLE Feedback
+ADD CONSTRAINT FK_Feedback_FeedbackPriority FOREIGN KEY (feedbackPriorityId) REFERENCES FeedbackPriority(id);
 `;
