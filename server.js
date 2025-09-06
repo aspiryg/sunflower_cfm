@@ -334,7 +334,7 @@ if (process.env.NODE_ENV === "production") {
   );
 
   // Handle client-side routing (SPA) - FIXED
-  app.get("*", (req, res, next) => {
+  app.get("/*splat", (req, res, next) => {
     // Don't serve index.html for API routes
     if (req.path.startsWith("/api/")) {
       return next(); // Let it fall through to the 404 handler

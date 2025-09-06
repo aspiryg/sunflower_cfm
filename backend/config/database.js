@@ -389,10 +389,10 @@ class DatabaseInitializer {
 
     try {
       // Create tables in dependency order
-      await this.createCoreTables(pool);
-      await this.createSupportingTables(pool);
-      await this.createCaseManagementTables(pool);
-      await this.createProcessingTables(pool);
+      // await this.createCoreTables(pool);
+      // await this.createSupportingTables(pool);
+      // await this.createCaseManagementTables(pool);
+      // await this.createProcessingTables(pool);
       await this.createSystemTables(pool);
 
       // Insert initial data
