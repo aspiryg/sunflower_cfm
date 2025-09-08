@@ -464,10 +464,9 @@ function CaseForm({
         }
         return;
       }
-
+      // console.log("Raw Form Data:", data);
       // Clean up data before submission
       const cleanedData = cleanFormData(data);
-
       // console.log("Submitting Case Data:", cleanedData);
 
       if (isEditing) {
@@ -495,7 +494,7 @@ function CaseForm({
 
       // account for nested fields
       nestedFieldsForEdit.forEach(({ object, field }) => {
-        if (cleaned[object]) {
+        if (cleaned[object] && typeof cleaned[object] === "object") {
           cleaned[field] = cleaned[object].id;
           delete cleaned[object];
         }

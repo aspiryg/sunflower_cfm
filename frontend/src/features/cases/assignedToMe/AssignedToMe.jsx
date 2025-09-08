@@ -1,33 +1,33 @@
-// Create this file: /frontend/src/pages/Case.jsx
 import { useState } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import {
-  HiOutlinePlus,
-  HiMiniArrowPath,
+  HiOutlineUserGroup,
   HiOutlineScale,
+  HiOutlineChatBubbleLeftRight,
+  HiMiniArrowPath,
   HiOutlineDocumentText,
+  HiOutlineChartBarSquare,
+  HiOutlineClipboardDocumentCheck,
 } from "react-icons/hi2";
 
-import Heading from "../ui/Heading";
-import Button from "../ui/Button";
-import IconButton from "../ui/IconButton";
-import Text from "../ui/Text";
-import Column from "../ui/Column";
-import Breadcrumb from "../ui/Breadcrumb";
+import Breadcrumb from "../../../ui/Breadcrumb";
+import Heading from "../../../ui/Heading";
+import Text from "../../../ui/Text";
+import IconButton from "../../../ui/IconButton";
+import Column from "../../../ui/Column";
+import Card from "../../../ui/Card";
+import InfoCard from "../../../ui/InfoCard";
 
-import CaseTable from "../features/cases/CaseTable";
-import CaseFilters from "../features/cases/CaseFilters";
-import CaseTableControls from "../features/cases/CaseTableControls";
+import CaseTable from "../CaseTable";
+import AssignedCaseFilters from "./AssignedCaseFilters";
+import CaseTableControls from "../CaseTableControls";
+import { useAssignedToMeTable } from "./useAssignedToMeTable";
 
-import { useCaseTable } from "../features/cases/useCaseTable";
-
-// Import modals (these will need to be created following your feedback modal patterns)
-import DeleteCaseModal from "../features/cases/modals/DeleteCaseModal";
-import UpdateStatusModal from "../features/cases/modals/UpdateStatusModal";
-import AssignCaseModal from "../features/cases/modals/AssignCaseModal";
-import AddCommentModal from "../features/cases/modals/AddCommentModal";
-import EscalateCaseModal from "../features/cases/modals/EscalateCaseModal";
+// Reuse modals from main Cases page
+import UpdateStatusModal from "../modals/UpdateStatusModal";
+import AddCommentModal from "../modals/AddCommentModal";
+import EscalateCaseModal from "../modals/EscalateCaseModal";
 
 const PageContainer = styled.div`
   display: flex;
@@ -47,10 +47,6 @@ const PageHeader = styled.div`
   display: flex;
   flex-direction: column;
   gap: var(--spacing-2);
-
-  @media (max-width: 768px) {
-    gap: var(--spacing-1);
-  }
 `;
 
 const HeaderContent = styled.div`
@@ -76,7 +72,13 @@ const PageHeaderInfo = styled.div`
   }
 `;
 
-const CaseIcon = styled.div`
+const PageHeaderText = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+`;
+
+const AssignedIcon = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -107,20 +109,58 @@ const CaseIcon = styled.div`
   }
 `;
 
-const PageHeaderText = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-2);
-`;
-
 const PageActions = styled.div`
   display: flex;
   align-items: center;
   gap: var(--spacing-3);
+`;
 
-  @media (max-width: 640px) {
-    justify-content: space-between;
+const StatsCards = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+  gap: var(--spacing-4);
+  margin-bottom: var(--spacing-4);
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-3);
   }
+`;
+
+const StatCard = styled(Card)`
+  padding: var(--spacing-4);
+  border: 1px solid var(--color-grey-200);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+`;
+
+const StatIcon = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  border-radius: var(--border-radius-lg);
+  background: ${(props) => props.$color || "var(--color-grey-100)"};
+  color: ${(props) => props.$textColor || "var(--color-grey-600)"};
+
+  svg {
+    width: 2rem;
+    height: 2rem;
+  }
+`;
+
+const StatContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+`;
+
+const StatValue = styled(Text)`
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-grey-800);
 `;
 
 const TableSection = styled.div`
@@ -140,27 +180,10 @@ const ErrorContainer = styled.div`
   gap: var(--spacing-3);
 `;
 
-const ErrorContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-1);
-`;
-
-function Case() {
-  // Modal states (uncomment when modals are created)
-  const [deleteModal, setDeleteModal] = useState({
-    isOpen: false,
-    case: null,
-  });
-  const [statusModal, setStatusModal] = useState({
-    isOpen: false,
-    case: null,
-  });
-  const [assignModal, setAssignModal] = useState({
-    isOpen: false,
-    case: null,
-  });
-  const [addCommentModal, setAddCommentModal] = useState({
+function AssignedToMe() {
+  // Modal states
+  const [statusModal, setStatusModal] = useState({ isOpen: false, case: null });
+  const [commentModal, setCommentModal] = useState({
     isOpen: false,
     case: null,
   });
@@ -169,12 +192,15 @@ function Case() {
     case: null,
   });
 
+  const navigate = useNavigate();
+
   const {
     data: caseData,
     isLoading,
     isFetching,
     isError,
     error,
+    currentUser,
     searchQuery,
     handleSearchChange,
     filters,
@@ -194,24 +220,36 @@ function Case() {
     handleRefresh,
     totalResults,
     filteredResults,
-  } = useCaseTable();
-
-  const navigate = useNavigate();
+  } = useAssignedToMeTable();
 
   // Breadcrumb items
   const breadcrumbItems = [
     {
-      label: "Case Management",
+      label: "Cases",
       to: "/cases",
-      icon: HiOutlineScale,
+      icon: HiOutlineChatBubbleLeftRight,
+    },
+    {
+      label: "Assigned To Me",
+      icon: HiOutlineUserGroup,
     },
   ];
 
-  // Navigation handlers
-  const handleCreateCase = () => {
-    navigate("/cases/add");
+  // Calculate stats
+  const stats = {
+    total: totalResults,
+    active: caseData.filter(
+      (c) => !["closed", "resolved"].includes(c.status?.name?.toLowerCase())
+    ).length,
+    highPriority: caseData.filter((c) =>
+      ["high", "urgent", "critical"].includes(c.priority?.name?.toLowerCase())
+    ).length,
+    overdue: caseData.filter(
+      (c) => c.dueDate && new Date(c.dueDate) < new Date()
+    ).length,
   };
 
+  // Navigation handlers
   const handleViewCase = (caseItem) => {
     navigate(`/cases/view/${caseItem.id}`);
   };
@@ -220,73 +258,46 @@ function Case() {
     navigate(`/cases/edit/${caseItem.id}`);
   };
 
-  // Modal handlers (uncomment when modals are created)
-  const handleDeleteCase = (caseItem) => {
-    // console.log("Delete case:", caseItem);
-    setDeleteModal({ isOpen: true, case: caseItem });
-  };
-
-  const handleAssignCase = (caseItem) => {
-    // console.log("Assign case:", caseItem);
-    setAssignModal({ isOpen: true, case: caseItem });
-  };
-
+  // Modal handlers (simplified - only essential actions)
   const handleUpdateStatus = (caseItem) => {
     setStatusModal({ isOpen: true, case: caseItem });
   };
 
   const handleAddComment = (caseItem) => {
-    // console.log("Add comment:", caseItem);
-    setAddCommentModal({ isOpen: true, case: caseItem });
+    setCommentModal({ isOpen: true, case: caseItem });
   };
 
   const handleEscalateCase = (caseItem) => {
-    // console.log("Escalate case:", caseItem);
     setEscalateModal({ isOpen: true, case: caseItem });
   };
 
-  const handleArchiveCase = (caseItem) => {
-    console.log("Archive case:", caseItem);
-    // Implement archive logic
-  };
-
-  const handleDuplicateCase = (caseItem) => {
-    console.log("Duplicate case:", caseItem);
-    // Navigate to create page with pre-filled data
-    navigate("/cases/add", { state: { duplicateFrom: caseItem } });
-  };
-
-  const handleMarkPriority = (caseItem) => {
-    console.log("Mark priority:", caseItem);
-    // Implement priority marking logic
-  };
-
-  // Modal close handlers (uncomment when modals are created)
-  const handleCloseDeleteModal = () => {
-    setDeleteModal({ isOpen: false, case: null });
-  };
-
+  // Modal close handlers
   const handleCloseStatusModal = () => {
     setStatusModal({ isOpen: false, case: null });
   };
 
-  const handleCloseAssignModal = () => {
-    setAssignModal({ isOpen: false, case: null });
-  };
-
-  const handleCloseAddCommentModal = () => {
-    setAddCommentModal({ isOpen: false, case: null });
+  const handleCloseCommentModal = () => {
+    setCommentModal({ isOpen: false, case: null });
   };
 
   const handleCloseEscalateModal = () => {
     setEscalateModal({ isOpen: false, case: null });
   };
 
-  const handleModalSuccess = (data, originalCase) => {
-    console.log("Modal operation successful:", { data, originalCase });
-    // Refresh data or handle success
+  const handleModalSuccess = () => {
     handleRefresh();
   };
+
+  // Show loading state when user data isn't available yet
+  if (!currentUser) {
+    return (
+      <PageContainer>
+        <Column align="center" gap={4} style={{ padding: "var(--spacing-8)" }}>
+          <Text size="lg">Loading user information...</Text>
+        </Column>
+      </PageContainer>
+    );
+  }
 
   return (
     <PageContainer>
@@ -297,16 +308,18 @@ function Case() {
         {/* Page Header */}
         <HeaderContent>
           <PageHeaderInfo>
-            <CaseIcon>
-              <HiOutlineScale />
-            </CaseIcon>
+            <AssignedIcon>
+              <HiOutlineUserGroup />
+            </AssignedIcon>
             <PageHeaderText>
               <Heading as="h2" size="h1">
-                Case Management
+                My Assigned Cases
               </Heading>
               <Text size="md" color="muted">
-                Track and manage beneficiary cases, complaints, and feedback
-                through their lifecycle
+                Cases currently assigned to{" "}
+                <strong>
+                  {currentUser.firstName} {currentUser.lastName}
+                </strong>
               </Text>
             </PageHeaderText>
           </PageHeaderInfo>
@@ -317,40 +330,98 @@ function Case() {
               size="medium"
               onClick={handleRefresh}
               disabled={isLoading || isFetching}
-              aria-label="Refresh case data"
+              aria-label="Refresh assigned cases"
             >
               <HiMiniArrowPath />
             </IconButton>
-
-            <Button variant="primary" size="medium" onClick={handleCreateCase}>
-              <HiOutlinePlus />
-              New Case
-            </Button>
           </PageActions>
         </HeaderContent>
       </PageHeader>
 
+      {/* Quick Stats */}
+      <StatsCards>
+        <StatCard>
+          <StatIcon
+            $color="var(--color-blue-100)"
+            $textColor="var(--color-blue-600)"
+          >
+            <HiOutlineScale />
+          </StatIcon>
+          <StatContent>
+            <Text size="sm" color="muted">
+              Total Assigned
+            </Text>
+            <StatValue>{stats.total}</StatValue>
+          </StatContent>
+        </StatCard>
+
+        <StatCard>
+          <StatIcon
+            $color="var(--color-green-100)"
+            $textColor="var(--color-green-600)"
+          >
+            <HiOutlineChartBarSquare />
+          </StatIcon>
+          <StatContent>
+            <Text size="sm" color="muted">
+              Active Cases
+            </Text>
+            <StatValue>{stats.active}</StatValue>
+          </StatContent>
+        </StatCard>
+
+        <StatCard>
+          <StatIcon
+            $color="var(--color-orange-100)"
+            $textColor="var(--color-orange-600)"
+          >
+            <HiOutlineClipboardDocumentCheck />
+          </StatIcon>
+          <StatContent>
+            <Text size="sm" color="muted">
+              High Priority
+            </Text>
+            <StatValue>{stats.highPriority}</StatValue>
+          </StatContent>
+        </StatCard>
+
+        <StatCard>
+          <StatIcon
+            $color="var(--color-red-100)"
+            $textColor="var(--color-red-600)"
+          >
+            <HiOutlineDocumentText />
+          </StatIcon>
+          <StatContent>
+            <Text size="sm" color="muted">
+              Overdue
+            </Text>
+            <StatValue>{stats.overdue}</StatValue>
+          </StatContent>
+        </StatCard>
+      </StatsCards>
+
       {/* Error State */}
       {isError && (
         <ErrorContainer>
-          <ErrorContent>
+          <div>
             <Text size="sm" weight="semibold" color="error">
-              Failed to load cases
+              Failed to load assigned cases
             </Text>
             <Text size="sm" color="muted">
               {error?.message ||
-                "Something went wrong while loading the cases data."}
+                "Something went wrong while loading your assigned cases."}
             </Text>
-          </ErrorContent>
-          <Button variant="secondary" size="small" onClick={handleRefresh}>
-            Retry
-          </Button>
+          </div>
+          <IconButton variant="secondary" size="small" onClick={handleRefresh}>
+            Try Again
+          </IconButton>
         </ErrorContainer>
       )}
 
-      {/* Main Table Section */}
+      {/* Main Content */}
       <TableSection>
-        <CaseFilters
+        <AssignedCaseFilters
           searchQuery={searchQuery}
           onSearchChange={handleSearchChange}
           filters={filters}
@@ -359,6 +430,7 @@ function Case() {
           totalResults={totalResults}
           filteredResults={filteredResults}
           isLoading={isLoading}
+          currentUser={currentUser}
         />
 
         <CaseTableControls
@@ -380,16 +452,17 @@ function Case() {
           isLoading={isLoading}
           onViewCase={handleViewCase}
           onEditCase={handleEditCase}
-          onDeleteCase={handleDeleteCase}
           onUpdateStatus={handleUpdateStatus}
-          onAssignCase={handleAssignCase}
           onAddComment={handleAddComment}
           onEscalateCase={handleEscalateCase}
-          onArchiveCase={handleArchiveCase}
-          onDuplicateCase={handleDuplicateCase}
-          onMarkPriority={handleMarkPriority}
+          // Disable actions that don't make sense for assigned cases
+          onDeleteCase={null}
+          onAssignCase={null}
+          onArchiveCase={null}
+          onDuplicateCase={null}
+          onMarkPriority={null}
           // Table Type
-          tableType="all"
+          tableType="assigned"
         />
 
         {/* Empty State */}
@@ -399,7 +472,7 @@ function Case() {
             gap={3}
             style={{ padding: "var(--spacing-8)" }}
           >
-            <HiOutlineDocumentText
+            <HiOutlineUserGroup
               style={{
                 fontSize: "4.8rem",
                 color: "var(--color-grey-400)",
@@ -407,25 +480,29 @@ function Case() {
             />
             <Text size="lg" color="muted">
               {totalResults === 0
-                ? "No cases found"
+                ? "No cases assigned to you"
                 : "No results match your search"}
             </Text>
             <Text size="sm" color="muted">
               {totalResults === 0
-                ? "Get started by creating your first case"
+                ? "Cases will appear here when they are assigned to you"
                 : "Try adjusting your search terms or filters"}
             </Text>
             {(searchQuery ||
               Object.values(filters).some((f) => f !== "all")) && (
-              <Button variant="ghost" size="small" onClick={handleResetFilters}>
+              <IconButton
+                variant="ghost"
+                size="small"
+                onClick={handleResetFilters}
+              >
                 Clear search and filters
-              </Button>
+              </IconButton>
             )}
           </Column>
         )}
       </TableSection>
 
-      {/* Modals - Uncomment when modals are created */}
+      {/* Modals - Only essential ones for assigned cases */}
       <UpdateStatusModal
         isOpen={statusModal.isOpen}
         onClose={handleCloseStatusModal}
@@ -433,10 +510,10 @@ function Case() {
         onSuccess={handleModalSuccess}
       />
 
-      <AssignCaseModal
-        isOpen={assignModal.isOpen}
-        onClose={handleCloseAssignModal}
-        case={assignModal.case}
+      <AddCommentModal
+        isOpen={commentModal.isOpen}
+        onClose={handleCloseCommentModal}
+        case={commentModal.case}
         onSuccess={handleModalSuccess}
       />
 
@@ -446,22 +523,8 @@ function Case() {
         case={escalateModal.case}
         onSuccess={handleModalSuccess}
       />
-
-      <DeleteCaseModal
-        isOpen={deleteModal.isOpen}
-        onClose={handleCloseDeleteModal}
-        case={deleteModal.case}
-        onSuccess={handleModalSuccess}
-      />
-
-      <AddCommentModal
-        isOpen={addCommentModal.isOpen}
-        onClose={handleCloseAddCommentModal}
-        case={addCommentModal.case}
-        onSuccess={handleModalSuccess}
-      />
     </PageContainer>
   );
 }
 
-export default Case;
+export default AssignedToMe;

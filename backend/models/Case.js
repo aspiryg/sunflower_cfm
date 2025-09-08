@@ -12,6 +12,7 @@ import {
 import { CaseHistory } from "./CaseHistory.js";
 import { CaseComments } from "./CaseComments.js";
 import { CaseNotification } from "./CaseNotification.js";
+import { getUserFullName } from "../utils/userUtils.js";
 // import { Notification } from "./Notification.js";
 
 export class Case {
@@ -1782,14 +1783,17 @@ export class Case {
               priority: CaseNotification._determinePriority(
                 caseData.priority?.level || caseData.urgencyLevel
               ),
-              actionUrl: `/cases/${caseData.id}`,
+              actionUrl: `/cases/view/${caseData.id}`,
               actionText: "Review Case",
               triggerUserId: createdBy,
               triggerAction: "case_creation",
               metadata: {
                 caseNumber: caseData.caseNumber,
                 category: caseData.category?.name,
-                submittedBy: caseData.submittedBy?.firstName,
+                submittedBy: getUserFullName(
+                  caseData?.submittedBy?.firstName,
+                  caseData?.submittedBy?.lastName
+                ),
                 urgencyLevel: caseData.urgencyLevel,
               },
             });
@@ -1883,7 +1887,7 @@ export class Case {
             title: "Case Reassigned",
             message: `Case "${caseData.title}" has been reassigned to another user.`,
             priority: "normal",
-            actionUrl: `/cases/${caseData.id}`,
+            actionUrl: `/cases/view/${caseData.id}`,
             actionText: "View Case",
             triggerUserId: assignedBy,
             triggerAction: "case_reassignment",
@@ -1970,7 +1974,7 @@ export class Case {
             title: "Case Resolved",
             message: `Case "${caseData.title}" has been resolved.`,
             priority: "normal",
-            actionUrl: `/cases/${caseData.id}`,
+            actionUrl: `/cases/view/${caseData.id}`,
             actionText: "View Resolution",
             triggerUserId: resolvedBy,
             triggerAction: "case_resolution",

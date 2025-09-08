@@ -451,6 +451,8 @@ export class EmailController {
       const notification = await CaseNotification.getNotificationByIdAsync(
         notificationId
       );
+
+      // console.log("Notification details:", notification);
       if (!notification) {
         throw new Error("Notification not found");
       }

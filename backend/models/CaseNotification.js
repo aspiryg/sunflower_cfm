@@ -529,7 +529,7 @@ export class CaseNotification {
         priority: this._determinePriority(
           caseData.priority?.level || caseData.urgencyLevel
         ),
-        actionUrl: `/cases/${caseData.id}`,
+        actionUrl: `/cases/view/${caseData.id}`,
         actionText: "View Case",
         triggerUserId: assignedBy,
         triggerAction: "case_assignment",
@@ -587,7 +587,7 @@ export class CaseNotification {
           priority: newStatus.toLowerCase().includes("resolved")
             ? "normal"
             : "normal",
-          actionUrl: `/cases/${caseData.id}`,
+          actionUrl: `/cases/view/${caseData.id}`,
           actionText: "View Update",
           triggerUserId: changedBy,
           triggerAction: "status_change",
@@ -642,7 +642,7 @@ export class CaseNotification {
             title: "Case Escalated",
             message: `Case "${caseData.title}" has been escalated. Reason: ${escalationReason}`,
             priority: "high",
-            actionUrl: `/cases/${caseData.id}`,
+            actionUrl: `/cases/view/${caseData.id}`,
             actionText: "Review Case",
             triggerUserId: escalatedBy,
             triggerAction: "escalation",
@@ -668,7 +668,7 @@ export class CaseNotification {
           title: "Escalated Case Assigned",
           message: `Escalated case "${caseData.title}" has been assigned to you.`,
           priority: "high",
-          actionUrl: `/cases/${caseData.id}`,
+          actionUrl: `/cases/view/${caseData.id}`,
           actionText: "Handle Escalation",
           triggerUserId: escalatedBy,
           triggerAction: "escalation_assignment",
@@ -743,7 +743,7 @@ export class CaseNotification {
           title: `New ${comment.commentType} Comment`,
           message: `A new ${comment.commentType} comment has been added to case "${caseData.title}".`,
           priority: comment.requiresFollowUp ? "high" : "normal",
-          actionUrl: `/cases/${caseData.id}#comment-${comment.id}`,
+          actionUrl: `/cases/view/${caseData.id}#comments`,
           actionText: "View Comment",
           triggerUserId: commentedBy,
           triggerAction: "comment_added",

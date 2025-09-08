@@ -256,6 +256,10 @@ function BasicInfoTab({
     }
   };
 
+  // console.log("Case Date: ", caseDate);
+  // console.log("Due Date: ", dueDate);
+  // console.log("Case Date (new Date): ", new Date(caseDate));
+
   return (
     <TabContainer>
       <TabHeader>
@@ -432,7 +436,10 @@ function BasicInfoTab({
                       onChange={(date) => handleCaseDateChange(date, onChange)}
                       disabled={isLoading}
                       error={!!errors.caseDate?.message}
-                      max={new Date().toISOString().slice(0, 10)}
+                      // Max is Today + 1 day to allow timezone differences
+                      max={new Date(Date.now() + 4 * 60 * 60 * 1000)
+                        .toISOString()
+                        .slice(0, 10)}
                       placeholder="Select case date"
                     />
                   )}

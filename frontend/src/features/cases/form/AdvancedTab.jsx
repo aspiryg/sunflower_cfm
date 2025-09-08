@@ -242,8 +242,8 @@ function AdvancedTab({
   watch,
   setValue,
   errors,
-  trigger,
-  isEditing,
+  // trigger,
+  // isEditing,
   isLoading,
   formOptions = {},
 }) {
@@ -275,10 +275,10 @@ function AdvancedTab({
     projectId,
     activityId,
     assignedTo,
-    assignedBy,
+    // assignedBy,
     submittedBy,
     isSensitive,
-    isAnonymized,
+    // isAnonymized,
     confidentialityLevel,
     tags,
   ] = watchedValues;
@@ -327,8 +327,10 @@ function AdvancedTab({
   };
 
   const selectedAssignee = getSelectedUser(assignedTo);
-  const selectedAssigner = getSelectedUser(assignedBy);
+  // const selectedAssigner = getSelectedUser(assignedBy);
   const selectedSubmitter = getSelectedUser(submittedBy);
+
+  // console.log("Assigned To:", selectedAssignee);
 
   // Form options
   const userOptions = users.length

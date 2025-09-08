@@ -279,6 +279,7 @@ function ContextMenu({
   // Group items by group property for organized menu sections
   const groupedItems = items.reduce((groups, item) => {
     const group = item.group || "default";
+    if (item.hidden) return groups; // Skip hidden items
     if (!groups[group]) {
       groups[group] = [];
     }
@@ -326,24 +327,28 @@ function ContextMenu({
             </MenuHeader>
           )}
 
-          {Object.entries(groupedItems).map(([groupName, groupItems]) => (
-            <MenuItemGroup key={groupName}>
-              {groupItems.map((item, itemIndex) => (
-                <MenuItem
-                  key={item.key || `${groupName}-${itemIndex}`}
-                  label={item.label}
-                  description={item.description}
-                  icon={item.icon}
-                  shortcut={item.shortcut}
-                  variant={item.variant}
-                  disabled={item.disabled}
-                  showDescription={showDescriptions}
-                  onClick={() => handleItemClick(item)}
-                  aria-label={item.ariaLabel || item.label}
-                />
-              ))}
-            </MenuItemGroup>
-          ))}
+          {Object.entries(groupedItems).map(([groupName, groupItems]) =>
+            groupItems.length === 0 ? null : (
+              <MenuItemGroup key={groupName}>
+                {groupItems.map((item, itemIndex) =>
+                  item.hidden ? null : (
+                    <MenuItem
+                      key={item.key || `${groupName}-${itemIndex}`}
+                      label={item.label}
+                      description={item.description}
+                      icon={item.icon}
+                      shortcut={item.shortcut}
+                      variant={item.variant}
+                      disabled={item.disabled}
+                      showDescription={showDescriptions}
+                      onClick={() => handleItemClick(item)}
+                      aria-label={item.ariaLabel || item.label}
+                    />
+                  )
+                )}
+              </MenuItemGroup>
+            )
+          )}
         </ContextMenuDropdown>
       </Portal>
     </ContextMenuContainer>

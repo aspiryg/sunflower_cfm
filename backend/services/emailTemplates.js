@@ -583,7 +583,7 @@ export class EmailTemplates {
    * Enhanced case assignment notification template
    */
   static caseAssigned(user, caseData, assignedBy, config) {
-    const caseUrl = `${config.baseUrl}/cases/${caseData.id}`;
+    const caseUrl = `${config.baseUrl}/cases/view/${caseData.id}`;
     const urgencyLevel =
       caseData.urgencyLevel ||
       caseData.priority?.name?.toLowerCase() ||
@@ -788,7 +788,7 @@ export class EmailTemplates {
     changedBy,
     config
   ) {
-    const caseUrl = `${config.baseUrl}/cases/${caseData.id}`;
+    const caseUrl = `${config.baseUrl}/cases/view/${caseData.id}`;
     const isResolved =
       newStatus.toLowerCase().includes("resolved") ||
       newStatus.toLowerCase().includes("closed");
@@ -954,7 +954,7 @@ export class EmailTemplates {
    * Enhanced case escalation notification template
    */
   static caseEscalated(user, caseData, escalatedBy, escalationReason, config) {
-    const caseUrl = `${config.baseUrl}/cases/${caseData.id}`;
+    const caseUrl = `${config.baseUrl}/cases/view/${caseData.id}`;
     const escalationLevel = caseData.escalationLevel || 1;
 
     const content = `
@@ -1094,7 +1094,7 @@ export class EmailTemplates {
    * Enhanced case comment notification template
    */
   static caseCommentAdded(user, caseData, comment, commentBy, config) {
-    const caseUrl = `${config.baseUrl}/cases/${caseData.id}#comment-${comment.id}`;
+    const caseUrl = `${config.baseUrl}/cases/view/${caseData.id}#comments`;
     const isFollowUpRequired = comment.requiresFollowUp;
     const isInternalNote = comment.commentType === "internal";
     const isPublicUpdate = comment.commentType === "public";
@@ -1193,10 +1193,10 @@ export class EmailTemplates {
       <div class="details-box">
         <h4>Case Context</h4>
         <p><strong>Current Status:</strong> <span class="status-${(
-          caseData.status?.name || "pending"
+          caseData.status || "pending"
         )
           .toLowerCase()
-          .replace(" ", "-")}">${caseData.status?.name || "Pending"}</span></p>
+          .replace(" ", "-")}">${caseData.status || "Pending"}</span></p>
         <p><strong>Priority:</strong> <span class="priority-${(
           caseData.urgencyLevel || "medium"
         ).toLowerCase()}">${this._formatPriority(
@@ -1209,7 +1209,7 @@ export class EmailTemplates {
         }</p>
         ${
           caseData.category
-            ? `<p><strong>Category:</strong> ${caseData.category.name}</p>`
+            ? `<p><strong>Category:</strong> ${caseData.category}</p>`
             : ""
         }
       </div>
@@ -1319,7 +1319,7 @@ export class EmailTemplates {
    * Enhanced case resolution notification template
    */
   static caseResolved(user, caseData, resolvedBy, resolutionSummary, config) {
-    const caseUrl = `${config.baseUrl}/cases/${caseData.id}`;
+    const caseUrl = `${config.baseUrl}/cases/view/${caseData.id}`;
     const isPositiveResolution =
       caseData.resolutionCategory?.toLowerCase() === "resolved" ||
       caseData.resolutionSatisfaction >= 4; // Assuming 1-5 scale
@@ -1934,8 +1934,8 @@ export class EmailTemplates {
    */
   static caseNotification(user, notification, config) {
     const caseUrl =
-      notification.actionUrl ||
-      `${config.baseUrl}/cases/${notification.entityId}`;
+      `${config.baseUrl}${notification.actionUrl}` ||
+      `${config.baseUrl}/cases/view/${notification?.caseId || ""}`;
     const isUrgent =
       notification.priority === "urgent" ||
       notification.priority === "critical";

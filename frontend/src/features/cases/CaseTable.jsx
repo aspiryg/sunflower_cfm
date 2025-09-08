@@ -210,6 +210,7 @@ function CaseTable({
   onMarkPriority,
   onAddComment,
   onEscalateCase,
+  tableType, // to distinguish between different table types (e.g., "assigned", "created"
 }) {
   const isMobile = useMediaQuery("(max-width: 768px)");
 
@@ -257,6 +258,8 @@ function CaseTable({
       icon: HiOutlineUserPlus,
       onClick: () => onAssignCase?.(caseItem),
       group: "secondary",
+      // Only show for "created" cases
+      hidden: tableType !== "created" && tableType !== "all",
     },
     {
       key: "comment",
@@ -291,6 +294,8 @@ function CaseTable({
       icon: HiOutlineDocumentDuplicate,
       onClick: () => onDuplicateCase?.(caseItem),
       group: "secondary",
+      // hidden: true,
+      hidden: tableType !== "created" && tableType !== "all",
     },
     {
       key: "archive",
@@ -300,6 +305,8 @@ function CaseTable({
       onClick: () => onArchiveCase?.(caseItem),
       disabled: caseItem.status?.name === "archived",
       group: "actions",
+      // hidden: true,
+      hidden: tableType !== "created" && tableType !== "all",
     },
     {
       key: "delete",
@@ -309,6 +316,8 @@ function CaseTable({
       onClick: () => onDeleteCase?.(caseItem),
       variant: "danger",
       group: "danger",
+      // hidden: true,
+      hidden: tableType !== "created" && tableType !== "all",
     },
   ];
 
@@ -443,8 +452,14 @@ function CaseTable({
             <TableHeaderCell>Status</TableHeaderCell>
             <TableHeaderCell>Priority</TableHeaderCell>
             <TableHeaderCell>Category</TableHeaderCell>
-            <TableHeaderCell>Submitted By</TableHeaderCell>
-            <TableHeaderCell>Date</TableHeaderCell>
+            <TableHeaderCell>
+              {tableType === "created" ? "Assigned To" : "Submitted By"}
+            </TableHeaderCell>
+            <TableHeaderCell>
+              {tableType === "created" || tableType === "all"
+                ? "Date"
+                : "Assigned Date"}
+            </TableHeaderCell>
             <TableHeaderCell>Actions</TableHeaderCell>
           </TableRow>
         </TableHeader>
@@ -499,13 +514,24 @@ function CaseTable({
                     src={caseItem.submittedBy?.profilePicture}
                     size="sm"
                   /> */}
-                  {getUserDisplayName(caseItem.submittedBy)}
+
+                  {tableType === "created"
+                    ? caseItem.assignedTo !== null &&
+                      caseItem.assignedTo !== undefined
+                      ? getUserDisplayName(caseItem.assignedTo)
+                      : "Not Assigned Yet"
+                    : caseItem.submittedBy !== null &&
+                      caseItem.submittedBy !== undefined
+                    ? getUserDisplayName(caseItem.submittedBy)
+                    : "Anonymous"}
                 </Text>
               </TableCell>
 
               <TableCell>
                 <Text size="sm" color="muted">
-                  {formatRelativeTime(caseItem.createdAt)}
+                  {tableType === "created" || tableType === "all"
+                    ? formatRelativeTime(caseItem.createdAt)
+                    : formatRelativeTime(caseItem.assignedAt)}
                 </Text>
               </TableCell>
 

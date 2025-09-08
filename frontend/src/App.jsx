@@ -27,8 +27,8 @@ import VerifyEmail from "./pages/VerifyEmail";
 import ResetPassword from "./pages/ResetPassword";
 import PageNotFound from "./pages/PageNotFound";
 // Import sub pages
-import AssignedToMe from "./features/feedback/AssignedToMe";
-import CreatedByMe from "./features/feedback/CreatedByMe";
+import AssignedToMe from "./features/cases/assignedToMe/AssignedToMe";
+import CreatedByMe from "./features/cases/createdByMe/CreatedByMe";
 
 // Import CasePages
 import Case from "./pages/Case";

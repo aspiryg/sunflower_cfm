@@ -741,3 +741,116 @@ export function useCaseStats(options = {}) {
     },
   });
 }
+
+/*
+  return {
+      // Core fields
+      caseNumber: { type: sql.NVarChar },
+      title: { type: sql.NVarChar },
+      description: { type: sql.NVarChar },
+      caseDate: { type: sql.DateTime },
+      dueDate: { type: sql.DateTime },
+      resolvedDate: { type: sql.DateTime },
+
+      // Classification
+      categoryId: { type: sql.Int },
+      priorityId: { type: sql.Int },
+      statusId: { type: sql.Int },
+      channelId: { type: sql.Int },
+
+      // Impact & Urgency
+      impactDescription: { type: sql.NVarChar },
+      urgencyLevel: { type: sql.NVarChar },
+      affectedBeneficiaries: { type: sql.Int },
+
+      // Related Programme/Project/Activity
+      programId: { type: sql.Int },
+      projectId: { type: sql.Int },
+      activityId: { type: sql.Int },
+      isProjectRelated: { type: sql.Bit },
+
+      // Provider Information
+      providerTypeId: { type: sql.Int },
+      individualProviderGender: { type: sql.NVarChar },
+      individualProviderAgeGroup: { type: sql.NVarChar },
+      individualProviderDisabilityStatus: { type: sql.NVarChar },
+      groupProviderSize: { type: sql.Int },
+      groupProviderGenderComposition: { type: sql.NVarChar },
+
+      // Contact Information
+      providerName: { type: sql.NVarChar },
+      providerEmail: { type: sql.NVarChar },
+      providerPhone: { type: sql.NVarChar },
+      providerOrganization: { type: sql.NVarChar },
+      providerAddress: { type: sql.NVarChar },
+
+      // Consent & Privacy
+      dataSharingConsent: { type: sql.Bit },
+      followUpConsent: { type: sql.Bit },
+      followUpContactMethod: { type: sql.NVarChar },
+      privacyPolicyAccepted: { type: sql.Bit },
+      isSensitive: { type: sql.Bit },
+      isAnonymized: { type: sql.Bit },
+      isPublic: { type: sql.Bit },
+      confidentialityLevel: { type: sql.NVarChar },
+
+      // Location
+      communityId: { type: sql.Int },
+      location: { type: sql.NVarChar },
+      coordinates: { type: sql.NVarChar },
+
+      // Assignment Information
+      assignedTo: { type: sql.Int },
+      assignedBy: { type: sql.Int },
+      assignedAt: { type: sql.DateTime },
+      assignmentComments: { type: sql.NVarChar },
+
+      // Submission Information
+      submittedBy: { type: sql.Int },
+      submittedAt: { type: sql.DateTime },
+      submittedByInitials: { type: sql.NVarChar },
+      submittedByConfirmation: { type: sql.Bit },
+      submittedByComments: { type: sql.NVarChar },
+
+      // Processing Information
+      firstResponseDate: { type: sql.DateTime },
+      lastActivityDate: { type: sql.DateTime },
+      escalationLevel: { type: sql.Int },
+      escalatedAt: { type: sql.DateTime },
+      escalatedBy: { type: sql.Int },
+      escalationReason: { type: sql.NVarChar },
+
+      // Resolution Information
+      resolutionSummary: { type: sql.NVarChar },
+      resolutionCategory: { type: sql.NVarChar },
+      resolutionSatisfaction: { type: sql.Int },
+
+      // Follow-up & Monitoring
+      followUpRequired: { type: sql.Bit },
+      followUpDate: { type: sql.DateTime },
+      monitoringRequired: { type: sql.Bit },
+      monitoringDate: { type: sql.DateTime },
+
+      // Quality Assurance
+      qualityReviewed: { type: sql.Bit },
+      qualityReviewedBy: { type: sql.Int },
+      qualityReviewedAt: { type: sql.DateTime },
+      qualityScore: { type: sql.Int },
+      qualityComments: { type: sql.NVarChar },
+
+      // Metadata
+      tags: { type: sql.NVarChar },
+      attachments: { type: sql.NVarChar },
+      externalReferences: { type: sql.NVarChar },
+
+      // Audit Information
+      createdAt: { type: sql.DateTime },
+      createdBy: { type: sql.Int },
+      updatedAt: { type: sql.DateTime },
+      updatedBy: { type: sql.Int },
+      isActive: { type: sql.Bit },
+      isDeleted: { type: sql.Bit },
+      deletedAt: { type: sql.DateTime },
+      deletedBy: { type: sql.Int },
+    };
+    */
