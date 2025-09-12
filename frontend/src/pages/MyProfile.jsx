@@ -495,6 +495,7 @@ function MyProfile() {
               </SectionTitleContent>
             </SectionTitleGroup>
             <IconButton
+              disabled // Disable editing for now (implement later) TODO
               variant="ghost"
               size="small"
               onClick={() => setIsSecurityModalOpen(true)}

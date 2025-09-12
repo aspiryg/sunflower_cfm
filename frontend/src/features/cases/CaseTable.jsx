@@ -275,7 +275,7 @@ function CaseTable({
       description: "Escalate to higher priority",
       icon: HiOutlineArrowTrendingUp,
       onClick: () => onEscalateCase?.(caseItem),
-      disabled: caseItem.escalationLevel >= 3,
+      disabled: caseItem.escalationLevel >= 3 || true, // Example condition
       group: "secondary",
     },
     {
@@ -284,7 +284,7 @@ function CaseTable({
       description: "Change priority level",
       icon: HiOutlineFlag,
       onClick: () => onMarkPriority?.(caseItem),
-      disabled: caseItem.urgencyLevel === "critical",
+      disabled: caseItem.urgencyLevel === "critical" || true, // Example condition
       group: "secondary",
     },
     {
@@ -295,6 +295,7 @@ function CaseTable({
       onClick: () => onDuplicateCase?.(caseItem),
       group: "secondary",
       // hidden: true,
+      disabled: true,
       hidden: tableType !== "created" && tableType !== "all",
     },
     {
@@ -303,7 +304,7 @@ function CaseTable({
       description: "Move to archived items",
       icon: HiOutlineArchiveBox,
       onClick: () => onArchiveCase?.(caseItem),
-      disabled: caseItem.status?.name === "archived",
+      disabled: caseItem.status?.name === "archived" || true,
       group: "actions",
       // hidden: true,
       hidden: tableType !== "created" && tableType !== "all",

@@ -518,6 +518,18 @@ function CaseTimeline({ case: caseData, caseId, onRefresh }) {
     return status;
   }
 
+  // get change description items
+
+  const getChangeDescriptionItems = (changeDescription) => {
+    if (!changeDescription) return [];
+    const items = changeDescription.split(";").map((item) => item.trim());
+    return items.map((item, index) => (
+      <li key={index}>
+        <Text size="sm">{item}</Text>
+      </li>
+    ));
+  };
+
   // Helper function to format action description
   const getActionDescription = (historyItem) => {
     const { actionType, status, oldValue, newValue, assignedTo } = historyItem;
@@ -578,8 +590,6 @@ function CaseTimeline({ case: caseData, caseId, onRefresh }) {
       (item) => item.actionType !== "COMMENT_ADDED"
     ) || [];
 
-  // console.log("Case History Data:", history);
-
   // Filter history based on action type
   const filteredHistory = history.filter((item) => {
     if (actionTypeFilter === "all") return true;
@@ -589,6 +599,8 @@ function CaseTimeline({ case: caseData, caseId, onRefresh }) {
   const displayedHistory = showAll
     ? filteredHistory
     : filteredHistory.slice(0, 10);
+
+  // console.log("Displayed History:", displayedHistory);
 
   // Get unique action types for filter dropdown
   const actionTypes = [
@@ -960,7 +972,17 @@ function CaseTimeline({ case: caseData, caseId, onRefresh }) {
                           <Text size="xs" weight="medium" color="muted">
                             Description
                           </Text>
-                          <Text size="xs">{item.changeDescription}</Text>
+                          <Text
+                            size="xs"
+                            as="ul"
+                            style={{
+                              marginTop: "4px",
+                              paddingLeft: "var(--spacing-4)",
+                              listStyleType: "disc",
+                            }}
+                          >
+                            {getChangeDescriptionItems(item.changeDescription)}
+                          </Text>
                         </div>
                       )}
                     </div>

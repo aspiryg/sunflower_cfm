@@ -258,7 +258,7 @@ function CreatedByMe() {
   };
 
   const handleCreateCase = () => {
-    navigate("/cases/create");
+    navigate("/cases/add");
   };
 
   // Modal handlers (full feature set for created cases)
