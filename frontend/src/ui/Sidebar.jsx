@@ -1,6 +1,8 @@
 import styled from "styled-components";
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
+import PropTypes from "prop-types";
+
 import {
   HiOutlineHome,
   HiOutlineCog8Tooth,
@@ -505,7 +507,7 @@ function Sidebar({ $isOpen, $isMobile, onClose }) {
                 key={subItem.to}
                 to={subItem.to}
                 onClick={handleNavClick}
-                end={subItem.to === "/feedback"}
+                end={subItem.to === "/cases"}
               >
                 {subItem.icon && <subItem.icon />}
                 <Text size="sm">{subItem.name}</Text>
@@ -571,5 +573,11 @@ function Sidebar({ $isOpen, $isMobile, onClose }) {
     </SidebarContainer>
   );
 }
+
+Sidebar.propTypes = {
+  $isOpen: PropTypes.bool,
+  $isMobile: PropTypes.bool,
+  onClose: PropTypes.func,
+};
 
 export default Sidebar;
