@@ -65,7 +65,7 @@ const CalendarDropdown = styled.div`
     `}
 
   @media (max-width: 768px) {
-    min-width: 26rem;
+    min-width: 30rem;
     left: 50%;
     transform: translateX(-50%) translateY(-8px);
 

@@ -249,6 +249,91 @@ class BaseSupportingModel {
   }
 
   /**
+   * Restores a soft-deleted record by setting isActive to true
+   * @param {number} id - Record ID
+   * @param {number} restoredBy - User ID restoring the record
+   * @returns {Promise<boolean>} Success status
+   */
+  static async restore(id, restoredBy) {
+    const pool = database.getPool();
+
+    try {
+      // Check if record exists
+      const existing = await this.getById(id);
+      if (!existing) {
+        throw new Error(`${this.modelName} with ID ${id} not found`);
+      }
+
+      const query = `
+        UPDATE ${this.tableName}
+        SET isActive = 1,
+            updatedAt = @updatedAt,
+            updatedBy = @updatedBy
+        WHERE id = @id
+      `;
+
+      const now = new Date();
+      const result = await pool
+        .request()
+        .input("id", sql.Int, parseInt(id, 10))
+        .input("updatedAt", sql.DateTime, now)
+        .input("updatedBy", sql.Int, restoredBy)
+        .query(query);
+
+      if (result.rowsAffected[0] > 0) {
+        console.log(`✅ ${this.modelName} ${id} restored successfully`);
+        return true;
+      } else {
+        throw new Error(`No rows were restored for ${this.modelName} ${id}`);
+      }
+    } catch (error) {
+      console.error(`❌ Failed to restore ${this.modelName}:`, error);
+      throw new Error(`Failed to restore ${this.modelName}: ${error.message}`);
+    }
+  }
+
+  /**
+   * Hard deletes a record permanently from the database
+   * @param {number} id - Record ID
+   * @returns {Promise<boolean>} Success status
+   */
+  static async hardDelete(id) {
+    const pool = database.getPool();
+
+    try {
+      // Check if record exists
+      const existing = await this.getById(id);
+      if (!existing) {
+        throw new Error(`${this.modelName} with ID ${id} not found`);
+      }
+
+      const query = `
+        DELETE FROM ${this.tableName}
+        WHERE id = @id
+      `;
+
+      const result = await pool
+        .request()
+        .input("id", sql.Int, parseInt(id, 10))
+        .query(query);
+
+      if (result.rowsAffected[0] > 0) {
+        console.log(`✅ ${this.modelName} ${id} hard deleted successfully`);
+        return true;
+      } else {
+        throw new Error(
+          `No rows were hard deleted for ${this.modelName} ${id}`
+        );
+      }
+    } catch (error) {
+      console.error(`❌ Failed to hard delete ${this.modelName}:`, error);
+      throw new Error(
+        `Failed to hard delete ${this.modelName}: ${error.message}`
+      );
+    }
+  }
+
+  /**
    * Gets SQL type for a field based on common patterns
    * @private
    */

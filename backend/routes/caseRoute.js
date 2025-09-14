@@ -261,6 +261,8 @@ router.patch(
 
 // ============= SUPPORTING DATA ROUTES =============
 
+// ============ RESOURCE MANAGEMENT ROUTES ============= //
+// 1) Case Categories
 /**
  * @route GET /api/cases/categories
  * @description Get all case categories
@@ -273,6 +275,29 @@ router.get(
 );
 
 /**
+ * @route POST /api/cases/categories
+ * @description Create a new case category
+ * @access Protected - Requires CREATE permission on CATEGORIES
+ */
+router.post(
+  "/categories",
+  requirePermission(RESOURCES.CATEGORIES, ACTIONS.CREATE),
+  caseController.addResource
+);
+
+/**
+ * @route DELETE /api/cases/categories/:categoryId
+ * @description Delete a case category
+ * @access Protected - Requires DELETE permission on CATEGORIES
+ */
+router.delete(
+  "/categories/:id",
+  requirePermission(RESOURCES.CATEGORIES, ACTIONS.DELETE),
+  caseController.deleteResource
+);
+
+// 2) Case Statuses
+/**
  * @route GET /api/cases/statuses
  * @description Get all case statuses
  * @access Protected - Requires READ permission on CATEGORIES
@@ -283,6 +308,29 @@ router.get(
   caseController.getCaseStatuses
 );
 
+/**
+ * @route POST /api/cases/statuses
+ * @description Create a new case status
+ * @access Protected - Requires CREATE permission on CATEGORIES
+ */
+router.post(
+  "/statuses",
+  requirePermission(RESOURCES.CATEGORIES, ACTIONS.CREATE),
+  caseController.addResource
+);
+
+/**
+ * @route DELETE /api/cases/statuses/:statusId
+ * @description Delete a case status
+ * @access Protected - Requires DELETE permission on CATEGORIES
+ */
+router.delete(
+  "/statuses/:id",
+  requirePermission(RESOURCES.CATEGORIES, ACTIONS.DELETE),
+  caseController.deleteResource
+);
+
+// 3) Case Priorties
 /**
  * @route GET /api/cases/priorities
  * @description Get all case priorities
@@ -295,6 +343,30 @@ router.get(
 );
 
 /**
+ * @route POST /api/cases/priorities
+ * @description Create a new case priority
+ * @access Protected - Requires CREATE permission on CATEGORIES
+ */
+router.post(
+  "/priorities",
+  requirePermission(RESOURCES.CATEGORIES, ACTIONS.CREATE),
+  caseController.addResource
+);
+
+/**
+ * @route DELETE /api/cases/priorities/:priorityId
+ * @description Delete a case priority
+ * @access Protected - Requires DELETE permission on CATEGORIES
+ */
+router.delete(
+  "/priorities/:id",
+  requirePermission(RESOURCES.CATEGORIES, ACTIONS.DELETE),
+  caseController.deleteResource
+);
+
+// 4) Case Channels
+
+/**
  * @route GET /api/cases/channels
  * @description Get all case channels
  * @access Protected - Requires READ permission on CATEGORIES
@@ -305,6 +377,20 @@ router.get(
   caseController.getCaseChannels
 );
 
+router.post(
+  "/channels",
+  requirePermission(RESOURCES.CATEGORIES, ACTIONS.CREATE),
+  caseController.addResource
+);
+
+router.delete(
+  "/channels/:id",
+  requirePermission(RESOURCES.CATEGORIES, ACTIONS.DELETE),
+  caseController.deleteResource
+);
+
+// 5) Case Locations
+
 /**
  * @route GET /api/cases/regions
  * @description Get all regions
@@ -314,6 +400,18 @@ router.get(
   "/regions",
   requirePermission(RESOURCES.CATEGORIES, ACTIONS.READ),
   caseController.getRegions
+);
+
+router.post(
+  "/regions",
+  requirePermission(RESOURCES.CATEGORIES, ACTIONS.CREATE),
+  caseController.addResource
+);
+
+router.delete(
+  "/regions/:id",
+  requirePermission(RESOURCES.CATEGORIES, ACTIONS.DELETE),
+  caseController.deleteResource
 );
 
 /**
@@ -327,6 +425,18 @@ router.get(
   caseController.getGovernoratesByRegion
 );
 
+router.post(
+  "/governorates",
+  requirePermission(RESOURCES.CATEGORIES, ACTIONS.CREATE),
+  caseController.addResource
+);
+
+router.delete(
+  "/governorates/:id",
+  requirePermission(RESOURCES.CATEGORIES, ACTIONS.DELETE),
+  caseController.deleteResource
+);
+
 /**
  * @route GET /api/cases/governorates/:governorateId/communities
  * @description Get communities by governorate
@@ -337,6 +447,20 @@ router.get(
   requirePermission(RESOURCES.CATEGORIES, ACTIONS.READ),
   caseController.getCommunitiesByGovernorate
 );
+
+router.post(
+  "/communities",
+  requirePermission(RESOURCES.CATEGORIES, ACTIONS.CREATE),
+  caseController.addResource
+);
+
+router.delete(
+  "/communities/:id",
+  requirePermission(RESOURCES.CATEGORIES, ACTIONS.DELETE),
+  caseController.deleteResource
+);
+
+// 6) Provider Types
 
 /**
  * @route GET /api/cases/provider-types
@@ -349,6 +473,20 @@ router.get(
   caseController.getProviderTypes
 );
 
+router.post(
+  "/provider-types",
+  requirePermission(RESOURCES.CATEGORIES, ACTIONS.CREATE),
+  caseController.addResource
+);
+
+router.delete(
+  "/provider-types/:id",
+  requirePermission(RESOURCES.CATEGORIES, ACTIONS.DELETE),
+  caseController.deleteResource
+);
+
+// 7) Programs, Projects, Activities
+
 /**
  * @route GET /api/cases/programs
  * @description Get all programs
@@ -358,6 +496,17 @@ router.get(
   "/programs",
   requirePermission(RESOURCES.CATEGORIES, ACTIONS.READ),
   caseController.getPrograms
+);
+
+router.post(
+  "/programs",
+  requirePermission(RESOURCES.CATEGORIES, ACTIONS.CREATE),
+  caseController.addResource
+);
+router.delete(
+  "/programs/:id",
+  requirePermission(RESOURCES.CATEGORIES, ACTIONS.DELETE),
+  caseController.deleteResource
 );
 
 /**
@@ -371,6 +520,18 @@ router.get(
   caseController.getProjectsByProgram
 );
 
+router.post(
+  "/projects",
+  requirePermission(RESOURCES.CATEGORIES, ACTIONS.CREATE),
+  caseController.addResource
+);
+
+router.delete(
+  "/projects/:id",
+  requirePermission(RESOURCES.CATEGORIES, ACTIONS.DELETE),
+  caseController.deleteResource
+);
+
 /**
  * @route GET /api/cases/projects/:projectId/activities
  * @description Get activities by project
@@ -382,4 +543,17 @@ router.get(
   caseController.getActivitiesByProject
 );
 
+router.post(
+  "/activities",
+  requirePermission(RESOURCES.CATEGORIES, ACTIONS.CREATE),
+  caseController.addResource
+);
+
+router.delete(
+  "/activities/:id",
+  requirePermission(RESOURCES.CATEGORIES, ACTIONS.DELETE),
+  caseController.deleteResource
+);
+
+// Export the router
 export default router;

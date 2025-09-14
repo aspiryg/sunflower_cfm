@@ -351,6 +351,7 @@ export const getCommentsRequiringFollowUp = async (options = {}) => {
 
 // ============= SUPPORTING DATA OPERATIONS =============
 
+// 1) Case Categories
 /**
  * Get all case categories
  * @param {Object} options - Query options
@@ -365,6 +366,7 @@ export const getCaseCategories = async (options = {}) => {
   }
 };
 
+// 2) Case Statuses:
 /**
  * Get all case statuses
  * @param {Object} options - Query options
@@ -379,6 +381,7 @@ export const getCaseStatuses = async (options = {}) => {
   }
 };
 
+// 3) Case Priorities:
 /**
  * Get all case priorities
  * @param {Object} options - Query options
@@ -393,6 +396,7 @@ export const getCasePriorities = async (options = {}) => {
   }
 };
 
+// 4) Case Channels:
 /**
  * Get all case channels
  * @param {Object} options - Query options
@@ -407,6 +411,7 @@ export const getCaseChannels = async (options = {}) => {
   }
 };
 
+// 5) Locations (Regions, Governorates, Communities):
 /**
  * Get all regions
  * @param {Object} options - Query options
@@ -422,6 +427,20 @@ export const getRegions = async (options = {}) => {
 };
 
 /**
+ * Get all governorates
+ * @param {Object} options - Query options
+ * @returns {Promise} Governorates data
+ */
+export const getGovernorates = async (options = {}) => {
+  try {
+    const response = await caseApi.get("/governorates", { params: options });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+/**
  * Get governorates by region
  * @param {string|number} regionId - The region ID
  * @returns {Promise} Governorates data
@@ -429,6 +448,20 @@ export const getRegions = async (options = {}) => {
 export const getGovernoratesByRegion = async (regionId) => {
   try {
     const response = await caseApi.get(`/regions/${regionId}/governorates`);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+/**
+ * Get all communities
+ * @param {Object} options - Query options
+ * @returns {Promise} Communities data
+ */
+export const getCommunities = async (options = {}) => {
+  try {
+    const response = await caseApi.get("/communities", { params: options });
     return response.data;
   } catch (error) {
     throw error.response?.data || error;
@@ -451,6 +484,7 @@ export const getCommunitiesByGovernorate = async (governorateId) => {
   }
 };
 
+// 6) Provider Types:
 /**
  * Get all provider types
  * @param {Object} options - Query options
@@ -465,6 +499,7 @@ export const getProviderTypes = async (options = {}) => {
   }
 };
 
+// 7) Programs, Projects, Activities
 /**
  * Get all programs
  * @param {Object} options - Query options
@@ -473,6 +508,20 @@ export const getProviderTypes = async (options = {}) => {
 export const getPrograms = async (options = {}) => {
   try {
     const response = await caseApi.get("/programs", { params: options });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+/**
+ * Get all projects
+ * @param {Object} options - Query options
+ * @returns {Promise} Projects data
+ */
+export const getProjects = async (options = {}) => {
+  try {
+    const response = await caseApi.get("/projects", { params: options });
     return response.data;
   } catch (error) {
     throw error.response?.data || error;
@@ -494,6 +543,20 @@ export const getProjectsByProgram = async (programId) => {
 };
 
 /**
+ * Get all activities
+ * @param {Object} options - Query options
+ * @returns {Promise} Activities data
+ */
+export const getActivities = async (options = {}) => {
+  try {
+    const response = await caseApi.get("/activities", { params: options });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+/**
  * Get activities by project
  * @param {string|number} projectId - The project ID
  * @returns {Promise} Activities data
@@ -501,6 +564,61 @@ export const getProjectsByProgram = async (programId) => {
 export const getActivitiesByProject = async (projectId) => {
   try {
     const response = await caseApi.get(`/projects/${projectId}/activities`);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+// ============= UNIVERSAL RESOURCE OPERATIONS =============
+
+/**
+ * Add a new resource (universal function)
+ * @param {string} resourceType - The type of resource (categories, statuses, etc.)
+ * @param {Object} resourceData - The data for the new resource
+ * @returns {Promise} Created resource data
+ */
+export const addResource = async (resourceType, resourceData) => {
+  try {
+    const response = await caseApi.post(`/${resourceType}`, resourceData);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+/**
+ * Delete a resource (universal function)
+ * @param {string} resourceType - The type of resource (categories, statuses, etc.)
+ * @param {string|number} resourceId - The ID of the resource to delete
+ * @returns {Promise} Delete confirmation
+ */
+export const deleteResource = async (resourceType, resourceId) => {
+  try {
+    const response = await caseApi.delete(`/${resourceType}/${resourceId}`);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+/**
+ * Update a resource (universal function)
+ * @param {string} resourceType - The type of resource (categories, statuses, etc.)
+ * @param {string|number} resourceId - The ID of the resource to update
+ * @param {Object} resourceData - The updated data for the resource
+ * @returns {Promise} Updated resource data
+ */
+export const updateResource = async (
+  resourceType,
+  resourceId,
+  resourceData
+) => {
+  try {
+    const response = await caseApi.put(
+      `/${resourceType}/${resourceId}`,
+      resourceData
+    );
     return response.data;
   } catch (error) {
     throw error.response?.data || error;

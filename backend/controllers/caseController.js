@@ -893,6 +893,154 @@ export const caseController = {
   },
 
   /**
+   * Add new case status
+   * @route POST /api/cases/statuses
+   */
+  addResource: async (req, res) => {
+    try {
+      const resourceData = req.body;
+      const userId = req.user ? req.user.id : 1;
+      const resourceType = req.path.split("/").pop();
+      let newResource;
+
+      switch (resourceType) {
+        case "statuses":
+          newResource = await CaseStatus.create(resourceData, userId);
+          break;
+        case "categories":
+          newResource = await CaseCategories.create(resourceData, userId);
+          break;
+        case "priorities":
+          newResource = await CasePriority.create(resourceData, userId);
+          break;
+        case "channels":
+          newResource = await CaseChannels.create(resourceData, userId);
+          break;
+        case "regions":
+          newResource = await Regions.create(resourceData, userId);
+          break;
+        case "governorates":
+          newResource = await Governorates.create(resourceData, userId);
+          break;
+        case "communities":
+          newResource = await Communities.create(resourceData, userId);
+          break;
+        case "provider-types":
+          newResource = await ProviderTypes.create(resourceData, userId);
+          break;
+        case "programs":
+          newResource = await Programs.create(resourceData, userId);
+          break;
+        case "projects":
+          newResource = await Projects.create(resourceData, userId);
+          break;
+        case "activities":
+          newResource = await Activities.create(resourceData, userId);
+          break;
+        //
+        default:
+          return res.status(400).json({
+            success: false,
+            message: "Invalid resource type",
+            error: `Resource type ${resourceType} is not supported`,
+          });
+      }
+      res.status(201).json({
+        success: true,
+        message: `${resourceType.slice(0, -1)} created successfully`,
+        data: newResource,
+      });
+    } catch (error) {
+      console.error(`❌ Failed to create ${resourceType.slice(0, -1)}:`, error);
+      res.status(500).json({
+        success: false,
+        message: `Failed to create ${resourceType.slice(0, -1)}`,
+        error: error.message,
+      });
+    }
+  },
+
+  /**
+   * Delete case status
+   * @route DELETE /api/cases/statuses/:id
+   */
+  deleteResource: async (req, res) => {
+    // Determine resource type from the URL (the segment before the ID)
+    try {
+      const resourceType = req.path.split("/").slice(-2, -1)[0];
+      console.log("Resource type to delete:", resourceType);
+      const resourceId = parseInt(req.params.id, 10);
+      if (isNaN(resourceId)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid resource ID",
+          error: "Resource ID must be a valid number",
+        });
+      }
+      const userId = req.user ? req.user.id : 1;
+      let result;
+      switch (resourceType) {
+        case "statuses":
+          result = await CaseStatus.hardDelete(resourceId, userId);
+          break;
+        case "categories":
+          result = await CaseCategories.hardDelete(resourceId, userId);
+          break;
+        case "priorities":
+          result = await CasePriority.hardDelete(resourceId, userId);
+          break;
+        case "channels":
+          result = await CaseChannels.hardDelete(resourceId, userId);
+          break;
+        case "regions":
+          result = await Regions.hardDelete(resourceId, userId);
+          break;
+        case "governorates":
+          result = await Governorates.hardDelete(resourceId, userId);
+          break;
+        case "communities":
+          result = await Communities.hardDelete(resourceId, userId);
+          break;
+        case "provider-types":
+          result = await ProviderTypes.hardDelete(resourceId, userId);
+          break;
+        case "programs":
+          result = await Programs.hardDelete(resourceId, userId);
+          break;
+        case "projects":
+          result = await Projects.hardDelete(resourceId, userId);
+          break;
+        case "activities":
+          result = await Activities.hardDelete(resourceId, userId);
+          break;
+        default:
+          return res.status(400).json({
+            success: false,
+            message: "Invalid resource type",
+            error: `Resource type ${resourceType} is not supported`,
+          });
+      }
+      if (!result) {
+        return res.status(404).json({
+          success: false,
+          message: `${resourceType.slice(0, -1)} not found`,
+        });
+      }
+      res.status(200).json({
+        success: true,
+        message: `${resourceType.slice(0, -1)} deleted successfully`,
+      });
+    } catch (error) {
+      console.error(`❌ Failed to delete ${resourceType.slice(0, -1)}:`, error);
+      return res.status(500).json({
+        success: false,
+        message: `Failed to delete ${resourceType.slice(0, -1)}`,
+        error: error.message,
+      });
+    }
+  },
+
+  /**
    * Get all case priorities
    * @route GET /api/cases/priorities
    */

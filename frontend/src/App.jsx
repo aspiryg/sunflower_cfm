@@ -19,6 +19,7 @@ import Settings from "./pages/Settings";
 import Users from "./pages/Users";
 import MyProfile from "./pages/MyProfile";
 import Notifications from "./pages/Notifications";
+import Resources from "./pages/Resources";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -108,6 +109,7 @@ function App() {
                 >
                   <Route index element={<Navigate replace to="dashboard" />} />
                   <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/resources" element={<Resources />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/notifications" element={<Notifications />} />
                   <Route path="/my-profile" element={<MyProfile />} />

@@ -391,6 +391,11 @@ const navigation = [
             to: "/cases/created-by-me",
             icon: HiOutlinePlusCircle,
           },
+          {
+            name: "Resources",
+            to: "/resources",
+            icon: HiOutlineCog8Tooth,
+          },
         ],
       },
     ],
