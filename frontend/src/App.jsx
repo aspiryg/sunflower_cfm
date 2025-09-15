@@ -20,6 +20,7 @@ import Users from "./pages/Users";
 import MyProfile from "./pages/MyProfile";
 import Notifications from "./pages/Notifications";
 import Resources from "./pages/Resources";
+import HierarchicalResources from "./pages/HierarchicalResources";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -109,8 +110,13 @@ function App() {
                 >
                   <Route index element={<Navigate replace to="dashboard" />} />
                   <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/resources" element={<Resources />} />
+
                   <Route path="/settings" element={<Settings />} />
+                  <Route path="/settings/resources" element={<Resources />} />
+                  <Route
+                    path="/settings/resources/hierarchical"
+                    element={<HierarchicalResources />}
+                  />
                   <Route path="/notifications" element={<Notifications />} />
                   <Route path="/my-profile" element={<MyProfile />} />
                 </Route>

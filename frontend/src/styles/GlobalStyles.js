@@ -459,6 +459,12 @@ const GlobalStyles = createGlobalStyle`
   --font-size-3xl: 3.0rem;
   --font-size-4xl: 3.6rem;
 
+  /* Font Families */
+  --font-sans: 'Poppins', sans-serif;
+  --font-mono: 'Fira Code', monospace;
+  --font-serif: 'Merriweather', serif;
+
+
   /* Font Weights */
   --font-weight-light: 300;
   --font-weight-normal: 400;
@@ -495,6 +501,7 @@ const GlobalStyles = createGlobalStyle`
   --duration-normal: 200ms;
   --duration-slow: 300ms;
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  
 }
 
 /* ===== RESET & BASE STYLES ===== */

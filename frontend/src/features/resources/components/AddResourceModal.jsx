@@ -9,6 +9,7 @@ import {
 } from "react-icons/hi2";
 
 import Modal from "../../../ui/Modal";
+import StyledSelect from "../../../ui/StyledSelect";
 import Text from "../../../ui/Text";
 import Button from "../../../ui/Button";
 import FormField from "../../../ui/FormField";
@@ -53,7 +54,8 @@ const ColorPreview = styled.div`
   width: 3rem;
   height: 3rem;
   border-radius: var(--border-radius-md);
-  border: 1px solid var(--color-grey-300);
+  border: 1px solid
+    var(--color-${(props) => props.$color.split("-")[3] || "grey"}-400);
   background-color: ${(props) => `var(${props.$color})`};
   display: inline-block;
 `;
@@ -86,6 +88,22 @@ function AddResourceModal({
 
   const config = RESOURCE_CONFIG[resourceKey];
   const addMutation = useAddResource(resourceKey);
+
+  // List of colors from CSS variables for color field validation
+  const cssColors = [
+    { label: "Blue", value: "--color-blue-200" },
+    { label: "Red", value: "--color-red-200" },
+    { label: "Green", value: "--color-green-200" },
+    { label: "Yellow", value: "--color-yellow-200" },
+    { label: "Purple", value: "--color-purple-200" },
+    { label: "Orange", value: "--color-orange-200" },
+    { label: "Teal", value: "--color-teal-200" },
+    { label: "Pink", value: "--color-pink-200" },
+    { label: "Indigo", value: "--color-indigo-200" },
+    { label: "Grey", value: "--color-grey-200" },
+    { label: "Black", value: "--color-black" },
+    { label: "White", value: "--color-white" },
+  ];
 
   // Get parent resource data if needed
   const parentResourceKey = config?.fields?.find(
@@ -218,7 +236,7 @@ function AddResourceModal({
           />
         );
 
-      case "color":
+      case "color": {
         const colorValue = watch(field.name);
         return (
           <div
@@ -228,18 +246,29 @@ function AddResourceModal({
               gap: "var(--spacing-3)",
             }}
           >
-            <Input
+            {/* <Input
               {...commonProps}
               type="text"
               placeholder="--color-blue-200"
               $variant={errors[field.name] ? "error" : "default"}
               style={{ flex: 1 }}
+            /> */}
+            <StyledSelect
+              {...commonProps}
+              value={colorValue}
+              placeholder="Select color"
+              onChange={(value) => setValue(field.name, value)}
+              // $variant={errors[field.name] ? "error" : "default"}
+              $hasError={!!errors[field.name]}
+              style={{ flex: 1 }}
+              options={cssColors}
             />
             <ColorPreview $color={colorValue || "--color-grey-200"} />
           </div>
         );
+      }
 
-      case "select":
+      case "select": {
         const options = parentResource?.data?.activeOptions || [];
         return (
           <Select
@@ -254,6 +283,7 @@ function AddResourceModal({
             ))}
           </Select>
         );
+      }
 
       case "boolean":
         return (

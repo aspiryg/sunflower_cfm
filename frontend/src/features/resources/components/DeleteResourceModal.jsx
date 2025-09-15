@@ -117,12 +117,14 @@ function DeleteResourceModal({
                 width: "1.6rem",
                 height: "1.6rem",
                 backgroundColor: `var(${value})`,
-                border: "1px solid var(--color-grey-300)",
+                border: `1px solid var(--color-${
+                  value?.split("-")[3] || "grey"
+                }-400)`,
                 borderRadius: "var(--border-radius-sm)",
               }}
             />
             <Text size="sm" style={{ fontFamily: "var(--font-mono)" }}>
-              {value}
+              {value?.split("-")[3] || "grey"}
             </Text>
           </div>
         );

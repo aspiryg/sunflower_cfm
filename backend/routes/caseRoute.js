@@ -425,6 +425,12 @@ router.get(
   caseController.getGovernoratesByRegion
 );
 
+router.get(
+  "/governorates",
+  requirePermission(RESOURCES.CATEGORIES, ACTIONS.READ),
+  caseController.getGovernorates
+);
+
 router.post(
   "/governorates",
   requirePermission(RESOURCES.CATEGORIES, ACTIONS.CREATE),
@@ -446,6 +452,12 @@ router.get(
   "/governorates/:governorateId/communities",
   requirePermission(RESOURCES.CATEGORIES, ACTIONS.READ),
   caseController.getCommunitiesByGovernorate
+);
+
+router.get(
+  "/communities",
+  requirePermission(RESOURCES.CATEGORIES, ACTIONS.READ),
+  caseController.getCommunities
 );
 
 router.post(
@@ -520,6 +532,12 @@ router.get(
   caseController.getProjectsByProgram
 );
 
+router.get(
+  "/projects",
+  requirePermission(RESOURCES.CATEGORIES, ACTIONS.READ),
+  caseController.getProjects
+);
+
 router.post(
   "/projects",
   requirePermission(RESOURCES.CATEGORIES, ACTIONS.CREATE),
@@ -541,6 +559,12 @@ router.get(
   "/projects/:projectId/activities",
   requirePermission(RESOURCES.CATEGORIES, ACTIONS.READ),
   caseController.getActivitiesByProject
+);
+
+router.get(
+  "/activities",
+  requirePermission(RESOURCES.CATEGORIES, ACTIONS.READ),
+  caseController.getActivities
 );
 
 router.post(

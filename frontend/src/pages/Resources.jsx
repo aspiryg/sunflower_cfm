@@ -1,10 +1,13 @@
 // Create this file: /frontend/src/pages/Resources.jsx
 import { useState } from "react";
 import styled from "styled-components";
+import { useNavigate } from "react-router-dom";
 import {
   HiOutlineCog8Tooth,
   HiOutlineEye,
   HiOutlineEyeSlash,
+  HiOutlineGlobeAlt,
+  HiOutlineClipboardDocumentList,
 } from "react-icons/hi2";
 import { HiOutlineRefresh } from "react-icons/hi";
 // import PageContainer from "../ui/PageContainer";
@@ -17,7 +20,7 @@ import Switch from "../ui/Switch";
 import ResourceBox from "../features/resources/components/ResourceBox";
 import {
   useAllFlatResources,
-  useUpdateResource,
+  // useUpdateResource,
   RESOURCE_CONFIG,
 } from "../features/resources/useResources";
 
@@ -77,11 +80,11 @@ const ViewControls = styled.div`
 
 const ResourcesGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(45rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(65rem, 1fr));
   gap: var(--spacing-5);
 
   @media (max-width: 1200px) {
-    grid-template-columns: repeat(auto-fit, minmax(40rem, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(55rem, 1fr));
   }
 
   @media (max-width: 900px) {
@@ -106,6 +109,39 @@ const StatItem = styled.div`
   min-width: 6rem;
 `;
 
+// Hierarchical
+const HierarchicalSection = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-4);
+  background: linear-gradient(
+    135deg,
+    var(--color-brand-50),
+    var(--color-brand-25)
+  );
+  border: 1px solid var(--color-brand-200);
+  border-radius: var(--border-radius-lg);
+  margin-bottom: var(--spacing-5);
+`;
+
+const HierarchicalInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+`;
+
+const HierarchicalIcon = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  background: var(--color-brand-100);
+  border-radius: var(--border-radius-md);
+  color: var(--color-brand-600);
+`;
+
 /**
  * Resources Page Component
  *
@@ -113,6 +149,7 @@ const StatItem = styled.div`
  */
 function Resources() {
   const [showActiveOnly, setShowActiveOnly] = useState(false);
+  const navigate = useNavigate();
 
   const {
     categories,
@@ -216,6 +253,36 @@ function Resources() {
           </Button>
         </HeaderActions>
       </PageHeader>
+
+      {/* Hierarchical Resources Section */}
+      <HierarchicalSection>
+        <HierarchicalInfo>
+          <HierarchicalIcon>
+            <HiOutlineGlobeAlt style={{ width: "2.4rem", height: "2.4rem" }} />
+          </HierarchicalIcon>
+          <div>
+            <Heading
+              as="h3"
+              size="h5"
+              style={{ marginBottom: "var(--spacing-1)" }}
+            >
+              Hierarchical Resources
+            </Heading>
+            <Text size="sm" color="muted">
+              Manage regions → governorates → communities and programs →
+              projects → activities
+            </Text>
+          </div>
+        </HierarchicalInfo>
+
+        <Button
+          variant="primary"
+          onClick={() => navigate("/settings/resources/hierarchical")}
+        >
+          <HiOutlineClipboardDocumentList />
+          Manage Hierarchies
+        </Button>
+      </HierarchicalSection>
 
       {/* Controls Section */}
       <ControlsSection>

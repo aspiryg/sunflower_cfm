@@ -1107,6 +1107,28 @@ export const caseController = {
   },
 
   /**
+   * Get all governorates
+   * @route GET /api/cases/governorates
+   */
+  getGovernorates: async (req, res) => {
+    try {
+      const governorates = await Governorates.getAll(req.query);
+
+      res.status(200).json({
+        success: true,
+        data: governorates,
+      });
+    } catch (error) {
+      console.error("❌ Failed to get governorates:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to retrieve governorates",
+        error: error.message,
+      });
+    }
+  },
+
+  /**
    * Get governorates by region
    * @route GET /api/cases/regions/:regionId/governorates
    */
@@ -1136,6 +1158,28 @@ export const caseController = {
       res.status(500).json({
         success: false,
         message: "Failed to retrieve governorates",
+        error: error.message,
+      });
+    }
+  },
+
+  /**
+   * Get all communities
+   * @route GET /api/cases/communities
+   */
+  getCommunities: async (req, res) => {
+    try {
+      const communities = await Communities.getAll(req.query);
+
+      res.status(200).json({
+        success: true,
+        data: communities,
+      });
+    } catch (error) {
+      console.error("❌ Failed to get communities:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to retrieve communities",
         error: error.message,
       });
     }
@@ -1221,6 +1265,28 @@ export const caseController = {
   },
 
   /**
+   * Get all projects
+   * @route GET /api/cases/projects
+   */
+  getProjects: async (req, res) => {
+    try {
+      const projects = await Projects.getAll(req.query);
+
+      res.status(200).json({
+        success: true,
+        data: projects,
+      });
+    } catch (error) {
+      console.error("❌ Failed to get projects:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to retrieve projects",
+        error: error.message,
+      });
+    }
+  },
+
+  /**
    * Get projects by program
    * @route GET /api/cases/programs/:programId/projects
    */
@@ -1250,6 +1316,28 @@ export const caseController = {
       res.status(500).json({
         success: false,
         message: "Failed to retrieve projects",
+        error: error.message,
+      });
+    }
+  },
+
+  /**
+   * Get all activities
+   * @route GET /api/cases/activities
+   */
+  getActivities: async (req, res) => {
+    try {
+      const activities = await Activities.getAll(req.query);
+
+      res.status(200).json({
+        success: true,
+        data: activities,
+      });
+    } catch (error) {
+      console.error("❌ Failed to get activities:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to retrieve activities",
         error: error.message,
       });
     }

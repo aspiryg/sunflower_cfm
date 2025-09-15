@@ -1,4 +1,4 @@
-// Create this file: /frontend/src/features/resources/components/ResourceBox.jsx
+// Create this file: /frontend/src/features/resources/components/HierarchicalResourceBox.jsx
 import { useState } from "react";
 import styled from "styled-components";
 import PropTypes from "prop-types";
@@ -8,6 +8,8 @@ import {
   HiOutlineEllipsisVertical,
   HiOutlineEye,
   HiOutlineEyeSlash,
+  HiOutlineChevronDown,
+  HiOutlineChevronRight,
 } from "react-icons/hi2";
 
 import Card from "../../../ui/Card";
@@ -15,10 +17,10 @@ import Heading from "../../../ui/Heading";
 import Text from "../../../ui/Text";
 import Button from "../../../ui/Button";
 import IconButton from "../../../ui/IconButton";
+import Switch from "../../../ui/Switch";
 import LoadingSpinner from "../../../ui/LoadingSpinner";
-import ResourceTable from "./ResourceTable";
+import HierarchicalResourceTree from "./HierarchicalResourceTree";
 import AddResourceModal from "./AddResourceModal";
-import DeleteResourceModal from "./DeleteResourceModal";
 import ContextMenu from "../../../ui/ContextMenu";
 
 const BoxContainer = styled(Card)`
@@ -81,19 +83,16 @@ const BoxContent = styled.div`
   background: var(--color-grey-0);
 `;
 
-const TableContainer = styled.div`
+const TreeContainer = styled.div`
   flex: 1;
   overflow: auto;
-  max-height: 400px;
+  max-height: 600px;
+  min-height: 300px;
 
-  /* Remove any padding/margin to create seamless integration */
-  margin: 0;
-  padding: 0;
-
-  /* Custom scrollbar for better integration */
+  /* Custom scrollbar */
   &::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 8px;
+    height: 8px;
   }
 
   &::-webkit-scrollbar-track {
@@ -108,6 +107,27 @@ const TableContainer = styled.div`
   &::-webkit-scrollbar-thumb:hover {
     background: var(--color-grey-400);
   }
+`;
+
+const ControlsBar = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-3) var(--spacing-4);
+  border-bottom: 1px solid var(--color-grey-100);
+  background: var(--color-grey-25);
+`;
+
+const ViewControls = styled.div`
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+`;
+
+const TreeActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
 `;
 
 const EmptyState = styled.div`
@@ -144,80 +164,74 @@ const ErrorState = styled.div`
 `;
 
 /**
- * ResourceBox Component
+ * HierarchicalResourceBox Component
  *
- * A reusable container component for displaying resource collections
- * with add, delete, and management capabilities
+ * Container for hierarchical resources with tree view and controls
  */
-function ResourceBox({
-  resourceKey,
+function HierarchicalResourceBox({
+  resourceType, // 'geographic' | 'program'
   title,
   description,
   data = [],
   isLoading = false,
   error = null,
   onRefresh,
-  // onAdd,
   onEdit,
-  // onDelete,
+  onDelete,
   onToggleActive,
-  columns = [],
+  onToggleExpand,
+  onAddChild,
   showActiveOnly = false,
   onToggleShowActive,
+  expandAll = false,
+  onToggleExpandAll,
+  rootResourceKey, // e.g., 'regions' | 'programs'
 }) {
   const [addModal, setAddModal] = useState({ isOpen: false });
-  const [deleteModal, setDeleteModal] = useState({ isOpen: false, item: null });
+
+  // Calculate stats
+  const calculateStats = (items) => {
+    let total = 0;
+    let active = 0;
+
+    const countRecursive = (nodes) => {
+      nodes.forEach((node) => {
+        total++;
+        if (node.isActive !== false) active++;
+        if (node.children) countRecursive(node.children);
+      });
+    };
+
+    countRecursive(items);
+    return { total, active };
+  };
+
+  const { total, active } = calculateStats(data);
 
   // Filter data based on showActiveOnly
-  const filteredData = showActiveOnly
-    ? data.filter((item) => item.isActive !== false)
-    : data;
+  const filterData = (items, showActive) => {
+    if (!showActive) return items;
 
-  const activeCount = data.filter((item) => item.isActive !== false).length;
-  const inactiveCount = data.length - activeCount;
+    return items
+      .filter((item) => item.isActive !== false)
+      .map((item) => ({
+        ...item,
+        children: item.children ? filterData(item.children, showActive) : [],
+      }));
+  };
 
-  // Get resource name in singular form for modals
-  const singularResourceName = title.endsWith("ies")
-    ? title.slice(0, -3) + "y"
-    : title === "Provider Types"
-    ? "Provider Type"
-    : title.endsWith("es")
-    ? title.slice(0, -2)
-    : title.endsWith("s")
-    ? title.slice(0, -1)
-    : title;
+  const filteredData = filterData(data, showActiveOnly);
 
-  const handleAdd = () => {
+  const handleAddRoot = () => {
     setAddModal({ isOpen: true });
-  };
-
-  const handleEdit = (item) => {
-    if (onEdit) {
-      onEdit(item);
-    }
-  };
-
-  const handleDelete = (item) => {
-    setDeleteModal({ isOpen: true, item });
   };
 
   const handleCloseAddModal = () => {
     setAddModal({ isOpen: false });
   };
 
-  const handleCloseDeleteModal = () => {
-    setDeleteModal({ isOpen: false, item: null });
-  };
-
-  const handleAddSuccess = (/*newItem*/) => {
+  const handleAddSuccess = () => {
     handleCloseAddModal();
-    if (onRefresh) {
-      onRefresh();
-    }
-  };
-
-  const handleDeleteSuccess = () => {
-    handleCloseDeleteModal();
     if (onRefresh) {
       onRefresh();
     }
@@ -238,13 +252,29 @@ function ResourceBox({
       onClick: onToggleShowActive,
     },
     {
-      key: "add",
-      label: `Add ${title.slice(0, -1)}`,
+      key: "expand-all",
+      label: expandAll ? "Collapse All" : "Expand All",
+      icon: expandAll ? HiOutlineChevronDown : HiOutlineChevronRight,
+      onClick: onToggleExpandAll,
+    },
+    {
+      key: "add-root",
+      label: `Add ${getRootLabel()}`,
       icon: HiOutlinePlus,
-      onClick: handleAdd,
+      onClick: handleAddRoot,
       variant: "primary",
     },
   ];
+
+  const getRootLabel = () => {
+    return resourceType === "geographic" ? "Region" : "Program";
+  };
+
+  const getSingularTitle = () => {
+    if (title.endsWith("ies")) return title.slice(0, -3) + "y";
+    if (title.endsWith("s")) return title.slice(0, -1);
+    return title;
+  };
 
   return (
     <BoxContainer>
@@ -256,7 +286,7 @@ function ResourceBox({
           <Text size="sm" color="muted">
             {description}
           </Text>
-          {data.length > 0 && (
+          {total > 0 && (
             <div
               style={{
                 display: "flex",
@@ -265,11 +295,9 @@ function ResourceBox({
               }}
             >
               <ResourceCount size="xs">
-                {showActiveOnly
-                  ? `${activeCount} active`
-                  : `${data.length} total`}
+                {showActiveOnly ? `${active} active` : `${total} total`}
               </ResourceCount>
-              {!showActiveOnly && inactiveCount > 0 && (
+              {!showActiveOnly && total - active > 0 && (
                 <ResourceCount
                   size="xs"
                   style={{
@@ -277,7 +305,7 @@ function ResourceBox({
                     color: "var(--color-grey-600)",
                   }}
                 >
-                  {inactiveCount} inactive
+                  {total - active} inactive
                 </ResourceCount>
               )}
             </div>
@@ -298,11 +326,11 @@ function ResourceBox({
           <Button
             variant="primary"
             size="small"
-            onClick={handleAdd}
+            onClick={handleAddRoot}
             disabled={isLoading}
           >
             <HiOutlinePlus />
-            Add New
+            Add {getRootLabel()}
           </Button>
 
           <ContextMenu
@@ -315,6 +343,47 @@ function ResourceBox({
           />
         </HeaderActions>
       </BoxHeader>
+
+      {/* Controls Bar */}
+      <ControlsBar>
+        <ViewControls>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "var(--spacing-2)",
+            }}
+          >
+            <Text size="xs" color="muted">
+              Show:
+            </Text>
+            <Switch
+              checked={showActiveOnly}
+              onChange={onToggleShowActive}
+              size="small"
+            />
+            <Text size="xs" color="muted">
+              {showActiveOnly ? "Active only" : "All items"}
+            </Text>
+          </div>
+        </ViewControls>
+
+        <TreeActions>
+          <Button variant="ghost" size="small" onClick={onToggleExpandAll}>
+            {expandAll ? (
+              <>
+                <HiOutlineChevronDown />
+                Collapse All
+              </>
+            ) : (
+              <>
+                <HiOutlineChevronRight />
+                Expand All
+              </>
+            )}
+          </Button>
+        </TreeActions>
+      </ControlsBar>
 
       <BoxContent>
         {isLoading && (
@@ -351,72 +420,68 @@ function ResourceBox({
             </Text>
             <Text size="xs" color="muted">
               {data.length === 0
-                ? `Get started by adding your first ${title
-                    .slice(0, -1)
-                    .toLowerCase()}`
+                ? `Get started by adding your first ${getSingularTitle().toLowerCase()}`
                 : `${
                     showActiveOnly
                       ? "All items are inactive"
                       : "Try adjusting your filters"
                   }`}
             </Text>
-            <Button variant="ghost" size="small" onClick={handleAdd}>
+            <Button variant="ghost" size="small" onClick={handleAddRoot}>
               <HiOutlinePlus />
-              Add {title.slice(0, -1)}
+              Add {getRootLabel()}
             </Button>
           </EmptyState>
         )}
 
         {!isLoading && !error && filteredData.length > 0 && (
-          <TableContainer>
-            <ResourceTable
+          <TreeContainer>
+            <HierarchicalResourceTree
               data={filteredData}
-              columns={columns}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
+              isLoading={isLoading}
+              error={error}
+              resourceType={resourceType}
+              onRefresh={onRefresh}
+              onEdit={onEdit}
+              onDelete={onDelete}
               onToggleActive={onToggleActive}
-              resourceKey={resourceKey}
+              onToggleExpand={onToggleExpand}
+              onAddChild={onAddChild}
             />
-          </TableContainer>
+          </TreeContainer>
         )}
       </BoxContent>
 
-      {/* Modals */}
+      {/* Add Root Resource Modal */}
       <AddResourceModal
         isOpen={addModal.isOpen}
         onClose={handleCloseAddModal}
         onSuccess={handleAddSuccess}
-        resourceKey={resourceKey}
-        title={`Add New ${singularResourceName}`}
-      />
-
-      <DeleteResourceModal
-        isOpen={deleteModal.isOpen}
-        onClose={handleCloseDeleteModal}
-        onSuccess={handleDeleteSuccess}
-        resourceKey={resourceKey}
-        item={deleteModal.item}
-        title={`Delete ${singularResourceName}`}
+        resourceKey={rootResourceKey}
+        title={`Add New ${getRootLabel()}`}
       />
     </BoxContainer>
   );
 }
 
-ResourceBox.propTypes = {
-  resourceKey: PropTypes.string.isRequired,
+HierarchicalResourceBox.propTypes = {
+  resourceType: PropTypes.oneOf(["geographic", "program"]).isRequired,
   title: PropTypes.string.isRequired,
   description: PropTypes.string.isRequired,
   data: PropTypes.array,
   isLoading: PropTypes.bool,
   error: PropTypes.object,
   onRefresh: PropTypes.func.isRequired,
-  onAdd: PropTypes.func,
   onEdit: PropTypes.func,
   onDelete: PropTypes.func,
   onToggleActive: PropTypes.func,
-  columns: PropTypes.array,
+  onToggleExpand: PropTypes.func,
+  onAddChild: PropTypes.func,
   showActiveOnly: PropTypes.bool,
   onToggleShowActive: PropTypes.func,
+  expandAll: PropTypes.bool,
+  onToggleExpandAll: PropTypes.func,
+  rootResourceKey: PropTypes.string.isRequired,
 };
 
-export default ResourceBox;
+export default HierarchicalResourceBox;

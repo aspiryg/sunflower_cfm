@@ -11,6 +11,7 @@ import Text from "../../../ui/Text";
 import IconButton from "../../../ui/IconButton";
 import StatusBadge from "../../../ui/StatusBadge";
 import { formatDate } from "../../../utils/dateUtils";
+// import { getColorStyles } from "../../../utils/caseUtils";
 
 const Table = styled.table`
   width: 100%;
@@ -84,7 +85,7 @@ const ColorSwatch = styled.div`
   width: 1.6rem;
   height: 1.6rem;
   border-radius: var(--border-radius-sm);
-  border: 1px solid var(--color-grey-300);
+  border: 1px solid ${(props) => `var(${props.$color})`};
   background-color: ${(props) => `var(${props.$color})`};
   display: inline-block;
 `;
@@ -165,7 +166,7 @@ function ResourceTable({
                   color="muted"
                   style={{ fontFamily: "var(--font-mono)" }}
                 >
-                  {item.color || "Default"}
+                  {item?.color?.split("-")[3] || "Default"}
                 </Text>
               </div>
             ),

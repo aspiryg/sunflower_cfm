@@ -96,12 +96,12 @@ export const RESOURCE_CONFIG = {
         label: "Color",
         defaultValue: "--color-blue-200",
       },
-      {
-        name: "icon",
-        type: "text",
-        label: "Icon (CSS class, e.g., 'fa fa-icon')",
-        defaultValue: "fa fa-tag",
-      },
+      // {
+      //   name: "icon",
+      //   type: "text",
+      //   label: "Icon (CSS class, e.g., 'fa fa-icon')",
+      //   defaultValue: "fa fa-tag",
+      // },
       {
         name: "sortOrder",
         type: "number",
@@ -137,12 +137,12 @@ export const RESOURCE_CONFIG = {
         label: "Color",
         defaultValue: "--color-gray-200",
       },
-      {
-        name: "icon",
-        type: "text",
-        label: "Icon (CSS class, e.g., 'fa fa-icon')",
-        defaultValue: "fa fa-tag",
-      },
+      // {
+      //   name: "icon",
+      //   type: "text",
+      //   label: "Icon (CSS class, e.g., 'fa fa-icon')",
+      //   defaultValue: "fa fa-tag",
+      // },
       {
         name: "sortOrder",
         type: "number",
