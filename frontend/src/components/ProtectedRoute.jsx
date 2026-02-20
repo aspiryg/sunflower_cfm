@@ -11,7 +11,7 @@ function ProtectedRoute({
   requiredRole = null,
   requiredRoles = null, // Accept array of roles
   exactRole = false, // Require exact role match
-  redirectTo = "/login",
+  redirectTo = "/home",
   fallback = null, // Custom fallback component
 }) {
   const { isAuthenticated, isLoading } = useAuth();

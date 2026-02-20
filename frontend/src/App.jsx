@@ -12,8 +12,12 @@ import ProtectedRoute from "./components/ProtectedRoute";
 
 // Layout
 import AppLayout from "./ui/AppLayout";
+import PublicLayout from "./ui/PublicLayout";
 
 // import pages
+import LandingPage from "./pages/LandingPage";
+import AboutPage from "./pages/AboutPage";
+import PublicFeedbackForm from "./pages/PublicFeedbackForm";
 import Dashboard from "./pages/Dashboard";
 import Settings from "./pages/Settings";
 import Users from "./pages/Users";
@@ -56,6 +60,16 @@ function App() {
             <GlobalStyles />
             <BrowserRouter>
               <Routes>
+                {/* Public landing pages */}
+                <Route path="/home" element={<PublicLayout />}>
+                  <Route index element={<LandingPage />} />
+                  <Route path="about" element={<AboutPage />} />
+                  <Route
+                    path="submit-feedback"
+                    element={<PublicFeedbackForm />}
+                  />
+                </Route>
+
                 {/* Public routes - redirect to dashboard if authenticated */}
                 <Route
                   path="/login"
