@@ -222,8 +222,8 @@ const SubmitButton = styled.button`
   justify-content: center;
   gap: var(--spacing-2);
   padding: var(--spacing-3) var(--spacing-6);
-  background-color: var(--color-brand-100);
-  color: white;
+  background-color: var(--color-brand-600);
+  color: var(--color-brand-50);
   border: none;
   border-radius: var(--border-radius-lg);
   font-size: var(--font-size-base);

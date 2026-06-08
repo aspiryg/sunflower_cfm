@@ -203,11 +203,11 @@ const HeroButton = styled(Link)`
   }
 
   &.primary {
-    color: white;
+    color: var(--color-brand-50);
     background: linear-gradient(
       135deg,
-      var(--color-brand-100),
-      var(--color-brand-50)
+      var(--color-brand-600),
+      var(--color-brand-700)
     );
     box-shadow: 0 4px 14px rgba(79, 70, 229, 0.3);
 
@@ -443,10 +443,10 @@ const StepNumber = styled.div`
   border-radius: 50%;
   background: linear-gradient(
     135deg,
-    var(--color-brand-100),
-    var(--color-brand-200)
+    var(--color-brand-500),
+    var(--color-brand-600)
   );
-  color: white;
+  color: var(--color-brand-50);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -483,9 +483,9 @@ const CTACard = styled.div`
   margin: 0 auto;
   background: linear-gradient(
     135deg,
-    var(--color-brand-100) 0%,
-    var(--color-indigo-100) 60%,
-    var(--color-purple-100) 100%
+    var(--color-brand-600) 0%,
+    var(--color-indigo-600) 60%,
+    var(--color-purple-600) 100%
   );
   border-radius: var(--border-radius-2xl);
   padding: var(--spacing-12) var(--spacing-8);
@@ -514,7 +514,7 @@ const CTAContent = styled.div`
 const CTATitle = styled.h2`
   font-size: var(--font-size-4xl);
   font-weight: var(--font-weight-bold);
-  color: white;
+  color: var(--color-brand-50);
   margin-bottom: var(--spacing-4);
   letter-spacing: -0.02em;
 
@@ -525,7 +525,7 @@ const CTATitle = styled.h2`
 
 const CTADescription = styled.p`
   font-size: var(--font-size-lg);
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--color-brand-100);
   max-width: 60rem;
   margin: 0 auto var(--spacing-8);
   line-height: 1.6;
@@ -575,7 +575,7 @@ const CTAButton = styled(Link)`
   }
 
   &.outline {
-    color: white;
+    color: var(--color-brand-50);
     border: 2px solid rgba(255, 255, 255, 0.4);
 
     &:hover {

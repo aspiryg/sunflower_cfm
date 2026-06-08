@@ -459,8 +459,15 @@ class Database {
         // Set up connection event handlers
         this.setupConnectionHandlers();
 
-        // Initialize database schema and data
-        await DatabaseInitializer.initializeDatabase(this.pool);
+        // Initialize database schema and data. This runs a series of
+        // CREATE/seed/validation queries that only matter on a fresh database.
+        // On an already-provisioned deployment it is pure overhead on every
+        // boot, so allow skipping it via SKIP_DB_INIT=true.
+        if (process.env.SKIP_DB_INIT === "true") {
+          console.log("⏭️  SKIP_DB_INIT=true — skipping on-boot schema initialization");
+        } else {
+          await DatabaseInitializer.initializeDatabase(this.pool);
+        }
 
         return this.pool;
       } catch (error) {

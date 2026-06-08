@@ -49,14 +49,14 @@ const LogoIcon = styled.div`
   height: 3.6rem;
   background: linear-gradient(
     135deg,
-    var(--color-brand-100),
-    var(--color-brand-200)
+    var(--color-brand-500),
+    var(--color-brand-600)
   );
   border-radius: var(--border-radius-lg);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: var(--color-brand-50);
   font-size: 1.8rem;
 
   svg {
@@ -133,14 +133,14 @@ const AuthButton = styled(Link)`
   ${(props) =>
     props.$variant === "primary"
       ? css`
-          color: white;
-          background-color: var(--color-brand-100);
-          border: 1px solid var(--color-brand-100);
+          color: var(--color-brand-50);
+          background-color: var(--color-brand-600);
+          border: 1px solid var(--color-brand-600);
 
           &:hover {
             background-color: var(--color-brand-700);
             border-color: var(--color-brand-700);
-            color: var(--color-grey-0);
+            color: var(--color-brand-50);
           }
         `
       : css`

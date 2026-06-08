@@ -484,46 +484,56 @@ process.on("unhandledRejection", (reason, promise) => {
 });
 
 // Start the server and connect to the database
-const startServer = async () => {
-  try {
-    console.log("🚀 Starting Sunflower CFM Server...");
-    console.log(`📊 Environment: ${process.env.NODE_ENV || "development"}`);
+//
+// The HTTP server starts listening immediately, independent of the database
+// connection/initialization. This keeps cold starts fast: static assets and
+// /api/health respond as soon as Node is up, instead of waiting for the DB to
+// connect and run on-boot initialization. The database connects in the
+// background; routes that need it return errors until it's ready, and a DB
+// failure no longer takes the whole server down.
+const startServer = () => {
+  console.log("🚀 Starting Sunflower CFM Server...");
+  console.log(`📊 Environment: ${process.env.NODE_ENV || "development"}`);
 
-    // Connect to the database first
-    await database.connect();
-    console.log("✅ Database connected and initialized");
+  // Start listening first
+  const server = app.listen(PORT, () => {
+    console.log("━".repeat(60));
+    console.log(`🌻 Sunflower CFM Server is running on port ${PORT}`);
+    console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
+    console.log(`📖 API Documentation: http://localhost:${PORT}/api`);
+    console.log(
+      `🌐 Frontend URL: ${
+        process.env.FRONTEND_URL || `http://localhost:${PORT}`
+      }`
+    );
+    console.log("━".repeat(60));
+  });
 
-    // Start the server
-    const server = app.listen(PORT, () => {
-      console.log("━".repeat(60));
-      console.log(`🌻 Sunflower CFM Server is running on port ${PORT}`);
-      console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
-      console.log(`📖 API Documentation: http://localhost:${PORT}/api`);
-      console.log(
-        `🌐 Frontend URL: ${
-          process.env.FRONTEND_URL || `http://localhost:${PORT}`
-        }`
+  // Handle server errors
+  server.on("error", (error) => {
+    if (error.code === "EADDRINUSE") {
+      console.error(`❌ Port ${PORT} is already in use`);
+      process.exit(1);
+    } else {
+      console.error("❌ Server error:", error);
+      process.exit(1);
+    }
+  });
+
+  // Connect to the database in the background
+  database
+    .connect()
+    .then(() => console.log("✅ Database connected and initialized"))
+    .catch((error) => {
+      // Keep the server running so static assets / health checks stay available
+      // and the app can recover once the database becomes reachable.
+      console.error(
+        "❌ Database connection failed (server still running):",
+        error.message
       );
-      console.log("━".repeat(60));
     });
 
-    // Handle server errors
-    server.on("error", (error) => {
-      if (error.code === "EADDRINUSE") {
-        console.error(`❌ Port ${PORT} is already in use`);
-        process.exit(1);
-      } else {
-        console.error("❌ Server error:", error);
-        process.exit(1);
-      }
-    });
-
-    return server;
-  } catch (error) {
-    console.error("❌ Failed to start the server:", error);
-    console.error("Stack trace:", error.stack);
-    process.exit(1);
-  }
+  return server;
 };
 
 startServer();
