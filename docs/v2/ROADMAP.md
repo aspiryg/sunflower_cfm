@@ -52,17 +52,25 @@ types, 3 regions, 10 settings) with Arabic names — idempotent.
   integers, not FKs to users (v2 decision, see _shared.ts); the ANN index on
   `cases.embedding` is deferred to Phase 6 (needs the chosen op class/model).
 
-## Phase 3 — Data-access + domain services + RBAC
-Rebuild the model layer on Drizzle and the authorization core.
-- Typed repositories for each aggregate (cases, users, comments, history,
-  assignments, notifications, reference data, settings).
-- Case lifecycle logic (status transitions honoring isInitial/isFinal/
-  allowReopen), caseNumber generation, SLA due-date calc, soft delete, history
-  writes, audit logging.
-- RBAC as one typed module (matrix + ownership filters) shared server+client.
-- **Verify:** Vitest integration suite per repository against the DB container;
-  a dedicated RBAC test table asserts every role×resource×action×restriction
-  matches `SPEC.md §2`; lifecycle + ownership edge cases covered.
+## Phase 3 — Data-access + domain services + RBAC ✅ DONE
+- **RBAC** as one shared, typed module (`src/lib/rbac`): role hierarchy, the
+  role→resource→action→restriction matrix, ownership fields, `authorize`/`can`/
+  `queryScope`/`canManageUser`/`assignableRoles`/`hasRole`. Pure — runs on server
+  and client so they can't drift.
+- **Domain services** (`src/lib/cases`): case-number formatting (settings-
+  prefixed `CFM-YYYYMMDD-NNNN`), SLA due-date/response-deadline calc, and status
+  transition rules honoring isInitial/isFinal/allowReopen — all pure/tested.
+- **Repositories** (`src/db/repositories`): settings, reference data (+ hierarchy
+  drill-downs), users (with `toSafeUser`), cases (create with number+SLA+history,
+  permission-scoped listing, validated status change, assign, escalate, update,
+  soft delete), comments (threaded). Every case mutation writes case_history.
+- **Verified:** 20 unit tests (RBAC matrix per role, query scoping, user-mgmt
+  hierarchy; case-number/SLA/lifecycle) + 6 repository integration tests against
+  the DB (number/SLA/history on create, ownership-scoped list, lifecycle
+  enforcement incl. SAME_STATUS/TO_INITIAL/STATUS_LOCKED, assignment history,
+  threaded comments, safe-user). 35 tests total green; typecheck/lint/build pass.
+- Deferred within later phases: notifications/assignments/attachments repos get
+  fleshed out when their API/UI lands (Phase 4/5); audit_logs writer in Phase 4.
 
 ## Phase 4 — API (Next route handlers / server actions)
 Reimplement the full API surface (`SPEC.md §3`) incl. the **new anonymous

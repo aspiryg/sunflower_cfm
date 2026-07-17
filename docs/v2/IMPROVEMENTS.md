@@ -35,26 +35,31 @@ continuously as each phase uncovers more. Grouped by area; each item tagged
   `requiredRole` works.
 - ☐ `[fix]` Frontend client-side ownership checks implement only
   `comments`/`feedback`, never `cases` → case ownership silently evaluates false.
-- ☐ `[update]` Backend and frontend maintain **separate** permission matrices
-  that can drift. v2: one shared, typed source of truth.
+- ☑ `[update]` Backend and frontend maintain **separate** permission matrices
+  that can drift. v2: one shared, typed source of truth. _Phase 3: single
+  `src/lib/rbac` module (pure, isomorphic); frontend will import the same in P5._
 - ☐ `[add]` No team/organization scoping — `organization` rides in the JWT but
   case ownership keys only on user id. Consider org/team-scoped access.
 
 ## Cases / domain
-- ◐ `[fix]` `caseNumber` inconsistency: code generates `CS-YYYYMMDD-0001` while
+- ☑ `[fix]` `caseNumber` inconsistency: code generates `CS-YYYYMMDD-0001` while
   `SystemSettings.case.number.prefix` says `CFM`. v2: settings-authoritative.
-  _Phase 2: seed sets `case.number.prefix=CFM`; generation logic lands in Phase 3._
+  _Phase 3: `getCasePrefix()` + `formatCaseNumber()` produce `CFM-YYYYMMDD-NNNN`,
+  with a unique-collision retry; tested._
 - ☐ `[add]` **Public anonymous feedback intake does not exist.** The public form
   only `console.log`s; `POST /api/cases` is auth-gated. v2 adds a real endpoint.
 - ◐ `[update]` Denormalized JSON/CSV blobs (`mentionedUsers`, `accessControl`,
   `tags`, `attachments`, `groupProviderGenderComposition`) → proper `jsonb` or
   junction tables. _Phase 2: `attachments`/`accessControl`/`mentionedUsers`/
   metadata are now `jsonb`; `tags` kept as text pending a tags junction decision._
-- ☐ `[add]` Case lifecycle (New→…→Closed, Reopened) is data-driven but not
+- ☑ `[add]` Case lifecycle (New→…→Closed, Reopened) is data-driven but not
   enforced — add explicit transition validation (honor isInitial/isFinal/
-  allowReopen) so illegal jumps are rejected.
-- ☐ `[add]` SLA due-date calc from priority hours exists ad hoc; make it a
-  first-class, tested service with escalation reminders.
+  allowReopen) so illegal jumps are rejected. _Phase 3: `canTransition()` +
+  enforced in `changeCaseStatus`; tested._
+- ◐ `[add]` SLA due-date calc from priority hours exists ad hoc; make it a
+  first-class, tested service with escalation reminders. _Phase 3: due-date +
+  response-deadline are pure tested services applied on create; escalation
+  reminders (scheduled job) still to add._
 
 ## Performance / data access
 - ☐ `[fix]` Dashboards & tables fetch `limit: 100000` and filter/sort/paginate
