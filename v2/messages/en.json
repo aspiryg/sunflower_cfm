@@ -3,10 +3,62 @@
     "name": "Sunflower CFM",
     "tagline": "Community Feedback Management"
   },
+  "nav": {
+    "home": "Home",
+    "submit": "Submit Feedback",
+    "about": "About",
+    "signIn": "Sign In",
+    "signUp": "Sign Up"
+  },
   "landing": {
+    "badge": "Sunflower Organization — OPT",
     "title": "Your voice, heard and acted on",
-    "subtitle": "Submit feedback, complaints, and suggestions. Our team reviews every submission and follows up.",
+    "subtitle": "Submit feedback, complaints, and suggestions. Our team reviews every submission, investigates, and follows up — with a full audit trail.",
     "submitFeedback": "Submit Feedback",
-    "signIn": "Sign In"
+    "signIn": "Staff Sign In",
+    "featuresTitle": "How we handle your feedback",
+    "features": {
+      "submit": { "title": "Submit easily", "body": "Share feedback in your language, with or without an account." },
+      "classify": { "title": "Smart classification", "body": "Cases are categorized and prioritized — assisted by AI." },
+      "resolve": { "title": "Tracked to resolution", "body": "Every case is assigned, investigated, resolved, and closed." }
+    }
+  },
+  "about": {
+    "title": "About Sunflower CFM",
+    "mission": "Sunflower CFM is the community feedback management platform of the Sunflower Organization, serving communities across the Occupied Palestinian Territories. We make it simple to raise concerns and ensure every voice is heard, tracked, and acted upon.",
+    "contactTitle": "Contact us",
+    "email": "Email",
+    "phone": "Phone"
+  },
+  "feedback": {
+    "badge": "Public Feedback",
+    "title": "Share your feedback with us",
+    "subtitle": "Your feedback helps us improve services. All submissions are reviewed by our team. You don't need an account.",
+    "name": "Your name",
+    "namePlaceholder": "Enter your name",
+    "contact": "Phone or email",
+    "contactPlaceholder": "How can we reach you",
+    "optional": "optional",
+    "category": "Feedback type",
+    "categories": {
+      "general": "General feedback",
+      "complaint": "Complaint",
+      "suggestion": "Suggestion",
+      "appreciation": "Appreciation",
+      "inquiry": "Inquiry"
+    },
+    "location": "Location / area",
+    "locationPlaceholder": "Governorate, community, or area name",
+    "description": "Your feedback",
+    "descriptionPlaceholder": "Please describe your feedback, complaint, or suggestion in detail…",
+    "submit": "Submit Feedback",
+    "submitting": "Submitting…",
+    "help": "Your feedback is confidential. Providing your name and contact information is optional but allows our team to follow up if needed.",
+    "minLength": "Please provide at least 10 characters.",
+    "errorGeneric": "Something went wrong. Please try again.",
+    "successTitle": "Thank you for your feedback",
+    "successBody": "Your feedback has been received. Our team will review it and take appropriate action.",
+    "referenceNumber": "Your reference number",
+    "submitAnother": "Submit another"
   }
 }

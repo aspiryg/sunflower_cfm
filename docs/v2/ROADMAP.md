@@ -97,7 +97,29 @@ types, 3 regions, 10 settings) with Arabic names — idempotent.
   profile endpoints; notifications endpoints; **B2 storage (S3 SDK)** for
   attachments/profile pictures (needs bucket creds). Tracked in IMPROVEMENTS.
 
-## Phase 5 — Frontend rebuild (bilingual, themed)
+## Phase 5 — Frontend rebuild (bilingual, themed) — ◐ IN PROGRESS
+**Part 1 ✅ DONE — foundation + public bilingual vertical:**
+- Design-token system (`styles/tokens.css`) with light/dark/system theming and
+  the inverting brand palette; `ThemeProvider` (no-FOUC pre-paint script),
+  `ThemeToggle`, `LocaleSwitcher`.
+- Fonts via `next/font`: Poppins (Latin) + **Cairo (Arabic)**, applied per-dir.
+- i18n: `NextIntlClientProvider` now receives messages (client components were
+  falling back to keys); expanded EN/AR catalogs.
+- Public pages in a `(public)` route group with navbar/footer (logical
+  properties → RTL-safe): landing, about, and **submit-feedback wired to the live
+  `POST /api/public/feedback`** — the v1 form that only console.logged now works.
+- **Verified:** 5 Playwright e2e (landing LTR/RTL, locale switch flips dir,
+  **feedback form → live API → CFM reference number**, theme cycle to dark) +
+  the prior 4 locale/health e2e = 9 green; 43 vitest still green; build/lint/tc
+  pass. Uppercase-label suppression for Arabic; `dir="auto"` on free-text.
+
+**Part 2 — remaining (next):** auth pages (login/register) + AuthProvider/route
+guards, the authenticated app shell (sidebar/header, RTL), cases module
+(server-paginated list, tabbed form, detail), users/profile/settings — all
+gating off the shared `src/lib/rbac`. Then wire TanStack Query for the authed
+data layer. (Original Phase 5 detail below.)
+
+### Original Phase 5 plan
 Port the UI to App Router with AR/EN + RTL as a first-class concern.
 - Design-token system + light/dark/system theming (inverting-palette rule).
 - Public pages (SSR + metadata, real AR/EN). Auth pages. App shell (sidebar/

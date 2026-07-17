@@ -1,0 +1,140 @@
+/*
+ * Design tokens ported from v1 styles/GlobalStyles.js. The brand palette
+ * INVERTS between light and dark (see repo CLAUDE.md): brand-600 is a saturated
+ * indigo in light mode and a light lavender in dark mode; brand-50 does the
+ * opposite. Pair a mid/deep step (fill) with a light step (text) so both invert
+ * together and stay legible in either theme.
+ *
+ * Theme resolution: :root holds light values. Dark values apply when the root
+ * carries data-theme="dark" OR when the OS prefers dark and the user hasn't
+ * explicitly chosen light. The ThemeProvider stamps data-theme on <html>.
+ */
+:root {
+  /* Greys */
+  --color-grey-0: #ffffff;
+  --color-grey-50: #f8fafc;
+  --color-grey-100: #f1f5f9;
+  --color-grey-200: #e2e8f0;
+  --color-grey-300: #cbd5e1;
+  --color-grey-400: #94a3b8;
+  --color-grey-500: #64748b;
+  --color-grey-600: #475569;
+  --color-grey-700: #334155;
+  --color-grey-800: #1e293b;
+  --color-grey-900: #0f172a;
+
+  /* Brand (indigo) — inverts */
+  --color-brand-50: #eef2ff;
+  --color-brand-100: #e0e7ff;
+  --color-brand-200: #c7d2fe;
+  --color-brand-500: #6366f1;
+  --color-brand-600: #4f46e5;
+  --color-brand-700: #4338ca;
+  --color-brand-800: #3730a3;
+
+  /* Semantic */
+  --color-red-100: #fee2e2;
+  --color-red-500: #ef4444;
+  --color-red-700: #b91c1c;
+  --color-green-100: #dcfce7;
+  --color-green-500: #22c55e;
+  --color-green-700: #15803d;
+  --color-yellow-100: #fef9c3;
+  --color-yellow-500: #eab308;
+  --color-blue-100: #dbeafe;
+  --color-blue-500: #3b82f6;
+
+  /* Typography */
+  --font-sans: var(--font-latin), system-ui, sans-serif;
+  --font-size-xs: 1.2rem;
+  --font-size-sm: 1.4rem;
+  --font-size-base: 1.6rem;
+  --font-size-lg: 1.8rem;
+  --font-size-xl: 2rem;
+  --font-size-2xl: 2.4rem;
+  --font-size-3xl: 3rem;
+  --font-size-4xl: 3.6rem;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Spacing */
+  --spacing-1: 0.4rem;
+  --spacing-2: 0.8rem;
+  --spacing-3: 1.2rem;
+  --spacing-4: 1.6rem;
+  --spacing-5: 2rem;
+  --spacing-6: 2.4rem;
+  --spacing-8: 3.2rem;
+  --spacing-10: 4rem;
+  --spacing-12: 4.8rem;
+  --spacing-16: 6.4rem;
+
+  /* Radius / shadow */
+  --radius-sm: 0.4rem;
+  --radius-md: 0.8rem;
+  --radius-lg: 1.2rem;
+  --radius-xl: 1.6rem;
+  --radius-full: 9999px;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.12);
+
+  --duration-fast: 150ms;
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Dark overrides — shared by explicit toggle and OS preference. */
+:root[data-theme="dark"] {
+  --color-grey-0: #0f172a;
+  --color-grey-50: #111c30;
+  --color-grey-100: #1e293b;
+  --color-grey-200: #334155;
+  --color-grey-300: #475569;
+  --color-grey-400: #64748b;
+  --color-grey-500: #94a3b8;
+  --color-grey-600: #cbd5e1;
+  --color-grey-700: #e2e8f0;
+  --color-grey-800: #f1f5f9;
+  --color-grey-900: #f8fafc;
+
+  --color-brand-50: #312e81;
+  --color-brand-100: #3730a3;
+  --color-brand-200: #4338ca;
+  --color-brand-500: #818cf8;
+  --color-brand-600: #c7d2fe;
+  --color-brand-700: #a5b4fc;
+  --color-brand-800: #e0e7ff;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.6);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-grey-0: #0f172a;
+    --color-grey-50: #111c30;
+    --color-grey-100: #1e293b;
+    --color-grey-200: #334155;
+    --color-grey-300: #475569;
+    --color-grey-400: #64748b;
+    --color-grey-500: #94a3b8;
+    --color-grey-600: #cbd5e1;
+    --color-grey-700: #e2e8f0;
+    --color-grey-800: #f1f5f9;
+    --color-grey-900: #f8fafc;
+
+    --color-brand-50: #312e81;
+    --color-brand-100: #3730a3;
+    --color-brand-200: #4338ca;
+    --color-brand-500: #818cf8;
+    --color-brand-600: #c7d2fe;
+    --color-brand-700: #a5b4fc;
+    --color-brand-800: #e0e7ff;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.6);
+  }
+}

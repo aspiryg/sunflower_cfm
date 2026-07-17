@@ -74,10 +74,13 @@ continuously as each phase uncovers more. Grouped by area; each item tagged
   pgvector semantic search.
 
 ## Frontend / UX
-- ☐ `[add]` **Bilingual AR/EN + full RTL** — none exists in v1 (see SPEC §4 RTL
+- ◐ `[add]` **Bilingual AR/EN + full RTL** — none exists in v1 (see SPEC §4 RTL
   list: layout uses physical `margin-left`/`border-right`, dropdowns `right:0`,
   toasts slide-from-right, directional icons don't flip, no Arabic webfont,
-  English-only relative dates).
+  English-only relative dates). _Phase 5 part 1: locale-driven `<html dir>`,
+  Cairo Arabic webfont, tokens/layout use logical properties, uppercase
+  suppressed for AR, `dir="auto"` on free text, locale switcher. Public pages
+  done; authed app shell RTL in part 2._
 - ☐ `[fix]` Two toast systems coexist (custom ContextToast + react-hot-toast) —
   consolidate to one.
 - ☐ `[update]` Several hooks use deprecated TanStack Query v4 options
