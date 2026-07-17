@@ -4,7 +4,7 @@
  * Every mutation writes a case_history row — the audit trail v1 maintained by
  * hand is centralized here.
  */
-import { and, asc, count, desc, eq, gte, ilike, lt, or, type SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, ilike, lt, or, sql, type SQL } from "drizzle-orm";
 import { db } from "../index";
 import {
   cases,
@@ -14,6 +14,7 @@ import {
   casePriorities,
   type Case,
   type NewCase,
+  type CaseHistoryEntry,
 } from "../schema";
 import type { QueryScope } from "@/lib/rbac";
 import { formatCaseNumber, dayBounds } from "@/lib/cases/caseNumber";
@@ -409,4 +410,41 @@ export async function softDeleteCase(
     .update(cases)
     .set({ isDeleted: true, deletedAt: new Date(), deletedBy: actorId })
     .where(eq(cases.id, caseId));
+}
+
+export function listCaseHistory(caseId: number): Promise<CaseHistoryEntry[]> {
+  return db
+    .select()
+    .from(caseHistory)
+    .where(eq(caseHistory.caseId, caseId))
+    .orderBy(desc(caseHistory.createdAt));
+}
+
+/** Aggregate case counts (total / open / resolved) honoring the permission scope. */
+export async function caseStats(
+  scope: QueryScope,
+): Promise<{ total: number; open: number; resolved: number }> {
+  if (scope.kind === "none") return { total: 0, open: 0, resolved: 0 };
+
+  const conds: (SQL | undefined)[] = [live()];
+  if (scope.kind === "field") {
+    if (scope.field === "createdBy") conds.push(eq(cases.createdBy, scope.value));
+    else if (scope.field === "assignedTo") conds.push(eq(cases.assignedTo, scope.value));
+  }
+
+  const [row] = await db
+    .select({
+      total: sql<number>`count(*)::int`,
+      open: sql<number>`count(*) filter (where ${caseStatuses.isFinal} = false)::int`,
+      resolved: sql<number>`count(*) filter (where ${caseStatuses.isFinal} = true)::int`,
+    })
+    .from(cases)
+    .innerJoin(caseStatuses, eq(caseStatuses.id, cases.statusId))
+    .where(and(...conds));
+
+  return {
+    total: Number(row?.total ?? 0),
+    open: Number(row?.open ?? 0),
+    resolved: Number(row?.resolved ?? 0),
+  };
 }

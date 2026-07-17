@@ -56,8 +56,14 @@ export default function CasesPage() {
             <tbody>
               {rows.map((c) => (
                 <tr key={c.id}>
-                  <td dir="ltr">{c.caseNumber}</td>
-                  <td>{c.title}</td>
+                  <td dir="ltr">
+                    <Link href={`/cases/${c.id}`} style={{ color: "var(--color-brand-600)" }}>
+                      {c.caseNumber}
+                    </Link>
+                  </td>
+                  <td>
+                    <Link href={`/cases/${c.id}`}>{c.title}</Link>
+                  </td>
                   <td className="muted">
                     {new Date(c.createdAt).toLocaleDateString()}
                   </td>

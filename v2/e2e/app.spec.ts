@@ -46,3 +46,44 @@ test("login page renders RTL in Arabic", async ({ page }) => {
   await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 });
+
+test("open a case, add a comment, and change status", async ({ page }) => {
+  await login(page);
+  // Create a case to operate on.
+  await page.goto("/en/cases/new");
+  const title = `Detail case ${Date.now()}`;
+  await page.locator("#title").fill(title);
+  await page.locator("#description").fill("Case for the detail-view e2e test.");
+  await page.locator('button[type="submit"]').click();
+  await expect(page).toHaveURL(/\/en\/cases$/);
+
+  // Open it.
+  await page.getByRole("link", { name: title }).click();
+  await expect(page).toHaveURL(/\/en\/cases\/\d+$/);
+  await expect(page.getByRole("heading", { name: /CFM-\d{8}-\d{4}/ })).toBeVisible();
+
+  // Add a comment.
+  await page.locator("#comment").fill("Investigating this now.");
+  await page.getByRole("button", { name: /Post comment/i }).click();
+  await expect(page.getByText("Investigating this now.")).toBeVisible();
+
+  // Change status to In Progress.
+  await page.locator("#statusSel").selectOption({ label: "In Progress" });
+  await page.getByRole("button", { name: /Apply/i }).click();
+  await expect(page.locator(".badge").filter({ hasText: "In Progress" })).toBeVisible();
+});
+
+test("users admin page lists users (admin only)", async ({ page }) => {
+  await login(page);
+  await page.goto("/en/users");
+  await expect(page.getByRole("heading", { name: /Users/i })).toBeVisible();
+  await expect(page.getByText(ADMIN_EMAIL)).toBeVisible();
+});
+
+test("profile page saves changes", async ({ page }) => {
+  await login(page);
+  await page.goto("/en/profile");
+  await page.locator("#organization").fill("Sunflower Org QA");
+  await page.getByRole("button", { name: /Save changes/i }).click();
+  await expect(page.getByText(/Profile updated/i)).toBeVisible();
+});

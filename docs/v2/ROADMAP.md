@@ -127,9 +127,24 @@ types, 3 regions, 10 settings) with Arabic names — idempotent.
   redirect; **create case via UI → appears in list**; Arabic RTL login) + 9 prior
   = 13 e2e green; 43 vitest green; typecheck/lint/build pass.
 
-**Part 3 — remaining:** case detail view (comments/status/assign/escalate UI),
-users admin screen, profile & settings screens, richer dashboard stats, mobile
-sidebar drawer. (Original Phase 5 detail below.)
+**Part 3 ✅ DONE — completes the core app:**
+- **Case detail view** (`/cases/[id]`): summary with resolved lookup names,
+  status change (lifecycle-validated, 409 surfaced), assign (manager+), add
+  comment + comments list, and the case history/audit trail.
+- **Users admin** (`/users`): list, inline role change (hierarchy-enforced),
+  deactivate.
+- **Profile** (`/profile`): edit own name/organization via the users endpoint.
+- **Dashboard**: total/open/resolved tiles backed by a new aggregate endpoint
+  `GET /api/cases/stats`; new `GET /api/cases/[id]/history`.
+- **Verified:** 3 new authed e2e (open case → add comment → change status; users
+  list; profile save) → **16 e2e green**; 43 vitest green; typecheck/lint/build
+  pass.
+
+**Still open (polish, not blocking deploy):** escalate UI, mobile sidebar
+drawer, settings/resources admin screens, richer filters/search on the cases
+list. Phase 5 core is complete — ready for Phase 7 (deploy).
+
+### Original Phase 5 plan
 
 ### Original Phase 5 plan
 Port the UI to App Router with AR/EN + RTL as a first-class concern.

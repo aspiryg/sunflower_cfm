@@ -21,8 +21,13 @@ export default function DashboardPage() {
     queryKey: ["cases", { page: 1, limit: 5 }],
     queryFn: () => apiFetch<CaseRow[]>("/api/cases?limit=5"),
   });
+  const statsQ = useQuery({
+    queryKey: ["cases", "stats"],
+    queryFn: () =>
+      apiFetch<{ total: number; open: number; resolved: number }>("/api/cases/stats"),
+  });
 
-  const total = data?.pagination?.total ?? 0;
+  const stats = statsQ.data?.data;
   const recent = data?.data ?? [];
 
   return (
@@ -36,8 +41,16 @@ export default function DashboardPage() {
 
       <div className="stat-grid">
         <div className="stat">
-          <div className="stat__value">{total}</div>
+          <div className="stat__value">{stats?.total ?? "—"}</div>
           <div className="stat__label">{t("totalCases")}</div>
+        </div>
+        <div className="stat">
+          <div className="stat__value">{stats?.open ?? "—"}</div>
+          <div className="stat__label">{t("open")}</div>
+        </div>
+        <div className="stat">
+          <div className="stat__value">{stats?.resolved ?? "—"}</div>
+          <div className="stat__label">{t("resolved")}</div>
         </div>
       </div>
 

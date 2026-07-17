@@ -62,9 +62,9 @@ export function AppShell({ children }: { children: ReactNode }) {
         <header className="header">
           <span className="header__title">{tApp("name")}</span>
           <div className="header__actions">
-            <span className="header__user">
+            <Link href="/profile" className="header__user">
               {user.firstName} {user.lastName}
-            </span>
+            </Link>
             <LocaleSwitcher />
             <ThemeToggle />
             <button

@@ -73,8 +73,9 @@ continuously as each phase uncovers more. Grouped by area; each item tagged
   **in the browser**. v2: real server-side SQL pagination + aggregation.
   _Phase 5 part 2: cases list uses real server-side pagination (page/limit +
   totalPages/hasNext). Aggregate dashboard stats still to expand._
-- ☐ `[update]` `useCaseStats` computes stats client-side by reducing all cases →
-  move to SQL aggregate endpoints.
+- ☑ `[update]` `useCaseStats` computes stats client-side by reducing all cases →
+  move to SQL aggregate endpoints. _Phase 5 part 3: `GET /api/cases/stats` does a
+  SQL `count(*) filter(...)` aggregate (total/open/resolved), permission-scoped._
 - ☐ `[update]` No DB-level full-text/semantic search in v1 → add Postgres FTS +
   pgvector semantic search.
 
