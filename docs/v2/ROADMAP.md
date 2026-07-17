@@ -113,11 +113,23 @@ types, 3 regions, 10 settings) with Arabic names — idempotent.
   the prior 4 locale/health e2e = 9 green; 43 vitest still green; build/lint/tc
   pass. Uppercase-label suppression for Arabic; `dir="auto"` on free-text.
 
-**Part 2 — remaining (next):** auth pages (login/register) + AuthProvider/route
-guards, the authenticated app shell (sidebar/header, RTL), cases module
-(server-paginated list, tabbed form, detail), users/profile/settings — all
-gating off the shared `src/lib/rbac`. Then wire TanStack Query for the authed
-data layer. (Original Phase 5 detail below.)
+**Part 2 ✅ DONE — authenticated app core:**
+- TanStack Query + typed API client (`lib/api/client`), `AuthProvider`
+  (`/api/auth/me`, login/register/logout mutations), `Providers` wired into the
+  locale layout.
+- Auth pages (login/register) bilingual, wired to the API.
+- App shell (`AppShell`): sidebar/header with logical properties (RTL-safe),
+  **RBAC-gated nav off the shared `src/lib/rbac`** (Users only for admin+), theme
+  + locale controls, sign-out; client-side auth guard (redirect to /login).
+- Dashboard (total + recent), **cases list with real server-side pagination**
+  (no more limit:100000), case-create form (reference dropdowns, bilingual labels).
+- **Verified:** 4 authed Playwright e2e (login→dashboard + RBAC nav; unauth→login
+  redirect; **create case via UI → appears in list**; Arabic RTL login) + 9 prior
+  = 13 e2e green; 43 vitest green; typecheck/lint/build pass.
+
+**Part 3 — remaining:** case detail view (comments/status/assign/escalate UI),
+users admin screen, profile & settings screens, richer dashboard stats, mobile
+sidebar drawer. (Original Phase 5 detail below.)
 
 ### Original Phase 5 plan
 Port the UI to App Router with AR/EN + RTL as a first-class concern.

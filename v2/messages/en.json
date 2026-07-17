@@ -60,5 +60,61 @@
     "successBody": "Your feedback has been received. Our team will review it and take appropriate action.",
     "referenceNumber": "Your reference number",
     "submitAnother": "Submit another"
+  },
+  "auth": {
+    "loginTitle": "Sign in to Sunflower CFM",
+    "registerTitle": "Create your account",
+    "email": "Email",
+    "password": "Password",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "signIn": "Sign in",
+    "signUp": "Create account",
+    "signingIn": "Signing in…",
+    "creatingAccount": "Creating account…",
+    "noAccount": "Don't have an account?",
+    "haveAccount": "Already have an account?",
+    "loginError": "Invalid email or password.",
+    "registerError": "Could not create the account.",
+    "passwordHint": "At least 8 characters, with upper, lower, and a digit."
+  },
+  "shell": {
+    "dashboard": "Dashboard",
+    "cases": "Cases",
+    "users": "Users",
+    "settings": "Settings",
+    "signOut": "Sign out",
+    "menu": "Menu"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome back, {name}",
+    "totalCases": "Total cases",
+    "open": "Open",
+    "resolved": "Resolved",
+    "recent": "Recent cases"
+  },
+  "cases": {
+    "title": "Cases",
+    "new": "New case",
+    "number": "Number",
+    "subject": "Title",
+    "status": "Status",
+    "created": "Created",
+    "none": "No cases yet.",
+    "createTitle": "Create a case",
+    "titleLabel": "Title",
+    "descriptionLabel": "Description",
+    "category": "Category",
+    "priorityLabel": "Priority",
+    "channel": "Channel",
+    "submit": "Create case",
+    "creating": "Creating…",
+    "backToList": "Back to cases",
+    "loadError": "Could not load cases."
+  },
+  "common": {
+    "loading": "Loading…",
+    "required": "Required"
   }
 }

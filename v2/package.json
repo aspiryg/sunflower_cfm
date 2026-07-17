@@ -19,6 +19,7 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.64.1",
     "bcryptjs": "^2.4.3",
     "drizzle-orm": "^0.38.3",
     "jose": "^5.9.6",

@@ -60,5 +60,61 @@
     "successBody": "تم استلام ملاحظتك. سيراجعها فريقنا ويتخذ الإجراء المناسب.",
     "referenceNumber": "رقمك المرجعي",
     "submitAnother": "إرسال ملاحظة أخرى"
+  },
+  "auth": {
+    "loginTitle": "تسجيل الدخول إلى دوّار الشمس",
+    "registerTitle": "أنشئ حسابك",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "firstName": "الاسم الأول",
+    "lastName": "اسم العائلة",
+    "signIn": "تسجيل الدخول",
+    "signUp": "إنشاء حساب",
+    "signingIn": "جارٍ تسجيل الدخول…",
+    "creatingAccount": "جارٍ إنشاء الحساب…",
+    "noAccount": "ليس لديك حساب؟",
+    "haveAccount": "لديك حساب بالفعل؟",
+    "loginError": "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
+    "registerError": "تعذّر إنشاء الحساب.",
+    "passwordHint": "8 أحرف على الأقل، مع حرف كبير وصغير ورقم."
+  },
+  "shell": {
+    "dashboard": "لوحة التحكم",
+    "cases": "الحالات",
+    "users": "المستخدمون",
+    "settings": "الإعدادات",
+    "signOut": "تسجيل الخروج",
+    "menu": "القائمة"
+  },
+  "dashboard": {
+    "title": "لوحة التحكم",
+    "welcome": "مرحباً بعودتك، {name}",
+    "totalCases": "إجمالي الحالات",
+    "open": "مفتوحة",
+    "resolved": "محلولة",
+    "recent": "أحدث الحالات"
+  },
+  "cases": {
+    "title": "الحالات",
+    "new": "حالة جديدة",
+    "number": "الرقم",
+    "subject": "العنوان",
+    "status": "الحالة",
+    "created": "أُنشئت",
+    "none": "لا توجد حالات بعد.",
+    "createTitle": "إنشاء حالة",
+    "titleLabel": "العنوان",
+    "descriptionLabel": "الوصف",
+    "category": "الفئة",
+    "priorityLabel": "الأولوية",
+    "channel": "القناة",
+    "submit": "إنشاء الحالة",
+    "creating": "جارٍ الإنشاء…",
+    "backToList": "العودة إلى الحالات",
+    "loadError": "تعذّر تحميل الحالات."
+  },
+  "common": {
+    "loading": "جارٍ التحميل…",
+    "required": "مطلوب"
   }
 }
