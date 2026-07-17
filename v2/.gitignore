@@ -13,8 +13,8 @@
 /playwright-report
 /test-results
 
-# drizzle
-/drizzle/meta
+# drizzle: migrations + meta (_journal/snapshots) are committed — they are the
+# migration source of truth. Nothing here is ignored.
 
 # env
 .env

@@ -18,6 +18,27 @@ defaults:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+
+    # Real Postgres + pgvector so the schema integration tests actually run in CI
+    # (they self-skip only when DATABASE_URL is unset).
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: cfm
+          POSTGRES_PASSWORD: cfm
+          POSTGRES_DB: cfm
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U cfm -d cfm"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://cfm:cfm@localhost:5432/cfm
+
     steps:
       - uses: actions/checkout@v4
 
@@ -36,11 +57,14 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
-      - name: Unit tests
+      - name: Apply migrations
+        run: npm run db:migrate
+
+      - name: Seed reference data
+        run: npm run db:seed
+
+      - name: Tests (unit + schema integration)
         run: npm test
 
       - name: Build
         run: npm run build
-        env:
-          # Build must not require a live DB (health check is runtime-gated).
-          DATABASE_URL: postgresql://cfm:cfm@localhost:5432/cfm

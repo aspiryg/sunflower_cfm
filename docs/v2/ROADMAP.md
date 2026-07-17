@@ -37,16 +37,20 @@ Stand up the empty v2 app so every later phase has a home and a test harness.
 - **Exit:** `docker compose up` serves the app; `/en` and `/ar` render (dir
   flips); `npm test` runs green on a trivial test; CI passes.
 
-## Phase 2 — Database schema (Drizzle) + migrations + seed
-Translate the full Case schema to Drizzle.
-- All tables, enums (`pgEnum`), FKs, cascade rules, indexes, soft-delete/audit
-  columns; camelCase↔snake_case mapping; `pgvector` extension + `embedding`
-  column on cases; reconcile `caseNumber` prefix (CFM) and drop Feedback tables.
-- Seed data (roles/admin, 8 categories, 9 statuses, 4 priorities, 8 channels,
-  7 provider types, 3 regions, 10 settings) with AR names.
-- **Verify:** migrations apply cleanly to a fresh container; seed loads;
-  spec-parity script confirms every table/column/enum/relationship in `SPEC.md`
-  exists; a round-trip integration test inserts/reads a case with all FKs.
+## Phase 2 — Database schema (Drizzle) + migrations + seed ✅ DONE
+Translated the full Case schema to Drizzle (21 tables, 31 pgEnums, 40 FKs,
+cascade rules, indexes, soft-delete/audit columns; camelCase↔snake_case; pgvector
+extension + `embedding vector(1024)` on cases; Feedback schema dropped).
+Seed (admin user, 8 categories, 9 statuses, 4 priorities, 8 channels, 7 provider
+types, 3 regions, 10 settings) with Arabic names — idempotent.
+- **Verified:** migration applies cleanly to a fresh pgvector container; seed
+  loads with exact expected counts and is idempotent on re-run; a 6-test
+  integration suite (spec parity for all 21 tables + pgvector/embedding, case
+  insert with all FKs + defaults, self-referential threaded comments, soft-delete
+  filtering, cascade delete) passes; CI now runs these against a pgvector service.
+- Notes for later phases: audit columns (createdBy/updatedBy/deletedBy) are plain
+  integers, not FKs to users (v2 decision, see _shared.ts); the ANN index on
+  `cases.embedding` is deferred to Phase 6 (needs the chosen op class/model).
 
 ## Phase 3 — Data-access + domain services + RBAC
 Rebuild the model layer on Drizzle and the authorization core.
