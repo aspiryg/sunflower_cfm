@@ -41,6 +41,15 @@ test("create a case through the UI and see it in the list", async ({ page }) => 
   await expect(page.getByText(/CFM-\d{8}-\d{4}/).first()).toBeVisible();
 });
 
+test("forgot-password flow shows the anti-enumeration confirmation", async ({ page }) => {
+  await page.goto("/en/login");
+  await page.getByRole("link", { name: /Forgot password/i }).click();
+  await expect(page).toHaveURL(/\/en\/forgot-password$/);
+  await page.locator("#email").fill("whoever@example.com");
+  await page.locator('button[type="submit"]').click();
+  await expect(page.getByText(/a reset message has been sent/i)).toBeVisible();
+});
+
 test("login page renders RTL in Arabic", async ({ page }) => {
   await page.goto("/ar/login");
   await expect(page.locator("html")).toHaveAttribute("dir", "rtl");

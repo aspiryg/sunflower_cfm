@@ -11,6 +11,10 @@ import {
 import { hashPassword, issueTokens } from "@/lib/auth/service";
 import { setAuthCookies } from "@/lib/auth/cookies";
 import { writeAudit } from "@/db/repositories/audit";
+import { setVerificationToken } from "@/db/repositories/authTokens";
+import { generateToken, VERIFICATION_TTL_MS } from "@/lib/auth/tokens";
+import { sendEmailSafe } from "@/lib/email";
+import { verificationEmail } from "@/lib/email/templates";
 
 export const POST = handler(
   async (req) => {
@@ -37,6 +41,15 @@ export const POST = handler(
       organization,
       role: "user",
     });
+
+    // Kick off email verification (best-effort — never blocks registration).
+    const verification = generateToken();
+    await setVerificationToken(
+      user.id,
+      verification.hash,
+      new Date(Date.now() + VERIFICATION_TTL_MS),
+    );
+    sendEmailSafe(verificationEmail(user.email, verification.raw));
 
     const tokens = await issueTokens(user);
     const res = ok({ user: toSafeUser(user) }, "Registration successful.", {

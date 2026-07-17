@@ -35,6 +35,21 @@ export const loginSchema = z.object({
   rememberMe: z.boolean().optional(),
 });
 
+/** verify-email request + forgot-password both take just an email. */
+export const emailOnlySchema = z.object({
+  email: z.string().email(),
+});
+
+export const resetPasswordSchema = z
+  .object({
+    password,
+    confirmPassword: z.string().min(1),
+  })
+  .refine((d) => d.password === d.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
 export const changePasswordSchema = z
   .object({
     currentPassword: z.string().min(1),

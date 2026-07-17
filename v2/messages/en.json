@@ -200,5 +200,25 @@
     "delete": "Delete",
     "hint": "Images, PDF, Word, or text — up to 10MB.",
     "error": "Upload failed. Check the file type and size."
+  },
+  "authFlows": {
+    "forgotTitle": "Reset your password",
+    "forgotIntro": "Enter your email and we'll send you a reset link.",
+    "sendReset": "Send reset link",
+    "sending": "Sending…",
+    "sentNote": "If that email is registered, a reset message has been sent. Check your inbox.",
+    "forgotLink": "Forgot password?",
+    "resetTitle": "Choose a new password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm password",
+    "resetSubmit": "Set new password",
+    "resetting": "Saving…",
+    "resetSuccess": "Password updated. You can now sign in.",
+    "resetError": "This reset link is invalid or has expired.",
+    "verifyTitle": "Email verification",
+    "verifying": "Verifying your email…",
+    "verifySuccess": "Your email has been verified.",
+    "verifyError": "This verification link is invalid or has expired.",
+    "backToLogin": "Back to sign in"
   }
 }

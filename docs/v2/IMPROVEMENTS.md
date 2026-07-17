@@ -26,8 +26,10 @@ continuously as each phase uncovers more. Grouped by area; each item tagged
   implement TOTP 2FA or remove the dead surface.
 - ☐ `[add]` Session persistence for "log out everywhere" / device management
   (v1 `UserSessions` table exists but is disabled). Ties to advanced admin.
-- ☐ `[update]` `requireEmailVerification` middleware exists but is never applied;
-  decide where verification is actually enforced.
+- ◐ `[update]` `requireEmailVerification` middleware exists but is never applied;
+  decide where verification is actually enforced. _Core-gap phase: full
+  verify-email flow works (hashed 24h tokens, sent on register, re-request,
+  consume page). Enforcement point (if any) still a product decision._
 - ☐ `[add]` Account lockout / brute-force protections exist but should be
   reviewed and surfaced in the admin UI.
 
@@ -129,8 +131,10 @@ continuously as each phase uncovers more. Grouped by area; each item tagged
   endpoints + case-detail UI, tested end-to-end._
 
 ## Email `[update]` (deferred by owner)
-- ☐ Move off Gmail app password (rate limits, deliverability, spam) to a
-  transactional provider (Resend/Postmark/SES).
+- ◐ Move off Gmail app password (rate limits, deliverability, spam) to a
+  transactional provider (Resend/Postmark/SES). _Core-gap phase: pluggable
+  transport seam (console dev/test; any SMTP provider at deploy via SMTP_URL) —
+  provider choice deferred to deploy, no Gmail dependency anywhere in v2._
 
 ## Infra / ops
 - ☐ `[fix]` v1 cold start on Azure F1 (no Always On). v2: Hetzner container that

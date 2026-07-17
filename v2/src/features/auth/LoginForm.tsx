@@ -7,6 +7,7 @@ import { useLogin } from "./AuthContext";
 
 export function LoginForm() {
   const t = useTranslations("auth");
+  const tFlows = useTranslations("authFlows");
   const tApp = useTranslations("app");
   const router = useRouter();
   const login = useLogin();
@@ -51,6 +52,9 @@ export function LoginForm() {
           {login.isPending ? t("signingIn") : t("signIn")}
         </button>
       </form>
+      <p className="auth-card__foot">
+        <Link href="/forgot-password">{tFlows("forgotLink")}</Link>
+      </p>
       <p className="auth-card__foot">
         {t("noAccount")} <Link href="/register">{t("signUp")}</Link>
       </p>

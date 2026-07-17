@@ -162,7 +162,16 @@ admin screens, richer filters/search on the cases list.
   (docker-run step). Verified: 7 integration tests (incl. presigned-URL
   byte-for-byte roundtrip and ownership 403) + a browser-upload e2e →
   55 vitest / 18 e2e green.
-- ☐ Email flows (verify-email, forgot/reset password) behind a provider seam.
+- ✅ **Email flows behind a provider seam**: transport chosen by env — `console`
+  (dev/test, captures for assertions) or `smtp` via SMTP_URL at deploy (any
+  provider). Bilingual EN+AR templates. Verify-email (24h token, sent on
+  register + public re-request) and forgot/reset-password (1h token, no account
+  enumeration) with **hashed one-time tokens** (SHA-256 stored, raw only in the
+  email — hardening over v1). Frontend pages: forgot-password,
+  reset-password/[token], verify-email/[token]; login links to forgot.
+  Verified: 5 integration tests (full round-trips extracting tokens from the
+  captured email, replay + expiry rejection, enumeration silence) + a
+  forgot-password e2e → 60 vitest / 19 e2e green.
 - ☐ Case edit screen; richer cases-list filters/search.
 - ☐ Escalate UI; settings/resources admin screens; mobile sidebar drawer.
 
