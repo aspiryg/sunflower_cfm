@@ -1,0 +1,8 @@
+# Phase 7 reverse proxy + automatic HTTPS (Let's Encrypt).
+# Replace the site address with the real domain at deploy time.
+# Kept here as a stub so the compose topology is documented from Phase 1.
+
+{$SITE_ADDRESS:localhost} {
+	encode gzip
+	reverse_proxy web:3000
+}

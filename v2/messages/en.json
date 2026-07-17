@@ -1,0 +1,12 @@
+{
+  "app": {
+    "name": "Sunflower CFM",
+    "tagline": "Community Feedback Management"
+  },
+  "landing": {
+    "title": "Your voice, heard and acted on",
+    "subtitle": "Submit feedback, complaints, and suggestions. Our team reviews every submission and follows up.",
+    "submitFeedback": "Submit Feedback",
+    "signIn": "Sign In"
+  }
+}

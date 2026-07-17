@@ -1,0 +1,49 @@
+# Local/VM stack for Sunflower CFM v2.
+# Phase 1: web + postgres(pgvector). Phase 7 adds caddy, redis, and the restic
+# backup sidecar targeting Backblaze B2.
+
+# Distinct project name → prefixes containers/network/volumes as
+# "sunflower-cfm-v2_*" so this stack never collides with other Compose projects
+# on the same machine. Override at runtime with `docker compose -p <name>`.
+name: sunflower-cfm-v2
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sunflower-cfm-v2-web
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://cfm:cfm@postgres:5432/cfm
+      JWT_SECRET: ${JWT_SECRET:-dev_access_secret}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-dev_refresh_secret}
+    ports:
+      # host:container — distinct host port to avoid clashing with v1 / other apps
+      - "3100:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: sunflower-cfm-v2-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: cfm
+      POSTGRES_PASSWORD: cfm
+      POSTGRES_DB: cfm
+    ports:
+      # host:container — distinct host port so a local/other Postgres on 5432 is fine
+      - "55432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cfm -d cfm"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pgdata:
