@@ -19,6 +19,8 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1090.0",
+    "@aws-sdk/s3-request-presigner": "^3.1090.0",
     "@tanstack/react-query": "^5.64.1",
     "bcryptjs": "^2.4.3",
     "drizzle-orm": "^0.38.3",
