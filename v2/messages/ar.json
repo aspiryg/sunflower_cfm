@@ -120,7 +120,13 @@
     "submit": "إنشاء الحالة",
     "creating": "جارٍ الإنشاء…",
     "backToList": "العودة إلى الحالات",
-    "loadError": "تعذّر تحميل الحالات."
+    "loadError": "تعذّر تحميل الحالات.",
+    "saveChanges": "حفظ التغييرات",
+    "saving": "جارٍ الحفظ…",
+    "searchPlaceholder": "ابحث بالعنوان أو رقم الحالة…",
+    "allStatuses": "كل الحالات",
+    "allPriorities": "كل الأولويات",
+    "allCategories": "كل الفئات"
   },
   "caseDetail": {
     "back": "العودة إلى الحالات",
@@ -144,7 +150,8 @@
     "noComments": "لا توجد تعليقات بعد.",
     "history": "السجل",
     "transitionError": "تغيير الحالة هذا غير مسموح.",
-    "notFound": "الحالة غير موجودة."
+    "notFound": "الحالة غير موجودة.",
+    "edit": "تعديل"
   },
   "users": {
     "title": "المستخدمون",

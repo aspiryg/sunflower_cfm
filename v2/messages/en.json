@@ -120,7 +120,13 @@
     "submit": "Create case",
     "creating": "Creating…",
     "backToList": "Back to cases",
-    "loadError": "Could not load cases."
+    "loadError": "Could not load cases.",
+    "saveChanges": "Save changes",
+    "saving": "Saving…",
+    "searchPlaceholder": "Search by title or case number…",
+    "allStatuses": "All statuses",
+    "allPriorities": "All priorities",
+    "allCategories": "All categories"
   },
   "caseDetail": {
     "back": "Back to cases",
@@ -144,7 +150,8 @@
     "noComments": "No comments yet.",
     "history": "History",
     "transitionError": "That status change is not allowed.",
-    "notFound": "Case not found."
+    "notFound": "Case not found.",
+    "edit": "Edit"
   },
   "users": {
     "title": "Users",

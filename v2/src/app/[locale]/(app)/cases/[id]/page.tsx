@@ -7,7 +7,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch, type ApiError } from "@/lib/api/client";
 import { Link } from "@/i18n/navigation";
 import { useAuth } from "@/features/auth/AuthContext";
-import { hasRole } from "@/lib/rbac";
+import { hasRole, can } from "@/lib/rbac";
 import { AttachmentsCard } from "@/features/cases/AttachmentsCard";
 
 interface Ref {
@@ -24,6 +24,7 @@ interface CaseFull {
   priorityId: number;
   categoryId: number;
   assignedTo: number | null;
+  createdBy: number | null;
   createdAt: string;
 }
 interface Comment {
@@ -133,9 +134,16 @@ export default function CaseDetailPage() {
     <>
       <div className="page-head">
         <h1 dir="ltr">{c.caseNumber}</h1>
-        <Link href="/cases" className="btn btn-outline">
-          {t("back")}
-        </Link>
+        <div style={{ display: "flex", gap: "1rem" }}>
+          {user && can(user, "cases", "update", c) && (
+            <Link href={`/cases/${c.id}/edit`} className="btn btn-primary">
+              {t("edit")}
+            </Link>
+          )}
+          <Link href="/cases" className="btn btn-outline">
+            {t("back")}
+          </Link>
+        </div>
       </div>
 
       <div className="form-card" style={{ maxWidth: "72rem", marginBottom: "2.4rem" }}>

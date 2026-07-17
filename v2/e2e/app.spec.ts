@@ -89,6 +89,42 @@ test("users admin page lists users (admin only)", async ({ page }) => {
   await expect(page.getByText(ADMIN_EMAIL)).toBeVisible();
 });
 
+test("edit a case through the UI", async ({ page }) => {
+  await login(page);
+  await page.goto("/en/cases/new");
+  const title = `Editable case ${Date.now()}`;
+  await page.locator("#title").fill(title);
+  await page.locator("#description").fill("Case for the edit e2e test.");
+  await page.locator('button[type="submit"]').click();
+  await expect(page).toHaveURL(/\/en\/cases$/);
+  await page.getByRole("link", { name: title }).click();
+
+  await page.getByRole("link", { name: /^Edit$/i }).click();
+  await expect(page).toHaveURL(/\/en\/cases\/\d+\/edit$/);
+  const newTitle = `${title} (edited)`;
+  await page.locator("#title").fill(newTitle);
+  await page.getByRole("button", { name: /Save changes/i }).click();
+
+  await expect(page).toHaveURL(/\/en\/cases\/\d+$/);
+  await expect(page.getByText(newTitle)).toBeVisible();
+});
+
+test("cases list search filters results", async ({ page }) => {
+  await login(page);
+  await page.goto("/en/cases/new");
+  const unique = `Searchable${Date.now()}`;
+  await page.locator("#title").fill(unique);
+  await page.locator("#description").fill("Case for the search filter e2e.");
+  await page.locator('button[type="submit"]').click();
+  await expect(page).toHaveURL(/\/en\/cases$/);
+
+  await page.locator("#case-search").fill(unique);
+  await expect(page.getByRole("link", { name: unique })).toBeVisible();
+  // A miss shows the empty state.
+  await page.locator("#case-search").fill(`zz-no-match-${Date.now()}`);
+  await expect(page.getByText(/No cases yet/i)).toBeVisible();
+});
+
 test("upload an attachment through the case detail UI", async ({ page }) => {
   await login(page);
   // Create a fresh case.

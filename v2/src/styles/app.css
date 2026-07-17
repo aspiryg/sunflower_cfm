@@ -217,6 +217,34 @@
   padding: var(--spacing-10);
 }
 
+/* ---- Cases list filters ---- */
+.filters-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-3);
+  margin-bottom: var(--spacing-5);
+}
+.filters-bar input[type="search"] {
+  flex: 1;
+  min-width: 20rem;
+  padding: var(--spacing-2) var(--spacing-3);
+  border: 1px solid var(--color-grey-300);
+  border-radius: var(--radius-md);
+  background: var(--color-grey-0);
+  color: var(--color-grey-800);
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+}
+.filters-bar select {
+  padding: var(--spacing-2) var(--spacing-3);
+  border: 1px solid var(--color-grey-300);
+  border-radius: var(--radius-md);
+  background: var(--color-grey-0);
+  color: var(--color-grey-800);
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+}
+
 /* ---- Notifications bell (logical props → RTL-safe) ---- */
 .bell {
   position: relative;

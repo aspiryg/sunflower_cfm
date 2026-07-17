@@ -172,7 +172,14 @@ admin screens, richer filters/search on the cases list.
   Verified: 5 integration tests (full round-trips extracting tokens from the
   captured email, replay + expiry rejection, enumeration silence) + a
   forgot-password e2e → 60 vitest / 19 e2e green.
-- ☐ Case edit screen; richer cases-list filters/search.
+- ✅ **Case edit + list filters/search**: shared `CaseForm` (new + edit reuse
+  it), `/cases/[id]/edit` page, Edit button on detail **gated by the shared
+  RBAC `can()` on the actual row** (closes the v1 client-ownership gap for
+  cases); list gets debounced search (title/case number) + status/priority/
+  category filters over the server-side query params. Verified: 5 integration
+  tests (owner edit + history, non-owner 403, **statusId can't be smuggled
+  through PUT**, search by title/number, category include/exclude) + 2 e2e
+  (edit via UI, search filter) → 65 vitest / 21 e2e green.
 - ☐ Escalate UI; settings/resources admin screens; mobile sidebar drawer.
 
 ### Original Phase 5 plan

@@ -37,11 +37,11 @@ continuously as each phase uncovers more. Grouped by area; each item tagged
 - ☐ `[fix]` Frontend `ProtectedRoute` calls `hasAnyRole`/`hasExactRole` that the
   hook never returns → `requiredRoles`/`exactRole` props are dead; only
   `requiredRole` works.
-- ◐ `[fix]` Frontend client-side ownership checks implement only
+- ☑ `[fix]` Frontend client-side ownership checks implement only
   `comments`/`feedback`, never `cases` → case ownership silently evaluates false.
-  _Phase 5 part 2: UI gates off the same `src/lib/rbac` as the server (e.g.
-  Users nav hidden for non-admins); full per-instance UI ownership lands with the
-  case detail view in part 3._
+  _Done: UI gates off the same `src/lib/rbac` as the server — role-gated nav
+  (part 2) and per-instance `can(user,"cases","update",row)` on the case detail
+  Edit button (core-gap phase)._
 - ☑ `[update]` Backend and frontend maintain **separate** permission matrices
   that can drift. v2: one shared, typed source of truth. _Phase 3: single
   `src/lib/rbac` module (pure, isomorphic); frontend will import the same in P5._
@@ -71,10 +71,11 @@ continuously as each phase uncovers more. Grouped by area; each item tagged
   reminders (scheduled job) still to add._
 
 ## Performance / data access
-- ◐ `[fix]` Dashboards & tables fetch `limit: 100000` and filter/sort/paginate
+- ☑ `[fix]` Dashboards & tables fetch `limit: 100000` and filter/sort/paginate
   **in the browser**. v2: real server-side SQL pagination + aggregation.
-  _Phase 5 part 2: cases list uses real server-side pagination (page/limit +
-  totalPages/hasNext). Aggregate dashboard stats still to expand._
+  _Done: server-side pagination (part 2), SQL aggregate dashboard stats
+  (part 3), and server-side search + status/priority/category filters
+  (core-gap phase). Nothing fetches more than a page._
 - ☑ `[update]` `useCaseStats` computes stats client-side by reducing all cases →
   move to SQL aggregate endpoints. _Phase 5 part 3: `GET /api/cases/stats` does a
   SQL `count(*) filter(...)` aggregate (total/open/resolved), permission-scoped._
