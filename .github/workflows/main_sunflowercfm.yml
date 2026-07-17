@@ -7,6 +7,12 @@ on:
   push:
     branches:
       - main
+    # v2 lives beside v1 in this repo during the rebuild. Don't redeploy v1 for
+    # commits that only touch v2 / its docs / its CI.
+    paths-ignore:
+      - "v2/**"
+      - "docs/v2/**"
+      - ".github/workflows/v2-ci.yml"
   workflow_dispatch:
 
 jobs:
