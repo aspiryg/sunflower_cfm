@@ -8,6 +8,7 @@ import { apiFetch, type ApiError } from "@/lib/api/client";
 import { Link } from "@/i18n/navigation";
 import { useAuth } from "@/features/auth/AuthContext";
 import { hasRole } from "@/lib/rbac";
+import { AttachmentsCard } from "@/features/cases/AttachmentsCard";
 
 interface Ref {
   id: number;
@@ -222,6 +223,8 @@ export default function CaseDetailPage() {
           </div>
         )}
       </div>
+
+      <AttachmentsCard caseId={id} />
 
       {/* Comments */}
       <div className="form-card" style={{ maxWidth: "72rem", marginBottom: "2.4rem" }}>

@@ -19,8 +19,8 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
-    # Real Postgres + pgvector so the schema integration tests actually run in CI
-    # (they self-skip only when DATABASE_URL is unset).
+    # Real Postgres + pgvector and MinIO (S3-compatible) so the integration
+    # tests actually run in CI (they self-skip when the env vars are unset).
     services:
       postgres:
         image: pgvector/pgvector:pg16
@@ -35,9 +35,13 @@ jobs:
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
-
     env:
       DATABASE_URL: postgresql://cfm:cfm@localhost:5432/cfm
+      S3_ENDPOINT: http://localhost:59000
+      S3_REGION: us-east-1
+      S3_BUCKET: cfm-uploads
+      S3_ACCESS_KEY_ID: cfm
+      S3_SECRET_ACCESS_KEY: cfm12345
 
     steps:
       - uses: actions/checkout@v4
@@ -47,6 +51,19 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: v2/package-lock.json
+
+      # GitHub service containers can't override the image command, and
+      # minio/minio needs `server /data` — so MinIO runs via docker directly.
+      - name: Start MinIO (S3-compatible storage for attachment tests)
+        run: |
+          docker run -d --name minio -p 59000:9000 \
+            -e MINIO_ROOT_USER=cfm -e MINIO_ROOT_PASSWORD=cfm12345 \
+            minio/minio:latest server /data
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:59000/minio/health/live && break; sleep 1
+          done
+          docker run --rm --network host --entrypoint /bin/sh minio/mc:latest -c \
+            "mc alias set local http://localhost:59000 cfm cfm12345 && mc mb -p local/cfm-uploads"
 
       - name: Install
         run: npm ci

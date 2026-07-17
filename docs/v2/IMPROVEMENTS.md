@@ -118,11 +118,15 @@ continuously as each phase uncovers more. Grouped by area; each item tagged
   ties to the email-provider decision._
 
 ## Files / storage
-- ☐ `[update]` Migrate uploads Azure Blob → Backblaze B2 (S3 SDK).
+- ☑ `[update]` Migrate uploads Azure Blob → Backblaze B2 (S3 SDK). _Core-gap
+  phase: S3-compatible layer (`lib/storage/s3`) used by attachments — B2 in
+  prod, MinIO locally/CI; only env vars differ. (v1's profile-picture upload to
+  Azure Blob is superseded; profile pictures re-land on the same layer later.)_
 - ☐ `[add]` Virus-scan status is modeled (`virusScanStatus`) but not performed →
-  wire an actual scan step or drop the pretense.
-- ☐ `[add]` `documentUpload` middleware exists but no route uses it → real case
-  attachment upload endpoints.
+  wire an actual scan step or drop the pretense. _(rows default to `pending`.)_
+- ☑ `[add]` `documentUpload` middleware exists but no route uses it → real case
+  attachment upload endpoints. _Core-gap phase: upload/list/download/delete
+  endpoints + case-detail UI, tested end-to-end._
 
 ## Email `[update]` (deferred by owner)
 - ☐ Move off Gmail app password (rate limits, deliverability, spam) to a

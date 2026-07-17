@@ -190,5 +190,15 @@
       "assignment_transferred": "Assignment of case {caseNumber} was transferred",
       "quality_review_required": "Quality review required for case {caseNumber}"
     }
+  },
+  "attachments": {
+    "title": "Attachments",
+    "upload": "Upload file",
+    "uploading": "Uploading…",
+    "empty": "No attachments.",
+    "download": "Download",
+    "delete": "Delete",
+    "hint": "Images, PDF, Word, or text — up to 10MB.",
+    "error": "Upload failed. Check the file type and size."
   }
 }

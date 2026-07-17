@@ -153,7 +153,15 @@ admin screens, richer filters/search on the cases list.
 - ✅ **Brand correction**: the app is "**Community Feedback Management**" — brand
   kept in English in the Arabic UI (owner decision); all catalogs/metadata/seed
   updated.
-- ☐ Attachments upload + **B2 (S3) storage** (MinIO locally for tests).
+- ✅ **Attachments + S3-compatible storage**: one S3 client for every env (B2 in
+  prod, MinIO locally/CI — env vars only). Upload (multipart, 10MB cap, MIME
+  allow-list, sha256 checksum) → key `cases/{id}/{uuid}`, metadata row, ATTACH
+  audit; list; download via 302 presigned URL (+download bookkeeping); soft
+  delete (object retained). Case-detail attachments card (upload/list/download/
+  delete, EN/AR). MinIO wired into docker-compose (+ bucket-init sidecar) and CI
+  (docker-run step). Verified: 7 integration tests (incl. presigned-URL
+  byte-for-byte roundtrip and ownership 403) + a browser-upload e2e →
+  55 vitest / 18 e2e green.
 - ☐ Email flows (verify-email, forgot/reset password) behind a provider seam.
 - ☐ Case edit screen; richer cases-list filters/search.
 - ☐ Escalate UI; settings/resources admin screens; mobile sidebar drawer.

@@ -190,5 +190,15 @@
       "assignment_transferred": "تم نقل تعيين الحالة {caseNumber}",
       "quality_review_required": "مطلوب مراجعة جودة للحالة {caseNumber}"
     }
+  },
+  "attachments": {
+    "title": "المرفقات",
+    "upload": "رفع ملف",
+    "uploading": "جارٍ الرفع…",
+    "empty": "لا توجد مرفقات.",
+    "download": "تنزيل",
+    "delete": "حذف",
+    "hint": "صور أو PDF أو Word أو نص — حتى 10 ميغابايت.",
+    "error": "فشل الرفع. تحقق من نوع الملف وحجمه."
   }
 }

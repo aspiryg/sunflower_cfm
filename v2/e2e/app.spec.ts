@@ -80,6 +80,28 @@ test("users admin page lists users (admin only)", async ({ page }) => {
   await expect(page.getByText(ADMIN_EMAIL)).toBeVisible();
 });
 
+test("upload an attachment through the case detail UI", async ({ page }) => {
+  await login(page);
+  // Create a fresh case.
+  await page.goto("/en/cases/new");
+  const title = `Attach case ${Date.now()}`;
+  await page.locator("#title").fill(title);
+  await page.locator("#description").fill("Case for the attachment e2e test.");
+  await page.locator('button[type="submit"]').click();
+  await expect(page).toHaveURL(/\/en\/cases$/);
+  await page.getByRole("link", { name: title }).click();
+  await expect(page).toHaveURL(/\/en\/cases\/\d+$/);
+
+  // Upload a small text file.
+  await page.locator("#attachment-file").setInputFiles({
+    name: "e2e-note.txt",
+    mimeType: "text/plain",
+    buffer: Buffer.from("uploaded from the e2e test"),
+  });
+  await expect(page.getByText("e2e-note.txt")).toBeVisible();
+  await expect(page.getByRole("link", { name: /Download/i })).toBeVisible();
+});
+
 test("notifications bell opens its dropdown", async ({ page }) => {
   await login(page);
   await page.getByRole("button", { name: /Notifications|الإشعارات/ }).click();
