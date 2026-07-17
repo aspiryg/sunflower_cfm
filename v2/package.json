@@ -21,18 +21,20 @@
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "drizzle-orm": "^0.38.3",
+    "jose": "^5.9.6",
     "next": "^15.1.6",
     "next-intl": "^3.26.3",
     "pg": "^8.13.1",
     "postgres": "^3.4.5",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
     "@playwright/test": "^1.49.1",
-    "@types/node": "^22.10.7",
     "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^22.10.7",
     "@types/pg": "^8.11.10",
     "@types/react": "^19.0.7",
     "@types/react-dom": "^19.0.3",

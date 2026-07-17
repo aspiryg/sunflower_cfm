@@ -12,10 +12,12 @@ continuously as each phase uncovers more. Grouped by area; each item tagged
 ## Auth & security
 - ☐ `[fix]` `GET /api/auth/status` uses CommonJS `require("jsonwebtoken")` inside
   an ESM module → throws at runtime.
-- ☐ `[fix]` `authenticateToken` lets an *expired-but-present* access token fall
-  through to a 500 instead of refreshing or returning 401.
-- ☐ `[fix]` Controllers fall back to a hardcoded `userId = 1` when `req.user` is
-  missing — must fail closed, never impersonate the admin.
+- ☑ `[fix]` `authenticateToken` lets an *expired-but-present* access token fall
+  through to a 500 instead of refreshing or returning 401. _Phase 4: session
+  layer distinguishes expired vs invalid and auto-refreshes; regression-tested._
+- ☑ `[fix]` Controllers fall back to a hardcoded `userId = 1` when `req.user` is
+  missing — must fail closed, never impersonate the admin. _Phase 4: `authed`
+  guard returns 401 when unauthenticated; no fallback actor exists._
 - ☐ `[fix]` `ResourceHelpers.getComment`/`getCategory` return stub objects with
   `createdBy:{id:1}` → ownership checks there are not real.
 - ☐ `[update]` JWT secrets/rotation: v1 shipped placeholder `JWT_SECRET`. v2
@@ -46,8 +48,10 @@ continuously as each phase uncovers more. Grouped by area; each item tagged
   `SystemSettings.case.number.prefix` says `CFM`. v2: settings-authoritative.
   _Phase 3: `getCasePrefix()` + `formatCaseNumber()` produce `CFM-YYYYMMDD-NNNN`,
   with a unique-collision retry; tested._
-- ☐ `[add]` **Public anonymous feedback intake does not exist.** The public form
+- ☑ `[add]` **Public anonymous feedback intake does not exist.** The public form
   only `console.log`s; `POST /api/cases` is auth-gated. v2 adds a real endpoint.
+  _Phase 4: `POST /api/public/feedback` creates a public case (null submitter,
+  rate-limited, audit-logged); returns only a reference number. Tested._
 - ◐ `[update]` Denormalized JSON/CSV blobs (`mentionedUsers`, `accessControl`,
   `tags`, `attachments`, `groupProviderGenderComposition`) → proper `jsonb` or
   junction tables. _Phase 2: `attachments`/`accessControl`/`mentionedUsers`/

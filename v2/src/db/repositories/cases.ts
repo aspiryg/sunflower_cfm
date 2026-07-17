@@ -124,7 +124,7 @@ export async function findCaseByNumber(
  */
 export async function createCase(
   input: CaseCreateInput,
-  actorId: number,
+  actorId: number | null,
 ): Promise<Case> {
   const now = new Date();
   const statusId = input.statusId ?? (await initialStatusId());
@@ -150,18 +150,22 @@ export async function createCase(
           dueDate,
           caseDate: now,
           submittedAt: now,
-          submittedBy: actorId,
+          submittedBy: actorId, // nullable — null for anonymous public intake
           createdBy: actorId,
         })
         .returning();
 
-      await writeHistory({
-        caseId: row.id,
-        actorId,
-        actionType: "CREATION",
-        changeDescription: `Case ${caseNumber} created.`,
-        statusId,
-      });
+      // case_history is a user-action log (createdBy is NOT NULL). Anonymous
+      // creation is recorded in audit_logs (userId nullable) by the caller.
+      if (actorId != null) {
+        await writeHistory({
+          caseId: row.id,
+          actorId,
+          actionType: "CREATION",
+          changeDescription: `Case ${caseNumber} created.`,
+          statusId,
+        });
+      }
       return row;
     } catch (err: unknown) {
       // 23505 = unique_violation (case_number collision) → retry with next seq.

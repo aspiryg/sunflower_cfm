@@ -72,15 +72,30 @@ types, 3 regions, 10 settings) with Arabic names — idempotent.
 - Deferred within later phases: notifications/assignments/attachments repos get
   fleshed out when their API/UI lands (Phase 4/5); audit_logs writer in Phase 4.
 
-## Phase 4 — API (Next route handlers / server actions)
-Reimplement the full API surface (`SPEC.md §3`) incl. the **new anonymous
-public-intake endpoint**, fixing the v1 auth/ownership bugs.
-- Cookie JWT auth (access+refresh, auto-refresh), rate limiting, validation
-  (zod), the `{success,...}` envelope, static-before-dynamic routing.
-- B2 (S3 SDK) for attachments/profile pictures.
-- **Verify:** Playwright/HTTP integration tests for each endpoint group; auth
-  matrix (public vs authed vs role-gated) asserted; public intake creates a real
-  case; the six known v1 bugs have explicit regression tests.
+## Phase 4 — API (Next route handlers) ✅ DONE (core)
+- **Auth infra** (`src/lib/auth`): jose JWT (access+refresh), httpOnly cookies,
+  `authenticate()` with DB-fresh user load + transparent access-token refresh,
+  bcrypt password service. **Fixes the v1 expired-token 500** and the
+  hardcoded-`userId=1` fallbacks (fail closed).
+- **HTTP infra** (`src/lib/http`): `{success,…}` envelope, in-memory rate
+  limiter (Redis in P7), and `handler`/`authed` guards (error handling + rate
+  limit + auth + collection-level RBAC + cookie refresh). Zod validation
+  (`src/lib/validation`). Audit writer (`repositories/audit`).
+- **Endpoints:** auth (register/login/logout/me/refresh), cases (list scoped,
+  create, get/update/delete with instance ownership, status/assign/escalate,
+  comments GET/POST, number lookup), users (list/create/get/update/delete +
+  role), reference data (one dynamic route: flat lists + hierarchy drill-downs),
+  and the **net-new anonymous `POST /api/public/feedback`**.
+- **Verified:** 8 API integration tests over the route handlers against the DB —
+  register/login/me cookie flow, the **expired-access-token regression** (200 via
+  auto-refresh, not 500), RBAC gating (user cannot create users), case ownership
+  (user can't read another's case; list excludes it), lifecycle over HTTP
+  (200/409), and public intake (public case, null submitter, ref number only).
+  43 tests total green; typecheck/lint/build pass.
+- **Deferred to a Phase 4 remainder / later phases:** email-dependent flows
+  (verify-email, forgot/reset password) — tied to the email decision;
+  profile endpoints; notifications endpoints; **B2 storage (S3 SDK)** for
+  attachments/profile pictures (needs bucket creds). Tracked in IMPROVEMENTS.
 
 ## Phase 5 — Frontend rebuild (bilingual, themed)
 Port the UI to App Router with AR/EN + RTL as a first-class concern.

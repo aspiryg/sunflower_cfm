@@ -10,7 +10,6 @@ import {
   type Action,
   type Restriction,
   type AuthUser,
-  type TargetResource,
   type AuthResult,
   type QueryScope,
 } from "./types";
@@ -46,7 +45,9 @@ export function authorize(
   user: AuthUser,
   resource: Resource,
   action: Action,
-  target?: TargetResource,
+  // `object` (not an index signature) so concrete row types (Case, User, …) are
+  // assignable at call sites without casts.
+  target?: object,
 ): AuthResult {
   if (user.role === "super_admin") {
     return { allowed: true, restriction: "all" };
@@ -73,7 +74,8 @@ export function authorize(
     return { allowed: false, restriction, code: "NO_OWNERSHIP_MODEL" };
   }
 
-  const owns = Number(target[field]) === user.id;
+  const owns =
+    Number((target as Record<string, unknown>)[field]) === user.id;
   if (owns) return { allowed: true, restriction };
   return {
     allowed: false,
@@ -87,7 +89,7 @@ export function can(
   user: AuthUser,
   resource: Resource,
   action: Action,
-  target?: TargetResource,
+  target?: object,
 ): boolean {
   return authorize(user, resource, action, target).allowed;
 }
