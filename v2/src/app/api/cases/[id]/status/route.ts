@@ -6,6 +6,7 @@ import { paramInt } from "@/lib/http/params";
 import { parseBody, changeStatusSchema } from "@/lib/validation";
 import { findCaseById, changeCaseStatus } from "@/db/repositories/cases";
 import { writeAudit } from "@/db/repositories/audit";
+import { notifyCaseStakeholders } from "@/lib/notify";
 
 export const PATCH = authed(
   async (req: NextRequest, auth, ctx) => {
@@ -33,6 +34,12 @@ export const PATCH = authed(
       entityType: "case",
       entityId: id,
       metadata: { statusId: parsed.data.statusId },
+    });
+    await notifyCaseStakeholders({
+      caseRow: result.case,
+      actorId: auth.user.id,
+      type: "case_status_changed",
+      message: parsed.data.reason,
     });
     return ok({ case: result.case }, "Status updated.");
   },

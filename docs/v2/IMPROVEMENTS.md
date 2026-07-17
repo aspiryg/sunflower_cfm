@@ -111,8 +111,11 @@ continuously as each phase uncovers more. Grouped by area; each item tagged
 - ☐ `[update]` "Real-time" is refetch-on-focus/reconnect only (no push/SSE/WS).
   Consider SSE or WebSocket for true real-time.
 - ☐ `[fix]` `getNotificationAnalytics` returns stubbed zeros → implement.
-- ☐ `[add]` Push/email delivery status is tracked in schema but delivery is
-  partial — finish the notification delivery pipeline.
+- ◐ `[add]` Push/email delivery status is tracked in schema but delivery is
+  partial — finish the notification delivery pipeline. _Core-gap phase: full
+  in-app pipeline done (fan-out on assign/status/comment, bell UI, unread
+  counts, mark read/all, localized EN/AR). Email/push delivery still open —
+  ties to the email-provider decision._
 
 ## Files / storage
 - ☐ `[update]` Migrate uploads Azure Blob → Backblaze B2 (S3 SDK).

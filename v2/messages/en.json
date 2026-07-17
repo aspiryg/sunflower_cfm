@@ -1,7 +1,7 @@
 {
   "app": {
-    "name": "Sunflower CFM",
-    "tagline": "Community Feedback Management"
+    "name": "Community Feedback Management",
+    "tagline": "Sunflower Organization"
   },
   "nav": {
     "home": "Home",
@@ -18,14 +18,23 @@
     "signIn": "Staff Sign In",
     "featuresTitle": "How we handle your feedback",
     "features": {
-      "submit": { "title": "Submit easily", "body": "Share feedback in your language, with or without an account." },
-      "classify": { "title": "Smart classification", "body": "Cases are categorized and prioritized — assisted by AI." },
-      "resolve": { "title": "Tracked to resolution", "body": "Every case is assigned, investigated, resolved, and closed." }
+      "submit": {
+        "title": "Submit easily",
+        "body": "Share feedback in your language, with or without an account."
+      },
+      "classify": {
+        "title": "Smart classification",
+        "body": "Cases are categorized and prioritized — assisted by AI."
+      },
+      "resolve": {
+        "title": "Tracked to resolution",
+        "body": "Every case is assigned, investigated, resolved, and closed."
+      }
     }
   },
   "about": {
-    "title": "About Sunflower CFM",
-    "mission": "Sunflower CFM is the community feedback management platform of the Sunflower Organization, serving communities across the Occupied Palestinian Territories. We make it simple to raise concerns and ensure every voice is heard, tracked, and acted upon.",
+    "title": "About Community Feedback Management",
+    "mission": "Community Feedback Management is the feedback platform of the Sunflower Organization, serving communities across the Occupied Palestinian Territories. We make it simple to raise concerns and ensure every voice is heard, tracked, and acted upon.",
     "contactTitle": "Contact us",
     "email": "Email",
     "phone": "Phone"
@@ -62,7 +71,7 @@
     "submitAnother": "Submit another"
   },
   "auth": {
-    "loginTitle": "Sign in to Sunflower CFM",
+    "loginTitle": "Sign in to Community Feedback Management",
     "registerTitle": "Create your account",
     "email": "Email",
     "password": "Password",
@@ -165,5 +174,21 @@
   "common": {
     "loading": "Loading…",
     "required": "Required"
+  },
+  "notifs": {
+    "label": "Notifications",
+    "empty": "No notifications.",
+    "markAllRead": "Mark all read",
+    "types": {
+      "case_assigned": "Case {caseNumber} was assigned",
+      "case_updated": "Case {caseNumber} was updated",
+      "case_status_changed": "Status of case {caseNumber} changed",
+      "comment_added": "New comment on case {caseNumber}",
+      "escalation": "Case {caseNumber} was escalated",
+      "due_date_reminder": "Case {caseNumber} is due soon",
+      "case_resolved": "Case {caseNumber} was resolved",
+      "assignment_transferred": "Assignment of case {caseNumber} was transferred",
+      "quality_review_required": "Quality review required for case {caseNumber}"
+    }
   }
 }

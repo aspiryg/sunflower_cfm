@@ -9,8 +9,8 @@ import { Providers } from "@/ui/Providers";
 import "../globals.css";
 
 export const metadata: Metadata = {
-  title: "Sunflower CFM",
-  description: "Community Feedback Management platform",
+  title: "Community Feedback Management",
+  description: "Community feedback platform of the Sunflower Organization",
 };
 
 export function generateStaticParams() {

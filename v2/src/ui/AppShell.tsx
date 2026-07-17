@@ -7,6 +7,7 @@ import { useAuth, useLogout } from "@/features/auth/AuthContext";
 import { hasRole, type Role } from "@/lib/rbac";
 import { ThemeToggle } from "./ThemeToggle";
 import { LocaleSwitcher } from "./LocaleSwitcher";
+import { NotificationsBell } from "./NotificationsBell";
 
 const NAV: { href: string; key: string; minRole?: Role }[] = [
   { href: "/dashboard", key: "dashboard" },
@@ -65,6 +66,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Link href="/profile" className="header__user">
               {user.firstName} {user.lastName}
             </Link>
+            <NotificationsBell />
             <LocaleSwitcher />
             <ThemeToggle />
             <button

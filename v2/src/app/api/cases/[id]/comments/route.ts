@@ -7,6 +7,7 @@ import { parseBody, addCommentSchema } from "@/lib/validation";
 import { findCaseById } from "@/db/repositories/cases";
 import { addComment, listComments } from "@/db/repositories/comments";
 import { writeAudit } from "@/db/repositories/audit";
+import { notifyCaseStakeholders } from "@/lib/notify";
 
 export const GET = authed(
   async (_req, auth, ctx) => {
@@ -40,6 +41,11 @@ export const POST = authed(
       action: "COMMENT",
       entityType: "case",
       entityId: id,
+    });
+    await notifyCaseStakeholders({
+      caseRow: found,
+      actorId: auth.user.id,
+      type: "comment_added",
     });
     return ok({ comment }, "Comment added.", { status: 201 });
   },

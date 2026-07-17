@@ -140,9 +140,23 @@ types, 3 regions, 10 settings) with Arabic names — idempotent.
   list; profile save) → **16 e2e green**; 43 vitest green; typecheck/lint/build
   pass.
 
-**Still open (polish, not blocking deploy):** escalate UI, mobile sidebar
-drawer, settings/resources admin screens, richer filters/search on the cases
-list. Phase 5 core is complete — ready for Phase 7 (deploy).
+**Still open (polish):** escalate UI, mobile sidebar drawer, settings/resources
+admin screens, richer filters/search on the cases list.
+
+## Core-gap closure (owner decision: gaps → AI → advanced → deploy) — ◐
+- ✅ **Notifications (in-app)**: self-scoped repo; fan-out on assign/status
+  change/comment to case creator + assignee (never the actor, deduped, failures
+  swallowed); API (list + unread summary, mark read, mark-all-read, delete);
+  header bell with unread badge + 30s polling; localized EN/AR by type.
+  Verified: 5 integration tests (triggers via real route handlers, self-scoping,
+  mark-all) + a bell e2e → 48 vitest / 17 e2e green.
+- ✅ **Brand correction**: the app is "**Community Feedback Management**" — brand
+  kept in English in the Arabic UI (owner decision); all catalogs/metadata/seed
+  updated.
+- ☐ Attachments upload + **B2 (S3) storage** (MinIO locally for tests).
+- ☐ Email flows (verify-email, forgot/reset password) behind a provider seam.
+- ☐ Case edit screen; richer cases-list filters/search.
+- ☐ Escalate UI; settings/resources admin screens; mobile sidebar drawer.
 
 ### Original Phase 5 plan
 

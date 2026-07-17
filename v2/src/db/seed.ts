@@ -33,7 +33,7 @@ async function seed() {
       firstName: "System",
       lastName: "Administrator",
       role: "super_admin",
-      organization: "Sunflower CFM",
+      organization: "Sunflower Organization",
       isEmailVerified: true,
       emailVerifiedAt: new Date(),
     })
@@ -124,7 +124,7 @@ async function seed() {
   await db
     .insert(systemSettings)
     .values([
-      { settingKey: "app.name", settingValue: "Sunflower CFM", settingType: "string", category: "general", displayName: "Application Name" },
+      { settingKey: "app.name", settingValue: "Community Feedback Management", settingType: "string", category: "general", displayName: "Application Name" },
       { settingKey: "app.version", settingValue: "2.0.0", settingType: "string", category: "general", displayName: "Application Version" },
       { settingKey: "case.number.prefix", settingValue: "CFM", settingType: "string", category: "general", displayName: "Case Number Prefix" },
       { settingKey: "case.auto.assignment", settingValue: "false", settingType: "boolean", category: "general", displayName: "Automatic Case Assignment" },

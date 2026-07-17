@@ -80,6 +80,12 @@ test("users admin page lists users (admin only)", async ({ page }) => {
   await expect(page.getByText(ADMIN_EMAIL)).toBeVisible();
 });
 
+test("notifications bell opens its dropdown", async ({ page }) => {
+  await login(page);
+  await page.getByRole("button", { name: /Notifications|الإشعارات/ }).click();
+  await expect(page.locator(".bell__menu")).toBeVisible();
+});
+
 test("profile page saves changes", async ({ page }) => {
   await login(page);
   await page.goto("/en/profile");

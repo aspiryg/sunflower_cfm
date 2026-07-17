@@ -6,6 +6,7 @@ import { parseBody, assignSchema } from "@/lib/validation";
 import { findCaseById, assignCase } from "@/db/repositories/cases";
 import { findUserById } from "@/db/repositories/users";
 import { writeAudit } from "@/db/repositories/audit";
+import { notifyCaseStakeholders } from "@/lib/notify";
 
 export const PATCH = authed(
   async (req: NextRequest, auth, ctx) => {
@@ -31,6 +32,14 @@ export const PATCH = authed(
       entityId: id,
       metadata: { assignedTo: parsed.data.assignedTo },
     });
+    if (updated) {
+      await notifyCaseStakeholders({
+        caseRow: updated,
+        actorId: auth.user.id,
+        type: "case_assigned",
+        alsoNotify: [parsed.data.assignedTo],
+      });
+    }
     return ok({ case: updated }, "Case assigned.");
   },
   // cases:assign is granted to manager+ only (see RBAC matrix).
