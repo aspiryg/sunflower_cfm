@@ -1,14 +1,17 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
-import { useTranslations } from "next-intl";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
+import { apiFetch } from "@/lib/api/client";
 import { useAuth } from "@/features/auth/AuthContext";
-import { hasRole, type Role } from "@/lib/rbac";
+import { hasRole, can, type Role } from "@/lib/rbac";
 import { ThemeToggle } from "./ThemeToggle";
+import { useTheme } from "./ThemeProvider";
 import { LocaleSwitcher } from "./LocaleSwitcher";
 import { NotificationsBell } from "./NotificationsBell";
 import { UserMenu } from "./UserMenu";
+import { CommandPalette, toggleCommandPalette, type CommandAction } from "./CommandPalette";
 
 const NAV: { href: string; key: string; minRole?: Role }[] = [
   { href: "/dashboard", key: "dashboard" },
@@ -21,10 +24,47 @@ export function AppShell({ children }: { children: ReactNode }) {
   const t = useTranslations("shell");
   const tApp = useTranslations("app");
   const tc = useTranslations("common");
+  const tCmd = useTranslations("command");
+  const locale = useLocale();
   const { user, isLoading, isAuthenticated } = useAuth();
+  const { mode, setMode } = useTheme();
   const router = useRouter();
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  // Action commands for the palette (theme, language, sign out).
+  const commandActions = useMemo<CommandAction[]>(
+    () => [
+      {
+        id: "toggle-theme",
+        label: tCmd("actionTheme"),
+        hint: mode,
+        keywords: "dark light appearance",
+        icon: "◐",
+        run: () => setMode(mode === "dark" ? "light" : "dark"),
+      },
+      {
+        id: "switch-language",
+        label: tCmd("actionLanguage"),
+        hint: locale === "ar" ? "EN" : "ع",
+        keywords: "arabic english locale لغة",
+        icon: "⇄",
+        run: () => router.replace(pathname, { locale: locale === "ar" ? "en" : "ar" }),
+      },
+      {
+        id: "sign-out",
+        label: tCmd("actionSignOut"),
+        keywords: "logout exit",
+        icon: "⏻",
+        run: async () => {
+          await apiFetch("/api/auth/logout", { method: "POST" });
+          router.replace("/login");
+          router.refresh();
+        },
+      },
+    ],
+    [tCmd, mode, setMode, locale, router, pathname],
+  );
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) router.replace("/login");
@@ -39,6 +79,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   if (!isAuthenticated || !user) return null;
 
   const items = NAV.filter((n) => !n.minRole || hasRole(user, n.minRole));
+  const commandNav = items.map((n) => ({ href: n.href, label: t(n.key) }));
+  const canCreateCase = can(user, "cases", "create");
 
   return (
     <div className="shell">
@@ -76,6 +118,16 @@ export function AppShell({ children }: { children: ReactNode }) {
             ☰
           </button>
           <span className="header__title">{tApp("name")}</span>
+          <button
+            type="button"
+            className="header__cmdk"
+            onClick={toggleCommandPalette}
+            aria-label={t("search")}
+          >
+            <span aria-hidden>⌕</span>
+            <span className="header__cmdk-label">{t("search")}</span>
+            <kbd>⌘K</kbd>
+          </button>
           <div className="header__actions">
             <NotificationsBell />
             <LocaleSwitcher />
@@ -85,6 +137,13 @@ export function AppShell({ children }: { children: ReactNode }) {
         </header>
         <main className="content">{children}</main>
       </div>
+
+      <CommandPalette
+        navItems={commandNav}
+        actions={commandActions}
+        newCaseHref={canCreateCase ? "/cases/new" : undefined}
+        onNavigate={(href) => router.push(href)}
+      />
     </div>
   );
 }

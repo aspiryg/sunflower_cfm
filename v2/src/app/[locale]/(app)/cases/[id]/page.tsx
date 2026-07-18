@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -14,11 +14,13 @@ import { ConfirmationModal } from "@/ui/Modal";
 import { useToast } from "@/ui/Toast";
 import { Breadcrumb } from "@/ui/Breadcrumb";
 import { UserSelect } from "@/ui/UserSelect";
+import { StatusBadge } from "@/ui/StatusBadge";
 
 interface Ref {
   id: number;
   name: string;
   arabicName: string | null;
+  color?: string | null;
 }
 interface CaseFull {
   id: number;
@@ -75,6 +77,8 @@ export default function CaseDetailPage() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [assignee, setAssignee] = useState<number | null>(null);
+  const [statusSel, setStatusSel] = useState<number | "">("");
+  const [escalateReason, setEscalateReason] = useState("");
   const [aiSummary, setAiSummary] = useState<string | null>(null);
   const toast = useToast();
   const tToast = useTranslations("toasts");
@@ -114,8 +118,16 @@ export default function CaseDetailPage() {
     enabled: canSeeUsers,
   });
 
+  // Seed the status select once the case loads.
+  useEffect(() => {
+    const s = caseQ.data?.data.case.statusId;
+    if (s != null) setStatusSel(s);
+  }, [caseQ.data]);
+
+  const refItem = (list: Ref[] | undefined, refId: number) =>
+    list?.find((x) => x.id === refId);
   const label = (list: Ref[] | undefined, refId: number) => {
-    const r = list?.find((x) => x.id === refId);
+    const r = refItem(list, refId);
     if (!r) return `#${refId}`;
     return locale === "ar" && r.arabicName ? r.arabicName : r.name;
   };
@@ -230,218 +242,234 @@ export default function CaseDetailPage() {
         onCancel={() => setConfirmDelete(false)}
       />
 
-      <Tabs defaultValue="overview">
-        <TabsList>
-          <TabsTrigger value="overview">{t("tabOverview")}</TabsTrigger>
-          <TabsTrigger value="comments" badge={comments.data?.data.length ?? 0}>
-            {t("comments")}
-          </TabsTrigger>
-          <TabsTrigger value="attachments">{t("tabAttachments")}</TabsTrigger>
-          <TabsTrigger value="history">{t("history")}</TabsTrigger>
-        </TabsList>
+      <div className="detail-grid">
+        {/* ---- Main column: title/description + tabbed content ---- */}
+        <div className="detail-main">
+          <Tabs defaultValue="overview">
+            <TabsList>
+              <TabsTrigger value="overview">{t("tabOverview")}</TabsTrigger>
+              <TabsTrigger value="comments" badge={comments.data?.data.length ?? 0}>
+                {t("comments")}
+              </TabsTrigger>
+              <TabsTrigger value="attachments">{t("tabAttachments")}</TabsTrigger>
+              <TabsTrigger value="history">{t("history")}</TabsTrigger>
+            </TabsList>
 
-        <TabsContent value="overview">
-      <div className="form-card" style={{ maxWidth: "72rem", marginBottom: "2.4rem" }}>
-        <h2 style={{ marginBottom: "1.2rem" }}>{c.title}</h2>
-        <p style={{ marginBottom: "1.6rem" }} dir="auto">
-          {c.description}
-        </p>
-        <p>
-          <strong>{t("status")}:</strong>{" "}
-          <span className="badge">{label(statuses.data?.data, c.statusId)}</span>
-          {c.escalationLevel > 0 && (
-            <span
-              className="badge"
-              style={{
-                marginInlineStart: "0.8rem",
-                background: "var(--color-red-100)",
-                color: "var(--color-red-700)",
-              }}
-            >
-              {t("escalate")} ×{c.escalationLevel}
-            </span>
-          )}
-        </p>
-        <p>
-          <strong>{t("priority")}:</strong> {label(priorities.data?.data, c.priorityId)}
-        </p>
-        <p>
-          <strong>{t("category")}:</strong> {label(categories.data?.data, c.categoryId)}
-        </p>
-        {canSeeUsers && (
-          <p>
-            <strong>{t("assignedTo")}:</strong> {userName(c.assignedTo)}
-          </p>
-        )}
-        <p className="muted">
-          {t("created")}: {new Date(c.createdAt).toLocaleString()}
-        </p>
-
-        {/* AI summary (Phase 6) */}
-        <div className="ai-summary">
-          <button
-            type="button"
-            className="btn btn-outline"
-            disabled={summarizeM.isPending}
-            onClick={() => summarizeM.mutate()}
-          >
-            ✨ {summarizeM.isPending ? tAi("summarizing") : tAi("summarize")}
-          </button>
-          {aiSummary && (
-            <blockquote className="ai-summary__text" dir="auto">
-              {aiSummary}
-            </blockquote>
-          )}
-        </div>
-      </div>
-
-      {/* Actions */}
-      <div className="form-card" style={{ maxWidth: "72rem", marginBottom: "2.4rem" }}>
-        <h3 style={{ marginBottom: "1.6rem" }}>{t("actions")}</h3>
-        {actionError && (
-          <div className="auth-card__error" role="alert">
-            {actionError}
-          </div>
-        )}
-        <div className="field">
-          <label htmlFor="statusSel">{t("changeStatus")}</label>
-          <div style={{ display: "flex", gap: "1rem" }}>
-            <select id="statusSel" defaultValue={c.statusId}>
-              {statuses.data?.data.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {locale === "ar" && s.arabicName ? s.arabicName : s.name}
-                </option>
-              ))}
-            </select>
-            <button
-              type="button"
-              className="btn btn-primary"
-              disabled={statusM.isPending}
-              onClick={() => {
-                setActionError(null);
-                const sel = document.getElementById("statusSel") as HTMLSelectElement;
-                statusM.mutate(Number(sel.value));
-              }}
-            >
-              {t("apply")}
-            </button>
-          </div>
-        </div>
-
-        <div className="field">
-          <label htmlFor="escalateReason">{t("escalateReason")}</label>
-          <div style={{ display: "flex", gap: "1rem", alignItems: "flex-start" }}>
-            <input id="escalateReason" placeholder={t("escalateReason")} dir="auto" />
-            <button
-              type="button"
-              className="btn btn-outline"
-              disabled={escalateM.isPending}
-              onClick={() => {
-                setActionError(null);
-                const el = document.getElementById("escalateReason") as HTMLInputElement;
-                const reason = el.value.trim();
-                if (reason) {
-                  escalateM.mutate(reason);
-                  el.value = "";
-                }
-              }}
-            >
-              {t("escalate")}
-            </button>
-          </div>
-        </div>
-
-        {canAssign && users.data && (
-          <div className="field">
-            <label htmlFor="assignSel">{t("assign")}</label>
-            <div style={{ display: "flex", gap: "1rem" }}>
-              <UserSelect
-                id="assignSel"
-                users={users.data.data}
-                value={assignee}
-                onChange={setAssignee}
-                placeholder={t("unassigned")}
-              />
-              <button
-                type="button"
-                className="btn btn-primary"
-                disabled={assignM.isPending || assignee == null}
-                onClick={() => {
-                  if (assignee != null) assignM.mutate(assignee);
-                }}
-              >
-                {t("assign")}
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-
-        </TabsContent>
-
-        <TabsContent value="attachments">
-          <AttachmentsCard caseId={id} />
-        </TabsContent>
-
-        <TabsContent value="comments">
-      <div className="form-card" style={{ maxWidth: "72rem", marginBottom: "2.4rem" }}>
-        <h3 style={{ marginBottom: "1.6rem" }}>{t("comments")}</h3>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            const formEl = e.currentTarget;
-            const text = String(new FormData(formEl).get("comment") ?? "").trim();
-            if (text) commentM.mutate(text);
-            formEl.reset();
-          }}
-        >
-          <div className="field">
-            <label htmlFor="comment">{t("addComment")}</label>
-            <textarea id="comment" name="comment" dir="auto" placeholder={t("commentPlaceholder")} />
-          </div>
-          <button type="submit" className="btn btn-primary" disabled={commentM.isPending}>
-            {t("postComment")}
-          </button>
-        </form>
-
-        <div style={{ marginTop: "2rem" }}>
-          {comments.data?.data.length === 0 ? (
-            <p className="muted">{t("noComments")}</p>
-          ) : (
-            comments.data?.data.map((cm) => (
-              <div
-                key={cm.id}
-                style={{
-                  padding: "1.2rem 0",
-                  borderBottom: "1px solid var(--color-grey-100)",
-                }}
-              >
-                <p dir="auto">{cm.comment}</p>
-                <p className="muted" style={{ fontSize: "1.2rem" }}>
-                  {new Date(cm.createdAt).toLocaleString()}
+            <TabsContent value="overview">
+              <section className="panel">
+                <h2 dir="auto">{c.title}</h2>
+                <p className="panel__desc" dir="auto">
+                  {c.description}
                 </p>
-              </div>
-            ))
-          )}
+                {/* AI summary (Phase 6) */}
+                <div className="ai-summary" style={{ marginTop: "2rem" }}>
+                  <button
+                    type="button"
+                    className="btn btn-outline"
+                    disabled={summarizeM.isPending}
+                    onClick={() => summarizeM.mutate()}
+                  >
+                    ✨ {summarizeM.isPending ? tAi("summarizing") : tAi("summarize")}
+                  </button>
+                  {aiSummary && (
+                    <blockquote className="ai-summary__text" dir="auto">
+                      {aiSummary}
+                    </blockquote>
+                  )}
+                </div>
+              </section>
+            </TabsContent>
+
+            <TabsContent value="comments">
+              <section className="panel">
+                <h3>{t("comments")}</h3>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const formEl = e.currentTarget;
+                    const text = String(new FormData(formEl).get("comment") ?? "").trim();
+                    if (text) commentM.mutate(text);
+                    formEl.reset();
+                  }}
+                >
+                  <div className="field">
+                    <label htmlFor="comment">{t("addComment")}</label>
+                    <textarea id="comment" name="comment" dir="auto" placeholder={t("commentPlaceholder")} />
+                  </div>
+                  <button type="submit" className="btn btn-primary" disabled={commentM.isPending}>
+                    {t("postComment")}
+                  </button>
+                </form>
+
+                <div style={{ marginTop: "2rem" }}>
+                  {comments.data?.data.length === 0 ? (
+                    <p className="muted">{t("noComments")}</p>
+                  ) : (
+                    comments.data?.data.map((cm) => (
+                      <div key={cm.id} className="comment">
+                        <p dir="auto">{cm.comment}</p>
+                        <p className="comment__meta">{new Date(cm.createdAt).toLocaleString()}</p>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </section>
+            </TabsContent>
+
+            <TabsContent value="attachments">
+              <AttachmentsCard caseId={id} />
+            </TabsContent>
+
+            <TabsContent value="history">
+              <section className="panel">
+                <h3>{t("history")}</h3>
+                {history.data?.data.map((h) => (
+                  <div key={h.id} className="comment">
+                    <span className="badge">{h.actionType}</span>{" "}
+                    <span className="muted">
+                      {h.changeDescription} · {new Date(h.createdAt).toLocaleString()}
+                    </span>
+                  </div>
+                ))}
+              </section>
+            </TabsContent>
+          </Tabs>
         </div>
-      </div>
 
-        </TabsContent>
+        {/* ---- Sidebar: details + actions ---- */}
+        <aside className="detail-side">
+          <section className="panel">
+            <h3>{t("tabOverview")}</h3>
+            <dl className="detail-list">
+              <dt>{t("status")}</dt>
+              <dd>
+                <StatusBadge
+                  name={label(statuses.data?.data, c.statusId)}
+                  color={refItem(statuses.data?.data, c.statusId)?.color}
+                />
+                {c.escalationLevel > 0 && (
+                  <span
+                    className="badge"
+                    style={{
+                      marginInlineStart: "0.6rem",
+                      background: "var(--color-red-100)",
+                      color: "var(--color-red-700)",
+                    }}
+                  >
+                    {t("escalate")} ×{c.escalationLevel}
+                  </span>
+                )}
+              </dd>
+              <dt>{t("priority")}</dt>
+              <dd>
+                <StatusBadge
+                  name={label(priorities.data?.data, c.priorityId)}
+                  color={refItem(priorities.data?.data, c.priorityId)?.color}
+                />
+              </dd>
+              <dt>{t("category")}</dt>
+              <dd>{label(categories.data?.data, c.categoryId)}</dd>
+              {canSeeUsers && (
+                <>
+                  <dt>{t("assignedTo")}</dt>
+                  <dd>{userName(c.assignedTo)}</dd>
+                </>
+              )}
+              <dt>{t("created")}</dt>
+              <dd>{new Date(c.createdAt).toLocaleString()}</dd>
+            </dl>
+          </section>
 
-        <TabsContent value="history">
-      <div className="form-card" style={{ maxWidth: "72rem" }}>
-        <h3 style={{ marginBottom: "1.6rem" }}>{t("history")}</h3>
-        {history.data?.data.map((h) => (
-          <div key={h.id} style={{ padding: "0.8rem 0", fontSize: "1.4rem" }}>
-            <span className="badge">{h.actionType}</span>{" "}
-            <span className="muted">
-              {h.changeDescription} · {new Date(h.createdAt).toLocaleString()}
-            </span>
-          </div>
-        ))}
+          <section className="panel">
+            <h3>{t("actions")}</h3>
+            {actionError && (
+              <div className="auth-card__error" role="alert">
+                {actionError}
+              </div>
+            )}
+            <div className="action-row">
+              <label htmlFor="statusSel">{t("changeStatus")}</label>
+              <div className="action-row__controls">
+                <select
+                  id="statusSel"
+                  value={statusSel}
+                  onChange={(e) => setStatusSel(Number(e.target.value))}
+                >
+                  {statuses.data?.data.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {locale === "ar" && s.arabicName ? s.arabicName : s.name}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  disabled={statusM.isPending || statusSel === ""}
+                  onClick={() => {
+                    setActionError(null);
+                    if (statusSel !== "") statusM.mutate(Number(statusSel));
+                  }}
+                >
+                  {t("apply")}
+                </button>
+              </div>
+            </div>
+
+            <div className="action-row">
+              <label htmlFor="escalateReason">{t("escalateReason")}</label>
+              <div className="action-row__controls">
+                <input
+                  id="escalateReason"
+                  placeholder={t("escalateReason")}
+                  dir="auto"
+                  value={escalateReason}
+                  onChange={(e) => setEscalateReason(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="btn btn-outline"
+                  disabled={escalateM.isPending}
+                  onClick={() => {
+                    setActionError(null);
+                    const reason = escalateReason.trim();
+                    if (reason) {
+                      escalateM.mutate(reason);
+                      setEscalateReason("");
+                    }
+                  }}
+                >
+                  {t("escalate")}
+                </button>
+              </div>
+            </div>
+
+            {canAssign && users.data && (
+              <div className="action-row">
+                <label htmlFor="assignSel">{t("assign")}</label>
+                <div className="action-row__controls">
+                  <UserSelect
+                    id="assignSel"
+                    users={users.data.data}
+                    value={assignee}
+                    onChange={setAssignee}
+                    placeholder={t("unassigned")}
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    disabled={assignM.isPending || assignee == null}
+                    onClick={() => {
+                      if (assignee != null) assignM.mutate(assignee);
+                    }}
+                  >
+                    {t("assign")}
+                  </button>
+                </div>
+              </div>
+            )}
+          </section>
+        </aside>
       </div>
-        </TabsContent>
-      </Tabs>
     </>
   );
 }

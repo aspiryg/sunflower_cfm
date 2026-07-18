@@ -94,7 +94,8 @@
     "settings": "Settings",
     "signOut": "Sign out",
     "menu": "Menu",
-    "notifications": "Notifications"
+    "notifications": "Notifications",
+    "search": "Search"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -537,5 +538,24 @@
     "addTag": "Add a tag and press Enter",
     "removeTag": "Remove tag {tag}",
     "moreActions": "More actions"
+  },
+  "command": {
+    "title": "Command palette",
+    "placeholder": "Search cases or jump to a page…",
+    "hint": "Type to search cases, or pick a destination.",
+    "searching": "Searching…",
+    "noResults": "No matches.",
+    "newCase": "Create a case",
+    "action": "Action",
+    "navigate": "Navigate",
+    "open": "Open",
+    "close": "Close",
+    "groupActions": "Actions",
+    "groupNavigation": "Navigation",
+    "groupCases": "Cases",
+    "groupRecent": "Recent",
+    "actionTheme": "Toggle theme",
+    "actionLanguage": "Switch language",
+    "actionSignOut": "Sign out"
   }
 }

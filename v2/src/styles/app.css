@@ -823,3 +823,128 @@
   color: var(--color-grey-700);
   font-weight: var(--font-weight-medium);
 }
+
+/* ---- Case detail: two-column layout (main content + details/actions rail) ---- */
+.detail-grid {
+  display: grid;
+  gap: var(--spacing-6);
+  align-items: start;
+}
+@media (min-width: 1024px) {
+  .detail-grid {
+    grid-template-columns: minmax(0, 1fr) 34rem;
+  }
+}
+.detail-main,
+.detail-side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-6);
+  min-width: 0;
+}
+@media (min-width: 1024px) {
+  .detail-side {
+    position: sticky;
+    top: var(--spacing-6);
+  }
+}
+.panel {
+  background: var(--color-grey-0);
+  border: 1px solid var(--color-grey-200);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  padding: var(--spacing-6);
+}
+.panel > h2 {
+  font-size: var(--font-size-xl);
+  margin-bottom: var(--spacing-3);
+  line-height: 1.3;
+}
+.panel > h3 {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  padding-bottom: var(--spacing-3);
+  margin-bottom: var(--spacing-4);
+  border-bottom: 1px solid var(--color-grey-200);
+}
+.panel__desc {
+  color: var(--color-grey-700);
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+/* Definition list for case metadata */
+.detail-list {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--spacing-3) var(--spacing-4);
+  align-items: center;
+}
+.detail-list dt {
+  color: var(--color-grey-500);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+.detail-list dd {
+  color: var(--color-grey-800);
+  font-size: var(--font-size-sm);
+}
+
+/* Stacked action rows in the sidebar Actions panel */
+.action-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  padding-block: var(--spacing-3);
+  border-top: 1px solid var(--color-grey-100);
+}
+.action-row:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}
+.action-row > label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-grey-700);
+}
+.action-row__controls {
+  display: flex;
+  gap: var(--spacing-2);
+  align-items: stretch;
+}
+.action-row__controls > :first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Comment thread */
+.comment {
+  padding: var(--spacing-4) 0;
+  border-bottom: 1px solid var(--color-grey-100);
+}
+.comment:last-child {
+  border-bottom: none;
+}
+.comment__meta {
+  margin-top: var(--spacing-1);
+  font-size: var(--font-size-xs);
+  color: var(--color-grey-500);
+}
+
+/* Raw selects/inputs inside the sidebar action rows (kept raw for layout + e2e ids) */
+.action-row__controls select,
+.action-row__controls input {
+  padding: var(--spacing-3);
+  border: 1px solid var(--color-grey-300);
+  border-radius: var(--radius-md);
+  background: var(--color-grey-0);
+  color: var(--color-grey-800);
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+}
+.action-row__controls select:focus,
+.action-row__controls input:focus {
+  outline: none;
+  border-color: var(--color-brand-500);
+  box-shadow: 0 0 0 3px var(--color-brand-100);
+}

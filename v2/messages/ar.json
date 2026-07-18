@@ -94,7 +94,8 @@
     "settings": "الإعدادات",
     "signOut": "تسجيل الخروج",
     "menu": "القائمة",
-    "notifications": "الإشعارات"
+    "notifications": "الإشعارات",
+    "search": "بحث"
   },
   "dashboard": {
     "title": "لوحة التحكم",
@@ -537,5 +538,24 @@
     "addTag": "أضف وسمًا واضغط Enter",
     "removeTag": "إزالة الوسم {tag}",
     "moreActions": "إجراءات إضافية"
+  },
+  "command": {
+    "title": "لوحة الأوامر",
+    "placeholder": "ابحث في الحالات أو انتقل إلى صفحة…",
+    "hint": "اكتب للبحث في الحالات، أو اختر وجهة.",
+    "searching": "جارٍ البحث…",
+    "noResults": "لا توجد نتائج.",
+    "newCase": "إنشاء حالة",
+    "action": "إجراء",
+    "navigate": "تنقّل",
+    "open": "فتح",
+    "close": "إغلاق",
+    "groupActions": "إجراءات",
+    "groupNavigation": "التنقل",
+    "groupCases": "الحالات",
+    "groupRecent": "الأخيرة",
+    "actionTheme": "تبديل السمة",
+    "actionLanguage": "تبديل اللغة",
+    "actionSignOut": "تسجيل الخروج"
   }
 }

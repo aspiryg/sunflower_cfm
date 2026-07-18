@@ -2,6 +2,7 @@
 @import "../styles/forms.css";
 @import "../styles/pickers.css";
 @import "../styles/table.css";
+@import "../styles/command.css";
 
 * {
   box-sizing: border-box;

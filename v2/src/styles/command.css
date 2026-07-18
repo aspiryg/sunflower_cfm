@@ -1,0 +1,172 @@
+/*
+ * Command palette (⌘K). Overlay + search + results list. Tokens only, so it
+ * themes automatically; logical properties keep it RTL-safe.
+ */
+.cmdk__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 12vh;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(2px);
+}
+.cmdk {
+  width: min(64rem, 92vw);
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-grey-0);
+  border: 1px solid var(--color-grey-200);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.cmdk__search {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-4) var(--spacing-5);
+  border-block-end: 1px solid var(--color-grey-200);
+}
+.cmdk__search-icon {
+  font-size: 2rem;
+  color: var(--color-grey-500);
+}
+.cmdk__input {
+  flex: 1;
+  border: none;
+  background: none;
+  outline: none;
+  color: var(--color-grey-800);
+  font-family: inherit;
+  font-size: var(--font-size-lg);
+}
+.cmdk__input::placeholder {
+  color: var(--color-grey-400);
+}
+.cmdk__esc {
+  padding: 0.2rem 0.8rem;
+  border: 1px solid var(--color-grey-300);
+  border-radius: var(--radius-sm);
+  color: var(--color-grey-500);
+  font-size: var(--font-size-xs);
+}
+
+.cmdk__list {
+  overflow-y: auto;
+  padding: var(--spacing-2);
+}
+.cmdk__empty {
+  padding: var(--spacing-6);
+  text-align: center;
+  color: var(--color-grey-500);
+  font-size: var(--font-size-sm);
+}
+.cmdk__group + .cmdk__group {
+  margin-top: var(--spacing-2);
+}
+.cmdk__group-head {
+  padding: var(--spacing-2) var(--spacing-4) var(--spacing-1);
+  color: var(--color-grey-400);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.cmdk__item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  width: 100%;
+  padding: var(--spacing-3) var(--spacing-4);
+  border: none;
+  background: none;
+  border-radius: var(--radius-md);
+  color: var(--color-grey-800);
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+  text-align: start;
+  cursor: pointer;
+}
+.cmdk__item.is-active {
+  background: var(--color-brand-600);
+  color: var(--color-brand-50);
+}
+.cmdk__item-icon {
+  flex-shrink: 0;
+  width: 2rem;
+  text-align: center;
+  color: var(--color-grey-400);
+}
+.cmdk__item.is-active .cmdk__item-icon {
+  color: var(--color-brand-50);
+}
+.cmdk__item-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cmdk__item-hint {
+  flex-shrink: 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-grey-500);
+  font-variant-numeric: tabular-nums;
+}
+.cmdk__item.is-active .cmdk__item-hint {
+  color: var(--color-brand-100);
+}
+
+.cmdk__foot {
+  display: flex;
+  gap: var(--spacing-5);
+  padding: var(--spacing-2) var(--spacing-5);
+  border-block-start: 1px solid var(--color-grey-200);
+  background: var(--color-grey-50);
+  color: var(--color-grey-500);
+  font-size: var(--font-size-xs);
+}
+.cmdk__foot kbd,
+.header__cmdk kbd {
+  display: inline-block;
+  min-width: 1.8rem;
+  padding: 0.1rem 0.5rem;
+  margin-inline-end: 0.3rem;
+  border: 1px solid var(--color-grey-300);
+  border-radius: var(--radius-sm);
+  background: var(--color-grey-0);
+  text-align: center;
+  font-family: inherit;
+}
+
+/* Header trigger button */
+.header__cmdk {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  margin-inline-start: var(--spacing-4);
+  padding: var(--spacing-2) var(--spacing-3);
+  border: 1px solid var(--color-grey-300);
+  border-radius: var(--radius-md);
+  background: var(--color-grey-50);
+  color: var(--color-grey-500);
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+.header__cmdk:hover {
+  border-color: var(--color-grey-400);
+  color: var(--color-grey-700);
+}
+.header__cmdk kbd {
+  color: var(--color-grey-500);
+}
+@media (max-width: 640px) {
+  .header__cmdk-label {
+    display: none;
+  }
+}
