@@ -69,8 +69,22 @@ export default function CaseDetailPage() {
 
   const [actionError, setActionError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [aiSummary, setAiSummary] = useState<string | null>(null);
   const toast = useToast();
   const tToast = useTranslations("toasts");
+  const tAi = useTranslations("ai");
+
+  const summarizeM = useMutation({
+    mutationFn: () =>
+      apiFetch<{ summary: string }>(`/api/cases/${id}/summarize?locale=${locale}`, {
+        method: "POST",
+      }),
+    onSuccess: (res) => setAiSummary(res.data.summary),
+    onError: (e) => {
+      const err = e as unknown as ApiError;
+      toast.error(err.error === "AI_UNAVAILABLE" ? tAi("unavailable") : tAi("error"));
+    },
+  });
 
   const caseQ = useQuery({
     queryKey: ["case", id],
@@ -250,6 +264,23 @@ export default function CaseDetailPage() {
         <p className="muted">
           {t("created")}: {new Date(c.createdAt).toLocaleString()}
         </p>
+
+        {/* AI summary (Phase 6) */}
+        <div className="ai-summary">
+          <button
+            type="button"
+            className="btn btn-outline"
+            disabled={summarizeM.isPending}
+            onClick={() => summarizeM.mutate()}
+          >
+            ✨ {summarizeM.isPending ? tAi("summarizing") : tAi("summarize")}
+          </button>
+          {aiSummary && (
+            <blockquote className="ai-summary__text" dir="auto">
+              {aiSummary}
+            </blockquote>
+          )}
+        </div>
       </div>
 
       {/* Actions */}

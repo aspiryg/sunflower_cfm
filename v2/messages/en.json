@@ -408,5 +408,19 @@
     "profileSaved": "Profile updated.",
     "userUpdated": "User updated.",
     "error": "Something went wrong."
+  },
+  "ai": {
+    "suggest": "Suggest with AI",
+    "suggesting": "Analyzing…",
+    "needsText": "Fill in the title and description first",
+    "unavailable": "AI features are not configured.",
+    "error": "The AI request failed. Please try again.",
+    "confidence": {
+      "low": "Low confidence",
+      "medium": "Medium confidence",
+      "high": "High confidence"
+    },
+    "summarize": "AI summary",
+    "summarizing": "Summarizing…"
   }
 }

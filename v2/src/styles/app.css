@@ -673,3 +673,39 @@
   font-size: var(--font-size-xs);
   color: var(--color-grey-400);
 }
+
+/* ---- AI features (Phase 6) ---- */
+.ai-suggest {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  flex-wrap: wrap;
+  padding: var(--spacing-3);
+  border: 1px dashed var(--color-brand-500);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-5);
+  background: var(--color-brand-50);
+}
+.ai-suggest__note {
+  font-size: var(--font-size-sm);
+  color: var(--color-grey-700);
+  margin: 0;
+}
+.ai-confidence--high { background: var(--color-green-100); color: var(--color-green-700); }
+.ai-confidence--medium { background: var(--color-yellow-100); color: var(--color-grey-800); }
+.ai-confidence--low { background: var(--color-red-100); color: var(--color-red-700); }
+.ai-summary {
+  margin-top: var(--spacing-4);
+  padding-top: var(--spacing-4);
+  border-top: 1px solid var(--color-grey-100);
+}
+.ai-summary__text {
+  margin-top: var(--spacing-3);
+  padding: var(--spacing-4);
+  border-inline-start: 3px solid var(--color-brand-500);
+  background: var(--color-brand-50);
+  border-radius: var(--radius-md);
+  color: var(--color-grey-800);
+  font-size: var(--font-size-sm);
+  line-height: 1.7;
+}

@@ -248,14 +248,31 @@ Port the UI to App Router with AR/EN + RTL as a first-class concern.
   an RTL smoke run in `/ar` (layout mirrors, no clipped/overflowing elements);
   Lighthouse/SEO check on public pages.
 
-## Phase 6 — AI classification / smart features
-- Embedding pipeline on case create/update (store `embedding`); Claude API
-  classifier suggesting category/priority; suggestions surfaced in intake/edit.
-- Redis-backed job queue so model calls are async; semantic search + duplicate
-  detection via pgvector.
-- **Verify:** classifier suggestions returned for seeded sample cases;
-  nearest-neighbor search returns relevant matches; queue retries on failure;
-  graceful degradation when the AI provider is down.
+## Phase 6 — AI classification / smart features — ◐ (part 1 done)
+**Part 1 ✅ — classification + summarization (Claude API, `claude-opus-4-8`):**
+- `src/lib/ai`: classifier with **structured outputs** (zod schema via
+  `messages.parse` — guaranteed JSON: categoryId/priorityId/urgency/
+  isSensitive/confidence/rationale, hallucinated-ID guard) + case summarizer
+  (adaptive thinking, localized EN/AR output).
+- **Public intake auto-classification**: anonymous submissions are classified
+  in-line (category, priority, urgency, sensitivity → sensitive cases get
+  `restricted` confidentiality); best-effort with fallback to defaults; AI
+  provenance recorded in the audit log.
+- `POST /api/cases/classify` + **"✨ Suggest with AI"** on the case form's
+  Classification tab (applies suggestion + shows confidence badge/rationale);
+  `POST /api/cases/[id]/summarize` + **AI summary** on the case detail Overview.
+- Graceful degradation everywhere (`isAiConfigured()`; 503 AI_UNAVAILABLE).
+- Also: shared **form-field components** (`src/ui/form.tsx` — TextField/
+  SelectField/TextAreaField/CheckboxField, owner directive) used by the rebuilt
+  CaseForm; migrating remaining screens onto them is on the parity checklist.
+- Verified: typecheck/lint/build green; 75 vitest; a live-API integration test
+  self-skips without ANTHROPIC_API_KEY (⚠️ v2/.env with the key doesn't exist
+  yet — owner to create it; everything degrades until then).
+
+**Part 2 — remaining:** embeddings on `cases.embedding` (needs an embeddings
+provider — Anthropic has none; **Voyage AI recommended, needs VOYAGE_API_KEY
+decision**), semantic search + duplicate detection via pgvector, optional Redis
+queue for async classification at scale.
 
 ## Phase 7 — Infra, backups, deploy to Hetzner
 - Finalize `docker compose`: web, postgres(pgvector), caddy(TLS), redis,

@@ -2,15 +2,16 @@
 
 /**
  * Multi-tab case form (v1 parity): Basic / Classification / Provider / Location.
- * Full field model incl. impact, program links (cascading), provider
- * demographics, consent/privacy, and the geographic hierarchy cascade.
+ * Core fields are controlled and built from the shared form components; the
+ * Classification tab offers AI-suggested classification (Phase 6).
  * All panels stay mounted so one <form> submits every field.
  */
 import { useState, type FormEvent } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { useQuery } from "@tanstack/react-query";
-import { apiFetch } from "@/lib/api/client";
+import { apiFetch, type ApiError } from "@/lib/api/client";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/ui/Tabs";
+import { TextField, TextAreaField, SelectField, CheckboxField, type SelectOption } from "@/ui/form";
 
 interface Ref {
   id: number;
@@ -53,6 +54,15 @@ export interface CaseFormValues {
   externalReferences?: string;
 }
 
+interface AiSuggestion {
+  categoryId: number;
+  priorityId: number;
+  urgencyLevel: string;
+  isSensitive: boolean;
+  confidence: "low" | "medium" | "high";
+  rationale: string;
+}
+
 function useReference(resource: string, params?: string, enabled = true) {
   return useQuery({
     queryKey: ["ref", resource, params ?? ""],
@@ -87,19 +97,26 @@ export function CaseForm({
 }) {
   const t = useTranslations("cases");
   const tf = useTranslations("caseForm");
+  const tAi = useTranslations("ai");
   const tc = useTranslations("common");
   const locale = useLocale();
 
-  // Cascades (controlled so dependent queries re-fetch). DB rows carry null —
-  // coerce to undefined so optional zod fields accept the round-trip.
-  const [programId, setProgramId] = useState<number | undefined>(
-    initial?.programId ?? undefined,
-  );
-  const [projectId, setProjectId] = useState<number | undefined>(
-    initial?.projectId ?? undefined,
-  );
+  // Controlled core fields (needed for AI suggestions + cascades).
+  const [title, setTitle] = useState(initial?.title ?? "");
+  const [description, setDescription] = useState(initial?.description ?? "");
+  const [categoryId, setCategoryId] = useState<number | "">(initial?.categoryId ?? "");
+  const [priorityId, setPriorityId] = useState<number | "">(initial?.priorityId ?? "");
+  const [urgencyLevel, setUrgencyLevel] = useState(initial?.urgencyLevel ?? "");
+  const [isSensitive, setIsSensitive] = useState(initial?.isSensitive ?? false);
+  const [programId, setProgramId] = useState<number | undefined>(initial?.programId ?? undefined);
+  const [projectId, setProjectId] = useState<number | undefined>(initial?.projectId ?? undefined);
   const [regionId, setRegionId] = useState<number | undefined>(undefined);
   const [governorateId, setGovernorateId] = useState<number | undefined>(undefined);
+
+  // AI suggestion state.
+  const [suggesting, setSuggesting] = useState(false);
+  const [aiNote, setAiNote] = useState<AiSuggestion | null>(null);
+  const [aiError, setAiError] = useState<string | null>(null);
 
   const categories = useReference("categories");
   const priorities = useReference("priorities");
@@ -114,6 +131,34 @@ export function CaseForm({
 
   const loading = categories.isLoading || priorities.isLoading || channels.isLoading;
   const label = (r: Ref) => (locale === "ar" && r.arabicName ? r.arabicName : r.name);
+  const refOptions = (list: Ref[] | undefined): SelectOption[] =>
+    (list ?? []).map((r) => ({ value: r.id, label: label(r) }));
+  const enumOptions = (values: readonly string[], ns: string): SelectOption[] =>
+    values.map((v) => ({ value: v, label: tf(`${ns}.${v}`) }));
+
+  const canSuggest = title.trim().length >= 3 && description.trim().length >= 10;
+
+  async function suggestWithAi() {
+    setAiError(null);
+    setSuggesting(true);
+    try {
+      const res = await apiFetch<{ suggestion: AiSuggestion }>("/api/cases/classify", {
+        method: "POST",
+        body: { title: title.trim(), description: description.trim() },
+      });
+      const s = res.data.suggestion;
+      setCategoryId(s.categoryId);
+      setPriorityId(s.priorityId);
+      setUrgencyLevel(s.urgencyLevel);
+      setIsSensitive(s.isSensitive);
+      setAiNote(s);
+    } catch (err) {
+      const e = err as ApiError;
+      setAiError(e.error === "AI_UNAVAILABLE" ? tAi("unavailable") : tAi("error"));
+    } finally {
+      setSuggesting(false);
+    }
+  }
 
   const str = (f: FormData, k: string) => {
     const v = String(f.get(k) ?? "").trim();
@@ -129,13 +174,13 @@ export function CaseForm({
     e.preventDefault();
     const f = new FormData(e.currentTarget);
     onSubmit({
-      title: String(f.get("title")),
-      description: String(f.get("description")),
-      categoryId: Number(f.get("categoryId")),
-      priorityId: Number(f.get("priorityId")),
+      title,
+      description,
+      categoryId: Number(categoryId),
+      priorityId: Number(priorityId),
       channelId: Number(f.get("channelId")),
       impactDescription: str(f, "impactDescription"),
-      urgencyLevel: str(f, "urgencyLevel"),
+      urgencyLevel: urgencyLevel || undefined,
       affectedBeneficiaries: num(f, "affectedBeneficiaries"),
       programId,
       projectId,
@@ -153,7 +198,7 @@ export function CaseForm({
       dataSharingConsent: bool(f, "dataSharingConsent"),
       followUpConsent: bool(f, "followUpConsent"),
       followUpContactMethod: str(f, "followUpContactMethod"),
-      isSensitive: bool(f, "isSensitive"),
+      isSensitive,
       isAnonymized: bool(f, "isAnonymized"),
       confidentialityLevel: str(f, "confidentialityLevel"),
       communityId: num(f, "communityId"),
@@ -165,39 +210,6 @@ export function CaseForm({
   }
 
   if (loading) return <p className="muted">{tc("loading")}</p>;
-
-  const enumSelect = (
-    name: string,
-    values: readonly string[],
-    ns: string,
-    defaultValue?: string,
-    allowEmpty = true,
-  ) => (
-    <select id={name} name={name} defaultValue={defaultValue ?? ""}>
-      {allowEmpty && <option value="">—</option>}
-      {values.map((v) => (
-        <option key={v} value={v}>
-          {tf(`${ns}.${v}`)}
-        </option>
-      ))}
-    </select>
-  );
-
-  const refSelect = (
-    name: string,
-    list: Ref[] | undefined,
-    defaultValue?: number,
-    required = false,
-  ) => (
-    <select id={name} name={name} defaultValue={defaultValue ?? ""} required={required}>
-      {!required && <option value="">—</option>}
-      {list?.map((r) => (
-        <option key={r.id} value={r.id}>
-          {label(r)}
-        </option>
-      ))}
-    </select>
-  );
 
   return (
     <>
@@ -217,242 +229,239 @@ export function CaseForm({
 
           {/* ---- Basic ---- */}
           <TabsContent value="basic" keepMounted>
-            <div className="field">
-              <label htmlFor="title">{t("titleLabel")}</label>
-              <input id="title" name="title" required minLength={3} defaultValue={initial?.title ?? ""} dir="auto" />
-            </div>
-            <div className="field">
-              <label htmlFor="description">{t("descriptionLabel")}</label>
-              <textarea id="description" name="description" dir="auto" required minLength={10} defaultValue={initial?.description ?? ""} />
-            </div>
-            <div className="field">
-              <label htmlFor="impactDescription">{tf("impactDescription")}</label>
-              <textarea id="impactDescription" name="impactDescription" dir="auto" style={{ minHeight: "8rem" }} defaultValue={initial?.impactDescription ?? ""} />
-            </div>
+            <TextField
+              id="title"
+              label={t("titleLabel")}
+              required
+              minLength={3}
+              dir="auto"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+            <TextAreaField
+              id="description"
+              label={t("descriptionLabel")}
+              required
+              minLength={10}
+              dir="auto"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+            <TextAreaField
+              id="impactDescription"
+              name="impactDescription"
+              label={tf("impactDescription")}
+              dir="auto"
+              style={{ minHeight: "8rem" }}
+              defaultValue={initial?.impactDescription ?? ""}
+            />
             <div className="field-row">
-              <div className="field">
-                <label htmlFor="urgencyLevel">{tf("urgencyLevel")}</label>
-                {enumSelect("urgencyLevel", URGENCY, "urgency", initial?.urgencyLevel)}
-              </div>
-              <div className="field">
-                <label htmlFor="affectedBeneficiaries">{tf("affectedBeneficiaries")}</label>
-                <input id="affectedBeneficiaries" name="affectedBeneficiaries" type="number" min={0} defaultValue={initial?.affectedBeneficiaries ?? ""} />
-              </div>
+              <SelectField
+                id="urgencyLevel"
+                label={tf("urgencyLevel")}
+                options={enumOptions(URGENCY, "urgency")}
+                placeholder="—"
+                value={urgencyLevel}
+                onChange={(e) => setUrgencyLevel(e.target.value)}
+              />
+              <TextField
+                id="affectedBeneficiaries"
+                name="affectedBeneficiaries"
+                label={tf("affectedBeneficiaries")}
+                type="number"
+                min={0}
+                defaultValue={initial?.affectedBeneficiaries ?? ""}
+              />
             </div>
           </TabsContent>
 
           {/* ---- Classification ---- */}
           <TabsContent value="classification" keepMounted>
+            {/* AI suggestion (Phase 6) */}
+            <div className="ai-suggest">
+              <button
+                type="button"
+                className="btn btn-outline"
+                disabled={!canSuggest || suggesting}
+                onClick={suggestWithAi}
+                title={canSuggest ? undefined : tAi("needsText")}
+              >
+                ✨ {suggesting ? tAi("suggesting") : tAi("suggest")}
+              </button>
+              {aiError && <span className="field__error">{aiError}</span>}
+              {aiNote && !aiError && (
+                <p className="ai-suggest__note" dir="auto">
+                  <span className={`badge ai-confidence--${aiNote.confidence}`}>
+                    {tAi(`confidence.${aiNote.confidence}`)}
+                  </span>{" "}
+                  {aiNote.rationale}
+                </p>
+              )}
+            </div>
+
             <div className="field-row">
-              <div className="field">
-                <label htmlFor="categoryId">{t("category")}</label>
-                {refSelect("categoryId", categories.data?.data, initial?.categoryId, true)}
-              </div>
-              <div className="field">
-                <label htmlFor="priorityId">{t("priorityLabel")}</label>
-                {refSelect("priorityId", priorities.data?.data, initial?.priorityId, true)}
-              </div>
+              <SelectField
+                id="categoryId"
+                label={t("category")}
+                required
+                options={refOptions(categories.data?.data)}
+                placeholder="—"
+                value={categoryId}
+                onChange={(e) => setCategoryId(e.target.value ? Number(e.target.value) : "")}
+              />
+              <SelectField
+                id="priorityId"
+                label={t("priorityLabel")}
+                required
+                options={refOptions(priorities.data?.data)}
+                placeholder="—"
+                value={priorityId}
+                onChange={(e) => setPriorityId(e.target.value ? Number(e.target.value) : "")}
+              />
             </div>
             <div className="field-row">
-              <div className="field">
-                <label htmlFor="channelId">{t("channel")}</label>
-                {refSelect("channelId", channels.data?.data, initial?.channelId, true)}
-              </div>
-              <div className="field">
-                <label htmlFor="confidentialityLevel">{tf("confidentiality")}</label>
-                {enumSelect("confidentialityLevel", CONFIDENTIALITY, "confidentialityLevels", initial?.confidentialityLevel)}
-              </div>
+              <SelectField
+                id="channelId"
+                name="channelId"
+                label={t("channel")}
+                required
+                options={refOptions(channels.data?.data)}
+                defaultValue={initial?.channelId ?? ""}
+                placeholder="—"
+              />
+              <SelectField
+                id="confidentialityLevel"
+                name="confidentialityLevel"
+                label={tf("confidentiality")}
+                options={enumOptions(CONFIDENTIALITY, "confidentialityLevels")}
+                placeholder="—"
+                defaultValue={initial?.confidentialityLevel ?? ""}
+              />
             </div>
             <div className="field-row">
-              <div className="field">
-                <label htmlFor="programSel">{tf("program")}</label>
-                <select
-                  id="programSel"
-                  value={programId ?? ""}
-                  onChange={(e) => {
-                    setProgramId(e.target.value ? Number(e.target.value) : undefined);
-                    setProjectId(undefined);
-                  }}
-                >
-                  <option value="">—</option>
-                  {programs.data?.data.map((r) => (
-                    <option key={r.id} value={r.id}>
-                      {label(r)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="field">
-                <label htmlFor="projectSel">{tf("project")}</label>
-                <select
-                  id="projectSel"
-                  value={projectId ?? ""}
-                  disabled={!programId}
-                  onChange={(e) => setProjectId(e.target.value ? Number(e.target.value) : undefined)}
-                >
-                  <option value="">—</option>
-                  {projects.data?.data.map((r) => (
-                    <option key={r.id} value={r.id}>
-                      {label(r)}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <SelectField
+                id="programSel"
+                label={tf("program")}
+                options={refOptions(programs.data?.data)}
+                placeholder="—"
+                value={programId ?? ""}
+                onChange={(e) => {
+                  setProgramId(e.target.value ? Number(e.target.value) : undefined);
+                  setProjectId(undefined);
+                }}
+              />
+              <SelectField
+                id="projectSel"
+                label={tf("project")}
+                options={refOptions(projects.data?.data)}
+                placeholder="—"
+                disabled={!programId}
+                value={projectId ?? ""}
+                onChange={(e) => setProjectId(e.target.value ? Number(e.target.value) : undefined)}
+              />
             </div>
-            <div className="field">
-              <label htmlFor="activityId">{tf("activity")}</label>
-              <select id="activityId" name="activityId" defaultValue="" disabled={!projectId}>
-                <option value="">—</option>
-                {activities.data?.data.map((r) => (
-                  <option key={r.id} value={r.id}>
-                    {label(r)}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="field">
-              <label htmlFor="tags">{tf("tags")}</label>
-              <input id="tags" name="tags" defaultValue={initial?.tags ?? ""} placeholder={tf("tagsPlaceholder")} dir="auto" />
-            </div>
-            <div className="field">
-              <label htmlFor="externalReferences">{tf("externalReferences")}</label>
-              <input id="externalReferences" name="externalReferences" defaultValue={initial?.externalReferences ?? ""} dir="auto" />
-            </div>
-            <label className="checkbox-field" htmlFor="isSensitive">
-              <input id="isSensitive" name="isSensitive" type="checkbox" defaultChecked={initial?.isSensitive ?? false} />
-              {tf("isSensitive")}
-            </label>
+            <SelectField
+              id="activityId"
+              name="activityId"
+              label={tf("activity")}
+              options={refOptions(activities.data?.data)}
+              placeholder="—"
+              disabled={!projectId}
+              defaultValue=""
+            />
+            <TextField
+              id="tags"
+              name="tags"
+              label={tf("tags")}
+              placeholder={tf("tagsPlaceholder")}
+              dir="auto"
+              defaultValue={initial?.tags ?? ""}
+            />
+            <TextField
+              id="externalReferences"
+              name="externalReferences"
+              label={tf("externalReferences")}
+              dir="auto"
+              defaultValue={initial?.externalReferences ?? ""}
+            />
+            <CheckboxField
+              id="isSensitive"
+              label={tf("isSensitive")}
+              checked={isSensitive}
+              onChange={(e) => setIsSensitive(e.target.checked)}
+            />
           </TabsContent>
 
           {/* ---- Provider ---- */}
           <TabsContent value="provider" keepMounted>
-            <div className="field">
-              <label htmlFor="providerTypeId">{tf("providerType")}</label>
-              {refSelect("providerTypeId", providerTypes.data?.data, initial?.providerTypeId)}
+            <SelectField
+              id="providerTypeId"
+              name="providerTypeId"
+              label={tf("providerType")}
+              options={refOptions(providerTypes.data?.data)}
+              placeholder="—"
+              defaultValue={initial?.providerTypeId ?? ""}
+            />
+            <div className="field-row">
+              <TextField id="providerName" name="providerName" label={tf("providerName")} dir="auto" defaultValue={initial?.providerName ?? ""} />
+              <TextField id="providerOrganization" name="providerOrganization" label={tf("providerOrganization")} dir="auto" defaultValue={initial?.providerOrganization ?? ""} />
             </div>
             <div className="field-row">
-              <div className="field">
-                <label htmlFor="providerName">{tf("providerName")}</label>
-                <input id="providerName" name="providerName" defaultValue={initial?.providerName ?? ""} dir="auto" />
-              </div>
-              <div className="field">
-                <label htmlFor="providerOrganization">{tf("providerOrganization")}</label>
-                <input id="providerOrganization" name="providerOrganization" defaultValue={initial?.providerOrganization ?? ""} dir="auto" />
-              </div>
+              <TextField id="providerEmail" name="providerEmail" label={tf("providerEmail")} type="email" dir="ltr" defaultValue={initial?.providerEmail ?? ""} />
+              <TextField id="providerPhone" name="providerPhone" label={tf("providerPhone")} dir="ltr" defaultValue={initial?.providerPhone ?? ""} />
+            </div>
+            <TextField id="providerAddress" name="providerAddress" label={tf("providerAddress")} dir="auto" defaultValue={initial?.providerAddress ?? ""} />
+            <div className="field-row">
+              <SelectField id="individualProviderGender" name="individualProviderGender" label={tf("gender")} options={enumOptions(GENDERS, "genders")} placeholder="—" defaultValue={initial?.individualProviderGender ?? ""} />
+              <SelectField id="individualProviderAgeGroup" name="individualProviderAgeGroup" label={tf("ageGroup")} options={enumOptions(AGE_GROUPS, "ageGroups")} placeholder="—" defaultValue={initial?.individualProviderAgeGroup ?? ""} />
             </div>
             <div className="field-row">
-              <div className="field">
-                <label htmlFor="providerEmail">{tf("providerEmail")}</label>
-                <input id="providerEmail" name="providerEmail" type="email" defaultValue={initial?.providerEmail ?? ""} dir="ltr" />
-              </div>
-              <div className="field">
-                <label htmlFor="providerPhone">{tf("providerPhone")}</label>
-                <input id="providerPhone" name="providerPhone" defaultValue={initial?.providerPhone ?? ""} dir="ltr" />
-              </div>
+              <SelectField id="individualProviderDisabilityStatus" name="individualProviderDisabilityStatus" label={tf("disability")} options={enumOptions(DISABILITIES, "disabilities")} placeholder="—" defaultValue={initial?.individualProviderDisabilityStatus ?? ""} />
+              <TextField id="groupProviderSize" name="groupProviderSize" label={tf("groupSize")} type="number" min={0} defaultValue={initial?.groupProviderSize ?? ""} />
             </div>
-            <div className="field">
-              <label htmlFor="providerAddress">{tf("providerAddress")}</label>
-              <input id="providerAddress" name="providerAddress" defaultValue={initial?.providerAddress ?? ""} dir="auto" />
-            </div>
-            <div className="field-row">
-              <div className="field">
-                <label htmlFor="individualProviderGender">{tf("gender")}</label>
-                {enumSelect("individualProviderGender", GENDERS, "genders", initial?.individualProviderGender)}
-              </div>
-              <div className="field">
-                <label htmlFor="individualProviderAgeGroup">{tf("ageGroup")}</label>
-                {enumSelect("individualProviderAgeGroup", AGE_GROUPS, "ageGroups", initial?.individualProviderAgeGroup)}
-              </div>
-            </div>
-            <div className="field-row">
-              <div className="field">
-                <label htmlFor="individualProviderDisabilityStatus">{tf("disability")}</label>
-                {enumSelect("individualProviderDisabilityStatus", DISABILITIES, "disabilities", initial?.individualProviderDisabilityStatus)}
-              </div>
-              <div className="field">
-                <label htmlFor="groupProviderSize">{tf("groupSize")}</label>
-                <input id="groupProviderSize" name="groupProviderSize" type="number" min={0} defaultValue={initial?.groupProviderSize ?? ""} />
-              </div>
-            </div>
-            <label className="checkbox-field" htmlFor="dataSharingConsent">
-              <input id="dataSharingConsent" name="dataSharingConsent" type="checkbox" defaultChecked={initial?.dataSharingConsent ?? false} />
-              {tf("dataSharingConsent")}
-            </label>
-            <label className="checkbox-field" htmlFor="followUpConsent">
-              <input id="followUpConsent" name="followUpConsent" type="checkbox" defaultChecked={initial?.followUpConsent ?? false} />
-              {tf("followUpConsent")}
-            </label>
-            <div className="field">
-              <label htmlFor="followUpContactMethod">{tf("followUpMethod")}</label>
-              {enumSelect("followUpContactMethod", FOLLOW_UP, "followUpMethods", initial?.followUpContactMethod)}
-            </div>
-            <label className="checkbox-field" htmlFor="isAnonymized">
-              <input id="isAnonymized" name="isAnonymized" type="checkbox" defaultChecked={initial?.isAnonymized ?? false} />
-              {tf("isAnonymized")}
-            </label>
+            <CheckboxField id="dataSharingConsent" name="dataSharingConsent" label={tf("dataSharingConsent")} defaultChecked={initial?.dataSharingConsent ?? false} />
+            <CheckboxField id="followUpConsent" name="followUpConsent" label={tf("followUpConsent")} defaultChecked={initial?.followUpConsent ?? false} />
+            <SelectField id="followUpContactMethod" name="followUpContactMethod" label={tf("followUpMethod")} options={enumOptions(FOLLOW_UP, "followUpMethods")} placeholder="—" defaultValue={initial?.followUpContactMethod ?? ""} />
+            <CheckboxField id="isAnonymized" name="isAnonymized" label={tf("isAnonymized")} defaultChecked={initial?.isAnonymized ?? false} />
           </TabsContent>
 
           {/* ---- Location ---- */}
           <TabsContent value="location" keepMounted>
             <div className="field-row">
-              <div className="field">
-                <label htmlFor="regionSel">{tf("region")}</label>
-                <select
-                  id="regionSel"
-                  value={regionId ?? ""}
-                  onChange={(e) => {
-                    setRegionId(e.target.value ? Number(e.target.value) : undefined);
-                    setGovernorateId(undefined);
-                  }}
-                >
-                  <option value="">—</option>
-                  {regions.data?.data.map((r) => (
-                    <option key={r.id} value={r.id}>
-                      {label(r)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="field">
-                <label htmlFor="governorateSel">{tf("governorate")}</label>
-                <select
-                  id="governorateSel"
-                  value={governorateId ?? ""}
-                  disabled={!regionId}
-                  onChange={(e) => setGovernorateId(e.target.value ? Number(e.target.value) : undefined)}
-                >
-                  <option value="">—</option>
-                  {governorates.data?.data.map((r) => (
-                    <option key={r.id} value={r.id}>
-                      {label(r)}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <SelectField
+                id="regionSel"
+                label={tf("region")}
+                options={refOptions(regions.data?.data)}
+                placeholder="—"
+                value={regionId ?? ""}
+                onChange={(e) => {
+                  setRegionId(e.target.value ? Number(e.target.value) : undefined);
+                  setGovernorateId(undefined);
+                }}
+              />
+              <SelectField
+                id="governorateSel"
+                label={tf("governorate")}
+                options={refOptions(governorates.data?.data)}
+                placeholder="—"
+                disabled={!regionId}
+                value={governorateId ?? ""}
+                onChange={(e) => setGovernorateId(e.target.value ? Number(e.target.value) : undefined)}
+              />
             </div>
-            <div className="field">
-              <label htmlFor="communityId">{tf("community")}</label>
-              <select id="communityId" name="communityId" defaultValue="" disabled={!governorateId}>
-                <option value="">—</option>
-                {communities.data?.data.map((r) => (
-                  <option key={r.id} value={r.id}>
-                    {label(r)}
-                  </option>
-                ))}
-              </select>
-              <span className="muted" style={{ fontSize: "1.2rem" }}>
-                {tf("communityHint")}
-              </span>
-            </div>
+            <SelectField
+              id="communityId"
+              name="communityId"
+              label={tf("community")}
+              options={refOptions(communities.data?.data)}
+              placeholder="—"
+              disabled={!governorateId}
+              defaultValue=""
+              hint={tf("communityHint")}
+            />
             <div className="field-row">
-              <div className="field">
-                <label htmlFor="location">{tf("locationText")}</label>
-                <input id="location" name="location" defaultValue={initial?.location ?? ""} dir="auto" />
-              </div>
-              <div className="field">
-                <label htmlFor="coordinates">{tf("coordinates")}</label>
-                <input id="coordinates" name="coordinates" defaultValue={initial?.coordinates ?? ""} dir="ltr" placeholder="31.9, 35.2" />
-              </div>
+              <TextField id="location" name="location" label={tf("locationText")} dir="auto" defaultValue={initial?.location ?? ""} />
+              <TextField id="coordinates" name="coordinates" label={tf("coordinates")} dir="ltr" placeholder="31.9, 35.2" defaultValue={initial?.coordinates ?? ""} />
             </div>
           </TabsContent>
         </Tabs>

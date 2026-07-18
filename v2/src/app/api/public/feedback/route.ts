@@ -9,6 +9,7 @@ import {
   listPriorities,
 } from "@/db/repositories/referenceData";
 import { writeAudit } from "@/db/repositories/audit";
+import { classifyCase, isAiConfigured, type CaseClassification } from "@/lib/ai";
 
 /**
  * Anonymous public feedback intake — NET-NEW in v2 (v1's public form only
@@ -37,15 +38,29 @@ export const POST = handler(
       description.length > 60 ? `${description.slice(0, 60)}…` : description;
     const contactIsEmail = contact?.includes("@") ?? false;
 
+    // AI auto-classification (Phase 6): pick category/priority/urgency from the
+    // text. Best-effort — any failure falls back to the static defaults so
+    // anonymous intake can never break because of an AI outage.
+    let ai: CaseClassification | null = null;
+    if (isAiConfigured()) {
+      try {
+        ai = await classifyCase({ title, description, categories, priorities });
+      } catch (err) {
+        console.error("[ai] public-intake classification failed:", err);
+      }
+    }
+
     const created = await createCase(
       {
         title,
         description,
-        categoryId: category.id,
-        priorityId: priority.id,
+        categoryId: ai?.categoryId ?? category.id,
+        priorityId: ai?.priorityId ?? priority.id,
         channelId: channel.id,
+        urgencyLevel: ai?.urgencyLevel,
+        isSensitive: ai?.isSensitive ?? false,
         isPublic: true,
-        confidentialityLevel: "public",
+        confidentialityLevel: ai?.isSensitive ? "restricted" : "public",
         providerName: name,
         providerEmail: contactIsEmail ? contact : undefined,
         providerPhone: contact && !contactIsEmail ? contact : undefined,
@@ -59,7 +74,11 @@ export const POST = handler(
       action: "CREATE",
       entityType: "case",
       entityId: created.id,
-      metadata: { source: "public_intake" },
+      metadata: {
+        source: "public_intake",
+        aiClassified: !!ai,
+        ...(ai ? { aiConfidence: ai.confidence, aiRationale: ai.rationale } : {}),
+      },
     });
 
     // Only return the reference number to the anonymous submitter.
