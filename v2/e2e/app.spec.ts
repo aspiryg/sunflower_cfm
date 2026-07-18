@@ -147,6 +147,43 @@ test("upload an attachment through the case detail UI", async ({ page }) => {
   await expect(page.getByRole("link", { name: /Download/i })).toBeVisible();
 });
 
+test("escalate a case from the detail view", async ({ page }) => {
+  await login(page);
+  await page.goto("/en/cases/new");
+  const title = `Escalate case ${Date.now()}`;
+  await page.locator("#title").fill(title);
+  await page.locator("#description").fill("Case for the escalate e2e test.");
+  await page.locator('button[type="submit"]').click();
+  await page.getByRole("link", { name: title }).click();
+
+  await page.locator("#escalateReason").fill("No response from the field team");
+  await page.getByRole("button", { name: /^Escalate$/i }).click();
+  await expect(page.getByText(/Escalate ×1/)).toBeVisible();
+});
+
+test("settings screen adds a category", async ({ page }) => {
+  await login(page);
+  await page.goto("/en/settings");
+  const name = `E2E Cat ${Date.now()}`;
+  await page.locator("#name").fill(name);
+  await page.locator("#arabicName").fill("فئة تجريبية");
+  await page.getByRole("button", { name: /^Add$/i }).click();
+  await expect(page.getByText(name)).toBeVisible();
+});
+
+test("mobile drawer opens the sidebar", async ({ page }) => {
+  await page.setViewportSize({ width: 480, height: 900 });
+  await login(page);
+  const sidebar = page.locator(".sidebar");
+  await expect(sidebar).not.toBeInViewport();
+  await page.getByRole("button", { name: /Menu|القائمة/ }).click();
+  await expect(sidebar).toBeInViewport();
+  // Navigating closes the drawer.
+  await sidebar.getByRole("link", { name: /Cases/i }).click();
+  await expect(page).toHaveURL(/\/en\/cases$/);
+  await expect(sidebar).not.toBeInViewport();
+});
+
 test("notifications bell opens its dropdown", async ({ page }) => {
   await login(page);
   await page.getByRole("button", { name: /Notifications|الإشعارات/ }).click();

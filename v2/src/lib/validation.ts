@@ -164,6 +164,24 @@ export const updateRoleSchema = z.object({
   reason: z.string().max(500).optional(),
 });
 
+export const lookupCreateSchema = z.object({
+  name: z.string().min(1).max(100),
+  arabicName: z.string().max(100).optional(),
+  description: z.string().max(500).optional(),
+  code: z.string().min(1).max(10).optional(),
+  sortOrder: z.number().int().min(0).optional(),
+});
+
+export const lookupUpdateSchema = z
+  .object({
+    name: z.string().min(1).max(100),
+    arabicName: z.string().max(100).nullable(),
+    description: z.string().max(500).nullable(),
+    sortOrder: z.number().int().min(0),
+    isActive: z.boolean(),
+  })
+  .partial();
+
 /** Parse+validate a JSON body; returns either the typed data or a 400 response. */
 export async function parseBody<T extends z.ZodTypeAny>(
   req: NextRequest,

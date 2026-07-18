@@ -227,5 +227,30 @@
     "verifySuccess": "Your email has been verified.",
     "verifyError": "This verification link is invalid or has expired.",
     "backToLogin": "Back to sign in"
+  },
+  "settings": {
+    "title": "Settings — Reference data",
+    "intro": "Manage the lookup values used across cases. Deactivated values stay on existing cases but disappear from new forms.",
+    "types": {
+      "categories": "Categories",
+      "channels": "Channels",
+      "provider-types": "Provider types",
+      "regions": "Regions"
+    },
+    "addTitle": "Add new",
+    "name": "Name",
+    "arabicName": "Arabic name",
+    "code": "Code",
+    "add": "Add",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "error": "The change could not be saved.",
+    "lockedNote": "Statuses and priorities drive the case lifecycle and SLA timers, so they cannot be edited here."
   }
 }

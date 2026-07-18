@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useAuth, useLogout } from "@/features/auth/AuthContext";
@@ -13,6 +13,7 @@ const NAV: { href: string; key: string; minRole?: Role }[] = [
   { href: "/dashboard", key: "dashboard" },
   { href: "/cases", key: "cases" },
   { href: "/users", key: "users", minRole: "admin" },
+  { href: "/settings", key: "settings", minRole: "manager" },
 ];
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -23,10 +24,16 @@ export function AppShell({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const logout = useLogout();
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) router.replace("/login");
   }, [isLoading, isAuthenticated, router]);
+
+  // Close the mobile drawer on navigation.
+  useEffect(() => {
+    setDrawerOpen(false);
+  }, [pathname]);
 
   if (isLoading) return <div className="center-note">{tc("loading")}</div>;
   if (!isAuthenticated || !user) return null;
@@ -43,7 +50,14 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="shell">
-      <aside className="sidebar">
+      {drawerOpen && (
+        <div
+          className="drawer-backdrop"
+          onClick={() => setDrawerOpen(false)}
+          aria-hidden
+        />
+      )}
+      <aside className={`sidebar ${drawerOpen ? "is-open" : ""}`}>
         <div className="sidebar__brand">
           <span aria-hidden>🌻</span>
           <span>{tApp("name")}</span>
@@ -61,6 +75,14 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <div className="main">
         <header className="header">
+          <button
+            type="button"
+            className="icon-btn header__menu-btn"
+            aria-label={t("menu")}
+            onClick={() => setDrawerOpen((v) => !v)}
+          >
+            ☰
+          </button>
           <span className="header__title">{tApp("name")}</span>
           <div className="header__actions">
             <Link href="/profile" className="header__user">

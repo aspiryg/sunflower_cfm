@@ -25,6 +25,7 @@ interface CaseFull {
   categoryId: number;
   assignedTo: number | null;
   createdBy: number | null;
+  escalationLevel: number;
   createdAt: string;
 }
 interface Comment {
@@ -124,6 +125,13 @@ export default function CaseDetailPage() {
       qc.invalidateQueries({ queryKey: ["case-history", id] });
     },
   });
+  const escalateM = useMutation({
+    mutationFn: (reason: string) =>
+      apiFetch(`/api/cases/${id}/escalate`, { method: "PATCH", body: { reason } }),
+    onSuccess: invalidate,
+    onError: (e) =>
+      setActionError((e as unknown as ApiError)?.message ?? t("transitionError")),
+  });
 
   if (caseQ.isLoading) return <p className="muted">…</p>;
   if (caseQ.isError || !caseQ.data)
@@ -154,6 +162,18 @@ export default function CaseDetailPage() {
         <p>
           <strong>{t("status")}:</strong>{" "}
           <span className="badge">{label(statuses.data?.data, c.statusId)}</span>
+          {c.escalationLevel > 0 && (
+            <span
+              className="badge"
+              style={{
+                marginInlineStart: "0.8rem",
+                background: "var(--color-red-100)",
+                color: "var(--color-red-700)",
+              }}
+            >
+              {t("escalate")} ×{c.escalationLevel}
+            </span>
+          )}
         </p>
         <p>
           <strong>{t("priority")}:</strong> {label(priorities.data?.data, c.priorityId)}
@@ -200,6 +220,29 @@ export default function CaseDetailPage() {
               }}
             >
               {t("apply")}
+            </button>
+          </div>
+        </div>
+
+        <div className="field">
+          <label htmlFor="escalateReason">{t("escalateReason")}</label>
+          <div style={{ display: "flex", gap: "1rem", alignItems: "flex-start" }}>
+            <input id="escalateReason" placeholder={t("escalateReason")} dir="auto" />
+            <button
+              type="button"
+              className="btn btn-outline"
+              disabled={escalateM.isPending}
+              onClick={() => {
+                setActionError(null);
+                const el = document.getElementById("escalateReason") as HTMLInputElement;
+                const reason = el.value.trim();
+                if (reason) {
+                  escalateM.mutate(reason);
+                  el.value = "";
+                }
+              }}
+            >
+              {t("escalate")}
             </button>
           </div>
         </div>

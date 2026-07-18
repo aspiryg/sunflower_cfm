@@ -143,7 +143,7 @@ types, 3 regions, 10 settings) with Arabic names — idempotent.
 **Still open (polish):** escalate UI, mobile sidebar drawer, settings/resources
 admin screens, richer filters/search on the cases list.
 
-## Core-gap closure (owner decision: gaps → AI → advanced → deploy) — ◐
+## Core-gap closure (owner decision: gaps → AI → advanced → deploy) — ✅ DONE
 - ✅ **Notifications (in-app)**: self-scoped repo; fan-out on assign/status
   change/comment to case creator + assignee (never the actor, deduped, failures
   swallowed); API (list + unread summary, mark read, mark-all-read, delete);
@@ -180,7 +180,22 @@ admin screens, richer filters/search on the cases list.
   tests (owner edit + history, non-owner 403, **statusId can't be smuggled
   through PUT**, search by title/number, category include/exclude) + 2 e2e
   (edit via UI, search filter) → 65 vitest / 21 e2e green.
-- ☐ Escalate UI; settings/resources admin screens; mobile sidebar drawer.
+- ✅ **Polish batch (closes the core-gap phase)**:
+  - Escalate UI on case detail (reason + button → escalation badge ×level).
+  - Settings screen (`/settings`, manager+): manage categories/channels/
+    provider-types/regions — add (bilingual name, region code), inline rename,
+    activate/deactivate (inactive rows vanish from forms, stay on old cases).
+    New API: POST/PATCH `/api/reference/...` + admin listing (`?all=true`).
+    **Statuses/priorities deliberately locked** (lifecycle/SLA-critical).
+  - Mobile sidebar drawer (hamburger < 900px, RTL-aware slide, backdrop,
+    closes on navigation).
+  - Verified: 6 integration tests (manager create w/ AR name, user 403, statuses
+    locked, region code required, deactivate hides from public list only,
+    rename + admin-list 403) + 3 e2e (escalate, settings add, mobile drawer) →
+    71 vitest / 24 e2e green. Also fixed a test-parallelism race (sortOrder).
+
+**Core-gap phase COMPLETE** → next: Phase 6 (AI), then advanced features, then
+deploy (Phase 7).
 
 ### Original Phase 5 plan
 
