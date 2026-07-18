@@ -4,7 +4,8 @@
  * Every mutation writes a case_history row — the audit trail v1 maintained by
  * hand is centralized here.
  */
-import { and, asc, count, desc, eq, gte, ilike, like, or, sql, type SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, getTableColumns, gte, ilike, isNotNull, like, or, sql, type SQL } from "drizzle-orm";
+import { cosineDistance } from "drizzle-orm";
 import { db } from "../index";
 import {
   cases,
@@ -549,4 +550,84 @@ export async function caseStats(
     open: Number(row?.open ?? 0),
     resolved: Number(row?.resolved ?? 0),
   };
+}
+
+// ---- Embeddings & semantic search (Phase 6 part 2) ----
+
+export interface CaseWithDistance extends Case {
+  /** Cosine distance to the query vector (0 = identical, 2 = opposite). */
+  distance: number;
+}
+
+/** Persist a case's embedding vector (best-effort; never on the create path). */
+export async function setCaseEmbedding(id: number, embedding: number[]): Promise<void> {
+  await db.update(cases).set({ embedding }).where(eq(cases.id, id));
+}
+
+/** Live cases missing an embedding, for the backfill job. */
+export async function casesWithoutEmbedding(
+  limit = 50,
+): Promise<{ id: number; title: string; description: string }[]> {
+  return db
+    .select({ id: cases.id, title: cases.title, description: cases.description })
+    .from(cases)
+    .where(and(live(), sql`${cases.embedding} is null`))
+    .orderBy(asc(cases.id))
+    .limit(limit);
+}
+
+/**
+ * Semantic search: cases ranked by cosine similarity to the query vector,
+ * honoring the caller's permission scope. Only embedded cases participate.
+ */
+export async function semanticSearchCases(params: {
+  scope: QueryScope;
+  vector: number[];
+  limit?: number;
+  /** Drop results whose distance exceeds this (0..2); omit for no cutoff. */
+  maxDistance?: number;
+}): Promise<CaseWithDistance[]> {
+  const { scope, vector, limit = 10, maxDistance } = params;
+  if (scope.kind === "none") return [];
+
+  const distance = cosineDistance(cases.embedding, vector);
+  const conds: (SQL | undefined)[] = [...scopeConds(scope), isNotNull(cases.embedding)];
+  if (maxDistance != null) conds.push(sql`${distance} <= ${maxDistance}`);
+
+  const rows = await db
+    .select({ ...getTableColumns(cases), distance: sql<number>`${distance}` })
+    .from(cases)
+    .where(and(...conds))
+    .orderBy(distance)
+    .limit(limit);
+  return rows as CaseWithDistance[];
+}
+
+/**
+ * Nearest neighbors to a vector, excluding a given case — used for
+ * duplicate detection at intake. `maxDistance` defaults to a conservative
+ * cutoff so only genuinely-close cases surface.
+ */
+export async function similarCases(params: {
+  vector: number[];
+  excludeId?: number;
+  limit?: number;
+  maxDistance?: number;
+}): Promise<CaseWithDistance[]> {
+  const { vector, excludeId, limit = 5, maxDistance = 0.35 } = params;
+  const distance = cosineDistance(cases.embedding, vector);
+  const conds: (SQL | undefined)[] = [
+    live(),
+    isNotNull(cases.embedding),
+    sql`${distance} <= ${maxDistance}`,
+  ];
+  if (excludeId != null) conds.push(sql`${cases.id} <> ${excludeId}`);
+
+  const rows = await db
+    .select({ ...getTableColumns(cases), distance: sql<number>`${distance}` })
+    .from(cases)
+    .where(and(...conds))
+    .orderBy(distance)
+    .limit(limit);
+  return rows as CaseWithDistance[];
 }

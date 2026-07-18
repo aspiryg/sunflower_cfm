@@ -11,6 +11,9 @@ import { zodResponseFormat } from "openai/helpers/zod";
 import { z } from "zod";
 
 const MODEL = process.env.OPENAI_MODEL ?? "gpt-4o";
+const EMBEDDING_MODEL = process.env.OPENAI_EMBEDDING_MODEL ?? "text-embedding-3-small";
+/** Must match the DB column width (cases.embedding vector(1024)). */
+export const EMBEDDING_DIMENSIONS = 1024;
 
 export function isAiConfigured(): boolean {
   return !!process.env.OPENAI_API_KEY;
@@ -158,4 +161,28 @@ Respond in ${input.locale === "ar" ? "Arabic" : "English"}.`,
   const text = completion.choices[0]?.message?.content?.trim();
   if (!text) throw new Error("Summarizer returned no text");
   return text;
+}
+
+// ---- Embeddings (semantic search / duplicate detection) ----
+
+/** The text a case is embedded from — title carries the most signal. */
+export function caseEmbeddingText(input: { title: string; description: string }): string {
+  return `${input.title}\n\n${input.description}`.slice(0, 8000);
+}
+
+/**
+ * Embed arbitrary text into a 1024-dim vector (pinned to the DB column width).
+ * Callers must gate on isAiConfigured(); throws on API failure.
+ */
+export async function embedText(text: string): Promise<number[]> {
+  const res = await client().embeddings.create({
+    model: EMBEDDING_MODEL,
+    input: text,
+    dimensions: EMBEDDING_DIMENSIONS,
+  });
+  const vector = res.data[0]?.embedding;
+  if (!vector || vector.length !== EMBEDDING_DIMENSIONS) {
+    throw new Error("Embedding response had an unexpected shape");
+  }
+  return vector;
 }

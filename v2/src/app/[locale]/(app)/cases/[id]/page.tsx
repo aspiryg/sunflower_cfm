@@ -54,6 +54,12 @@ interface UserRow {
   email: string;
   role?: string;
 }
+interface SimilarCase {
+  id: number;
+  caseNumber: string;
+  title: string;
+  distance: number;
+}
 
 function useRef(resource: string) {
   return useQuery({
@@ -111,6 +117,11 @@ export default function CaseDetailPage() {
   const history = useQuery({
     queryKey: ["case-history", id],
     queryFn: () => apiFetch<HistoryEntry[]>(`/api/cases/${id}/history`),
+  });
+  // Semantically-related cases (Phase 6 part 2). Empty when AI is unconfigured.
+  const similar = useQuery({
+    queryKey: ["case-similar", id],
+    queryFn: () => apiFetch<SimilarCase[]>(`/api/cases/${id}/similar`),
   });
   const users = useQuery({
     queryKey: ["users", "all-for-assign"],
@@ -468,6 +479,32 @@ export default function CaseDetailPage() {
               </div>
             )}
           </section>
+
+          {(similar.data?.data.length ?? 0) > 0 && (
+            <section className="panel">
+              <h3>{t("relatedCases")}</h3>
+              <ul className="related-list">
+                {similar.data?.data.map((s) => (
+                  <li key={s.id}>
+                    <Link href={`/cases/${s.id}`} className="related-list__item">
+                      <span className="related-list__num" dir="ltr">
+                        {s.caseNumber}
+                      </span>
+                      <span className="related-list__title" dir="auto">
+                        {s.title}
+                      </span>
+                      <span className="related-list__score">
+                        {Math.round((1 - s.distance) * 100)}%
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+              <p className="muted" style={{ fontSize: "1.2rem", marginTop: "0.8rem" }}>
+                {t("relatedHint")}
+              </p>
+            </section>
+          )}
         </aside>
       </div>
     </>

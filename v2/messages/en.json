@@ -167,7 +167,9 @@
     "confirmDeleteBody": "Case {number} will be removed from all lists. Its data is retained for audit.",
     "confirmDelete": "Delete case",
     "cancel": "Cancel",
-    "details": "Details"
+    "details": "Details",
+    "relatedCases": "Related cases",
+    "relatedHint": "Ranked by semantic similarity — check for possible duplicates."
   },
   "users": {
     "title": "Users",

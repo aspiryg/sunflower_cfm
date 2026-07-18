@@ -248,7 +248,7 @@ Port the UI to App Router with AR/EN + RTL as a first-class concern.
   an RTL smoke run in `/ar` (layout mirrors, no clipped/overflowing elements);
   Lighthouse/SEO check on public pages.
 
-## Phase 6 — AI classification / smart features — ◐ (part 1 done)
+## Phase 6 — AI classification / smart features — ✅ (parts 1 & 2 done)
 **Part 1 ✅ — classification + summarization (OpenAI API — owner decision
 2026-07-17, switched from the original Claude implementation; default model
 `gpt-4o`, override via `OPENAI_MODEL`):**
@@ -271,10 +271,24 @@ Port the UI to App Router with AR/EN + RTL as a first-class concern.
   test returned a valid seeded category/priority at high/critical urgency with
   rationale. Key wired in v2/.env (exposed in chat — owner advised to rotate).
 
-**Part 2 — remaining:** embeddings on `cases.embedding` (OpenAI
-`text-embedding-3-small/large` now the natural choice given the provider
-switch — same key), semantic search + duplicate detection via pgvector,
-optional Redis queue for async classification at scale.
+**Part 2 ✅ — embeddings + semantic search + duplicate detection:**
+- `src/lib/ai`: `embedText` via `text-embedding-3-small` (`dimensions: 1024`,
+  pinned to the `cases.embedding vector(1024)` column; override via
+  `OPENAI_EMBEDDING_MODEL`). `src/lib/ai/embedCase.ts` embeds best-effort on
+  every create (authed + public intake) — never blocks or fails intake.
+- pgvector cosine search in the repo via drizzle `cosineDistance`
+  (`semanticSearchCases` honors the RBAC scope; `similarCases` for duplicates),
+  backed by an **HNSW index** (`drizzle/0001_case_embedding_hnsw.sql`).
+- `GET /api/cases/search/semantic?q=` (scope-aware), `GET /api/cases/[id]/similar`
+  (reuses the stored vector), `POST /api/cases/backfill-embeddings` (admin,
+  batched/idempotent).
+- **"Related cases"** panel on the case-detail sidebar shows semantically-similar
+  cases with a similarity % — duplicate detection at a glance.
+- **Verified LIVE** (2026-07-18): backfilled all existing cases; semantic query
+  "clinic closed during opening hours" ranked the matching cases by cosine
+  distance; related-cases panel renders with similarity scores.
+
+_Deferred: optional Redis queue for async classification/embedding at scale._
 
 ## Phase 7 — Infra, backups, deploy to Hetzner
 - Finalize `docker compose`: web, postgres(pgvector), caddy(TLS), redis,

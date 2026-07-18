@@ -10,6 +10,7 @@ import {
 } from "@/db/repositories/referenceData";
 import { writeAudit } from "@/db/repositories/audit";
 import { classifyCase, isAiConfigured, type CaseClassification } from "@/lib/ai";
+import { embedAndStoreCase } from "@/lib/ai/embedCase";
 
 /**
  * Anonymous public feedback intake — NET-NEW in v2 (v1's public form only
@@ -80,6 +81,9 @@ export const POST = handler(
         ...(ai ? { aiConfidence: ai.confidence, aiRationale: ai.rationale } : {}),
       },
     });
+
+    // Best-effort semantic embedding (never blocks or fails intake).
+    await embedAndStoreCase(created.id, { title, description });
 
     // Only return the reference number to the anonymous submitter.
     return ok(

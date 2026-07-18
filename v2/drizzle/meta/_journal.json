@@ -8,6 +8,13 @@
       "when": 1784324792537,
       "tag": "0000_deep_black_bird",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1784324793537,
+      "tag": "0001_case_embedding_hnsw",
+      "breakpoints": true
     }
   ]
 }

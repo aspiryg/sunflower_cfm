@@ -11,6 +11,7 @@ import {
   type CaseSortKey,
 } from "@/db/repositories/cases";
 import { writeAudit } from "@/db/repositories/audit";
+import { embedAndStoreCase } from "@/lib/ai/embedCase";
 
 function intParam(v: string | null): number | undefined {
   if (!v) return undefined;
@@ -84,6 +85,8 @@ export const POST = authed(
         entityType: "case",
         entityId: created.id,
       });
+      // Best-effort semantic embedding (never blocks or fails the create).
+      await embedAndStoreCase(created.id, created);
       return ok({ case: created }, "Case created.", { status: 201 });
     } catch (err: unknown) {
       // 23503 = foreign_key_violation (bad category/priority/channel id, etc.)
