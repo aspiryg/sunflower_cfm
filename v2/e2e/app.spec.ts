@@ -147,6 +147,23 @@ test("upload an attachment through the case detail UI", async ({ page }) => {
   await expect(page.getByRole("link", { name: /Download/i })).toBeVisible();
 });
 
+test("account menu shows identity and signs out", async ({ page }) => {
+  await login(page);
+  await page.getByRole("button", { name: /Account|الحساب/ }).click();
+  await expect(page.getByText(ADMIN_EMAIL)).toBeVisible();
+  await page.getByRole("menuitem", { name: /Sign out/i }).click();
+  await expect(page).toHaveURL(/\/en\/login$/);
+});
+
+test("cases table sorts by title", async ({ page }) => {
+  await login(page);
+  await page.goto("/en/cases");
+  await page.getByRole("button", { name: /Sort by title/i }).click();
+  await expect(page.locator("tbody tr").first()).toBeVisible();
+  // Status badges render colored reference values.
+  await expect(page.locator("tbody .badge").first()).toBeVisible();
+});
+
 test("escalate a case from the detail view", async ({ page }) => {
   await login(page);
   await page.goto("/en/cases/new");

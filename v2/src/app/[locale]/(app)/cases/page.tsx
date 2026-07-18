@@ -5,17 +5,22 @@ import { useTranslations, useLocale } from "next-intl";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api/client";
 import { Link } from "@/i18n/navigation";
+import { DataTable, type Column } from "@/ui/DataTable";
+import { StatusBadge } from "@/ui/StatusBadge";
 
 interface CaseRow {
   id: number;
   caseNumber: string;
   title: string;
+  statusId: number;
+  priorityId: number;
   createdAt: string;
 }
 interface Ref {
   id: number;
   name: string;
   arabicName: string | null;
+  color?: string | null;
 }
 
 const PAGE_SIZE = 20;
@@ -52,6 +57,10 @@ export default function CasesPage() {
   const categories = useReference("categories");
   const label = (r: Ref) =>
     locale === "ar" && r.arabicName ? r.arabicName : r.name;
+  const refName = (list: Ref[] | undefined, id: number) => {
+    const r = list?.find((x) => x.id === id);
+    return r ? label(r) : "";
+  };
 
   const params = new URLSearchParams({ page: String(page), limit: String(PAGE_SIZE) });
   if (search) params.set("search", search);
@@ -120,36 +129,61 @@ export default function CasesPage() {
         <p className="center-note">{t("loadError")}</p>
       ) : isLoading ? (
         <p className="muted">…</p>
-      ) : rows.length === 0 ? (
-        <p className="center-note">{t("none")}</p>
       ) : (
         <>
-          <table className="table">
-            <thead>
-              <tr>
-                <th>{t("number")}</th>
-                <th>{t("subject")}</th>
-                <th>{t("created")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((c) => (
-                <tr key={c.id}>
-                  <td dir="ltr">
-                    <Link href={`/cases/${c.id}`} style={{ color: "var(--color-brand-600)" }}>
+          <DataTable<CaseRow>
+            empty={t("none")}
+            rows={rows}
+            columns={
+              [
+                {
+                  key: "number",
+                  header: t("number"),
+                  dir: "ltr",
+                  value: (c) => c.caseNumber,
+                  render: (c) => (
+                    <Link href={`/cases/${c.id}`} style={{ color: "var(--color-brand-600)", fontWeight: 600 }}>
                       {c.caseNumber}
                     </Link>
-                  </td>
-                  <td>
-                    <Link href={`/cases/${c.id}`}>{c.title}</Link>
-                  </td>
-                  <td className="muted">
-                    {new Date(c.createdAt).toLocaleDateString()}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  ),
+                },
+                {
+                  key: "title",
+                  header: t("subject"),
+                  value: (c) => c.title,
+                  render: (c) => <Link href={`/cases/${c.id}`}>{c.title}</Link>,
+                },
+                {
+                  key: "status",
+                  header: t("status"),
+                  value: (c) => refName(statuses.data?.data, c.statusId),
+                  render: (c) => {
+                    const r = statuses.data?.data.find((x) => x.id === c.statusId);
+                    return r ? <StatusBadge name={label(r)} color={r.color} /> : "—";
+                  },
+                },
+                {
+                  key: "priority",
+                  header: t("priorityLabel"),
+                  value: (c) => c.priorityId,
+                  render: (c) => {
+                    const r = priorities.data?.data.find((x) => x.id === c.priorityId);
+                    return r ? <StatusBadge name={label(r)} color={r.color} /> : "—";
+                  },
+                },
+                {
+                  key: "created",
+                  header: t("created"),
+                  value: (c) => c.createdAt,
+                  render: (c) => (
+                    <span className="muted">
+                      {new Date(c.createdAt).toLocaleDateString()}
+                    </span>
+                  ),
+                },
+              ] satisfies Column<CaseRow>[]
+            }
+          />
 
           {pagination && pagination.totalPages > 1 && (
             <div

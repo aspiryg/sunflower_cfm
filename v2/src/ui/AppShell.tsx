@@ -3,11 +3,12 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
-import { useAuth, useLogout } from "@/features/auth/AuthContext";
+import { useAuth } from "@/features/auth/AuthContext";
 import { hasRole, type Role } from "@/lib/rbac";
 import { ThemeToggle } from "./ThemeToggle";
 import { LocaleSwitcher } from "./LocaleSwitcher";
 import { NotificationsBell } from "./NotificationsBell";
+import { UserMenu } from "./UserMenu";
 
 const NAV: { href: string; key: string; minRole?: Role }[] = [
   { href: "/dashboard", key: "dashboard" },
@@ -23,7 +24,6 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { user, isLoading, isAuthenticated } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-  const logout = useLogout();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
@@ -39,14 +39,6 @@ export function AppShell({ children }: { children: ReactNode }) {
   if (!isAuthenticated || !user) return null;
 
   const items = NAV.filter((n) => !n.minRole || hasRole(user, n.minRole));
-
-  async function signOut() {
-    try {
-      await logout.mutateAsync();
-    } finally {
-      router.replace("/login");
-    }
-  }
 
   return (
     <div className="shell">
@@ -85,20 +77,10 @@ export function AppShell({ children }: { children: ReactNode }) {
           </button>
           <span className="header__title">{tApp("name")}</span>
           <div className="header__actions">
-            <Link href="/profile" className="header__user">
-              {user.firstName} {user.lastName}
-            </Link>
             <NotificationsBell />
             <LocaleSwitcher />
             <ThemeToggle />
-            <button
-              type="button"
-              className="btn btn-outline"
-              style={{ padding: "0.6rem 1.4rem", fontSize: "1.4rem" }}
-              onClick={signOut}
-            >
-              {t("signOut")}
-            </button>
+            <UserMenu />
           </div>
         </header>
         <main className="content">{children}</main>

@@ -165,7 +165,11 @@
     "deactivate": "Deactivate",
     "roleUpdated": "Role updated.",
     "deactivated": "User deactivated.",
-    "loadError": "Could not load users."
+    "loadError": "Could not load users.",
+    "confirmDeactivateTitle": "Deactivate user?",
+    "confirmDeactivateBody": "{name} will lose access immediately. Their cases and history remain.",
+    "confirm": "Deactivate",
+    "cancel": "Cancel"
   },
   "profile": {
     "title": "My profile",
@@ -252,5 +256,16 @@
     "deactivate": "Deactivate",
     "error": "The change could not be saved.",
     "lockedNote": "Statuses and priorities drive the case lifecycle and SLA timers, so they cannot be edited here."
+  },
+  "userMenu": {
+    "label": "Account",
+    "profile": "My profile",
+    "roles": {
+      "user": "User",
+      "staff": "Staff",
+      "manager": "Manager",
+      "admin": "Administrator",
+      "super_admin": "Super administrator"
+    }
   }
 }

@@ -194,8 +194,33 @@ admin screens, richer filters/search on the cases list.
     rename + admin-list 403) + 3 e2e (escalate, settings add, mobile drawer) →
     71 vitest / 24 e2e green. Also fixed a test-parallelism race (sortOrder).
 
-**Core-gap phase COMPLETE** → next: Phase 6 (AI), then advanced features, then
-deploy (Phase 7).
+**Core-gap phase COMPLETE.**
+
+## Phase 5.75 — v1 feature parity + reusable component library — ◐
+Owner directive: **v2 must contain at least every v1 feature at v1's component
+depth — no minimal stand-ins — built as reusable components.** Parity checklist
+(mined from the Phase 0 frontend map; ✅ as they land):
+- ☐ UI primitives: Button/IconButton components, Input/Textarea/FormField,
+  **EnhancedSelect** (searchable), UserSelect, Checkbox, Switch, DatePicker,
+  Card/InfoCard, Breadcrumb, LoadingSpinner, Empty state.
+- ◐ Overlays: **Menu primitive** (dropdowns), **UserMenu/account menu**,
+  ContextMenu (row actions), **Modal + ConfirmationModal**, one toast system.
+- ☐ **Tabs** compound component (case form + case detail).
+- ◐ **Advanced DataTable**: typed columns, sortable, page-size control, row
+  actions, empty state — cases + users on it.
+- ☐ Cases: multi-tab form (Basic/Classification/Provider/Location/Advanced —
+  the full v1 field model incl. provider demographics, consent, geography,
+  program links), case detail as tabs (Overview/Assignment/Timeline/Comments/
+  Location/Settings), assigned-to-me / created-by-me views, delete-case flow.
+- ☐ Dashboard: charts (trend line, status distribution, category breakdown),
+  quick actions.
+- ☐ Profile: picture upload (S3 layer), contact/security editing, completion.
+- ☐ Users: create-user flow (admin), role modal limited to assignable roles.
+- ☐ Resources: hierarchical management (region→governorate→community,
+  program→project→activity).
+- ☐ Notifications full page (beyond the bell).
+
+Then: Phase 6 (AI) → advanced features → deploy (Phase 7).
 
 ### Original Phase 5 plan
 
