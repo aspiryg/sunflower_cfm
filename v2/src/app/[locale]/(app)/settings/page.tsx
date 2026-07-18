@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch, type ApiError } from "@/lib/api/client";
+import { useToast } from "@/ui/Toast";
 
 interface LookupRow {
   id: number;
@@ -22,6 +23,8 @@ export default function SettingsPage() {
   const [resource, setResource] = useState<ResourceKey>("categories");
   const [editingId, setEditingId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const toast = useToast();
+  const tToast = useTranslations("toasts");
 
   const listQ = useQuery({
     queryKey: ["ref-admin", resource],
@@ -37,7 +40,10 @@ export default function SettingsPage() {
   const createM = useMutation({
     mutationFn: (body: Record<string, unknown>) =>
       apiFetch(`/api/reference/${resource}`, { method: "POST", body }),
-    onSuccess: invalidate,
+    onSuccess: () => {
+      invalidate();
+      toast.success(tToast("settingsSaved"));
+    },
     onError: (e) => setError((e as unknown as ApiError)?.message ?? t("error")),
   });
   const updateM = useMutation({
@@ -46,6 +52,7 @@ export default function SettingsPage() {
     onSuccess: () => {
       setEditingId(null);
       invalidate();
+      toast.success(tToast("settingsSaved"));
     },
     onError: (e) => setError((e as unknown as ApiError)?.message ?? t("error")),
   });

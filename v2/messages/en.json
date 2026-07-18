@@ -156,7 +156,12 @@
     "notFound": "Case not found.",
     "edit": "Edit",
     "tabOverview": "Overview",
-    "tabAttachments": "Attachments"
+    "tabAttachments": "Attachments",
+    "delete": "Delete",
+    "confirmDeleteTitle": "Delete this case?",
+    "confirmDeleteBody": "Case {number} will be removed from all lists. Its data is retained for audit.",
+    "confirmDelete": "Delete case",
+    "cancel": "Cancel"
   },
   "users": {
     "title": "Users",
@@ -353,5 +358,25 @@
     "communityHint": "Pick region and governorate first. Leave empty to keep unchanged when editing.",
     "locationText": "Location / area",
     "coordinates": "Coordinates"
+  },
+  "charts": {
+    "trend": "New cases — last 30 days",
+    "byStatus": "Cases by status",
+    "byCategory": "Cases by category"
+  },
+  "toasts": {
+    "caseCreated": "Case created.",
+    "caseUpdated": "Case updated.",
+    "caseDeleted": "Case deleted.",
+    "statusChanged": "Status updated.",
+    "assigned": "Case assigned.",
+    "escalated": "Case escalated.",
+    "commentPosted": "Comment posted.",
+    "attachmentUploaded": "File uploaded.",
+    "attachmentDeleted": "Attachment deleted.",
+    "settingsSaved": "Saved.",
+    "profileSaved": "Profile updated.",
+    "userUpdated": "User updated.",
+    "error": "Something went wrong."
   }
 }

@@ -203,8 +203,10 @@ depth — no minimal stand-ins — built as reusable components.** Parity checkl
 - ☐ UI primitives: Button/IconButton components, Input/Textarea/FormField,
   **EnhancedSelect** (searchable), UserSelect, Checkbox, Switch, DatePicker,
   Card/InfoCard, Breadcrumb, LoadingSpinner, Empty state.
-- ◐ Overlays: **Menu primitive** (dropdowns), **UserMenu/account menu**,
-  ContextMenu (row actions), **Modal + ConfirmationModal**, one toast system.
+- ✅ Overlays: **Menu primitive** (dropdowns), **UserMenu/account menu**,
+  row-actions slot (context-menu pattern), **Modal + ConfirmationModal**, and
+  **one toast system** (useToast success/error, auto-dismiss, RTL-safe) wired
+  across case/settings/profile/users/attachment mutations.
 - ✅ **Tabs** compound component (Tabs/TabsList/TabsTrigger/TabsContent, badges,
   keepMounted for forms) — used by the case form and case detail.
 - ◐ **Advanced DataTable**: typed columns, sortable, page-size control, row
@@ -214,9 +216,12 @@ depth — no minimal stand-ins — built as reusable components.** Parity checkl
   provider demographics + consent/privacy, region→governorate→community
   cascade, tags/refs; API schema extended to match). ✅ case detail as tabs
   (Overview/Comments+count/Attachments/History). ✅ assigned-to-me /
-  created-by-me scope tabs (server-side `mine=` param). ☐ delete-case flow UI.
-- ☐ Dashboard: charts (trend line, status distribution, category breakdown),
-  quick actions.
+  created-by-me scope tabs (server-side `mine=` param). ✅ delete-case flow
+  (RBAC-gated button → ConfirmationModal → toast → back to list).
+- ✅ Dashboard charts (Recharts): 30-day trend area chart, status distribution
+  donut, category breakdown bar — colored from reference-data hex colors,
+  localized labels, backed by a permission-scoped SQL group-by endpoint
+  `GET /api/cases/analytics`.
 - ☐ Profile: picture upload (S3 layer), contact/security editing, completion.
 - ☐ Users: create-user flow (admin), role modal limited to assignable roles.
 - ☐ Resources: hierarchical management (region→governorate→community,

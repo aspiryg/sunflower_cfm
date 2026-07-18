@@ -5,11 +5,13 @@ import { useParams } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch, type ApiError } from "@/lib/api/client";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { useAuth } from "@/features/auth/AuthContext";
 import { hasRole, can } from "@/lib/rbac";
 import { AttachmentsCard } from "@/features/cases/AttachmentsCard";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/ui/Tabs";
+import { ConfirmationModal } from "@/ui/Modal";
+import { useToast } from "@/ui/Toast";
 
 interface Ref {
   id: number;
@@ -66,6 +68,9 @@ export default function CaseDetailPage() {
   const canSeeUsers = user ? hasRole(user, "staff") : false;
 
   const [actionError, setActionError] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const toast = useToast();
+  const tToast = useTranslations("toasts");
 
   const caseQ = useQuery({
     queryKey: ["case", id],
@@ -109,14 +114,20 @@ export default function CaseDetailPage() {
   const statusM = useMutation({
     mutationFn: (statusId: number) =>
       apiFetch(`/api/cases/${id}/status`, { method: "PATCH", body: { statusId } }),
-    onSuccess: invalidate,
+    onSuccess: () => {
+      invalidate();
+      toast.success(tToast("statusChanged"));
+    },
     onError: (e) =>
       setActionError((e as unknown as ApiError)?.message ?? t("transitionError")),
   });
   const assignM = useMutation({
     mutationFn: (assignedTo: number) =>
       apiFetch(`/api/cases/${id}/assign`, { method: "PATCH", body: { assignedTo } }),
-    onSuccess: invalidate,
+    onSuccess: () => {
+      invalidate();
+      toast.success(tToast("assigned"));
+    },
   });
   const commentM = useMutation({
     mutationFn: (comment: string) =>
@@ -124,14 +135,31 @@ export default function CaseDetailPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["case-comments", id] });
       qc.invalidateQueries({ queryKey: ["case-history", id] });
+      toast.success(tToast("commentPosted"));
     },
   });
   const escalateM = useMutation({
     mutationFn: (reason: string) =>
       apiFetch(`/api/cases/${id}/escalate`, { method: "PATCH", body: { reason } }),
-    onSuccess: invalidate,
+    onSuccess: () => {
+      invalidate();
+      toast.success(tToast("escalated"));
+    },
     onError: (e) =>
       setActionError((e as unknown as ApiError)?.message ?? t("transitionError")),
+  });
+  const router = useRouter();
+  const deleteM = useMutation({
+    mutationFn: () => apiFetch(`/api/cases/${id}`, { method: "DELETE" }),
+    onSuccess: () => {
+      toast.success(tToast("caseDeleted"));
+      qc.invalidateQueries({ queryKey: ["cases"] });
+      router.replace("/cases");
+    },
+    onError: () => {
+      setConfirmDelete(false);
+      toast.error(tToast("error"));
+    },
   });
 
   if (caseQ.isLoading) return <p className="muted">…</p>;
@@ -149,11 +177,32 @@ export default function CaseDetailPage() {
               {t("edit")}
             </Link>
           )}
+          {user && can(user, "cases", "delete", c) && (
+            <button
+              type="button"
+              className="btn btn-danger"
+              onClick={() => setConfirmDelete(true)}
+            >
+              {t("delete")}
+            </button>
+          )}
           <Link href="/cases" className="btn btn-outline">
             {t("back")}
           </Link>
         </div>
       </div>
+
+      <ConfirmationModal
+        open={confirmDelete}
+        title={t("confirmDeleteTitle")}
+        body={t("confirmDeleteBody", { number: c.caseNumber })}
+        confirmLabel={t("confirmDelete")}
+        cancelLabel={t("cancel")}
+        danger
+        busy={deleteM.isPending}
+        onConfirm={() => deleteM.mutate()}
+        onCancel={() => setConfirmDelete(false)}
+      />
 
       <Tabs defaultValue="overview">
         <TabsList>

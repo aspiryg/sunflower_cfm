@@ -150,6 +150,32 @@ test("upload an attachment through the case detail UI", async ({ page }) => {
   await expect(page.getByRole("link", { name: /Download/i })).toBeVisible();
 });
 
+test("dashboard renders analytics charts", async ({ page }) => {
+  await login(page);
+  await expect(page.locator(".chart-card").first()).toBeVisible();
+  // Recharts renders SVG surfaces once data arrives.
+  await expect(page.locator(".chart-card svg").first()).toBeVisible();
+});
+
+test("delete a case via the confirmation modal (with toast)", async ({ page }) => {
+  await login(page);
+  await page.goto("/en/cases/new");
+  const title = `Deletable case ${Date.now()}`;
+  await page.locator("#title").fill(title);
+  await page.locator("#description").fill("Case for the delete-flow e2e.");
+  await page.locator('button[type="submit"]').click();
+  await expect(page).toHaveURL(/\/en\/cases$/);
+  await page.getByRole("link", { name: title }).click();
+
+  await page.getByRole("button", { name: /^Delete$/i }).click();
+  await expect(page.getByText(/Delete this case\?/i)).toBeVisible();
+  await page.getByRole("button", { name: /Delete case/i }).click();
+
+  await expect(page).toHaveURL(/\/en\/cases$/);
+  await expect(page.getByText(/Case deleted/i)).toBeVisible(); // toast
+  await expect(page.getByRole("link", { name: title })).toHaveCount(0);
+});
+
 test("multi-tab case form captures provider details and location", async ({ page }) => {
   await login(page);
   await page.goto("/en/cases/new");
@@ -251,5 +277,6 @@ test("profile page saves changes", async ({ page }) => {
   await page.goto("/en/profile");
   await page.locator("#organization").fill("Sunflower Org QA");
   await page.getByRole("button", { name: /Save changes/i }).click();
-  await expect(page.getByText(/Profile updated/i)).toBeVisible();
+  // Banner + toast both confirm — assert at least one.
+  await expect(page.getByText(/Profile updated/i).first()).toBeVisible();
 });

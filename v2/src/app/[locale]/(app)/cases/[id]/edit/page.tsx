@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch, type ApiError } from "@/lib/api/client";
 import { Link, useRouter } from "@/i18n/navigation";
 import { CaseForm, type CaseFormValues } from "@/features/cases/CaseForm";
+import { useToast } from "@/ui/Toast";
 
 interface CaseFull extends CaseFormValues {
   id: number;
@@ -21,6 +22,8 @@ export default function EditCasePage() {
   const router = useRouter();
   const qc = useQueryClient();
   const [error, setError] = useState<string | null>(null);
+  const toast = useToast();
+  const tToast = useTranslations("toasts");
 
   const caseQ = useQuery({
     queryKey: ["case", id],
@@ -34,6 +37,7 @@ export default function EditCasePage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["case", id] });
       qc.invalidateQueries({ queryKey: ["cases"] });
+      toast.success(tToast("caseUpdated"));
       router.push(`/cases/${id}`);
     },
     onError: (e) =>

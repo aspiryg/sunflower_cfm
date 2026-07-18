@@ -12,6 +12,7 @@ import {
   caseAssignments,
   caseStatuses,
   casePriorities,
+  caseCategories,
   type Case,
   type NewCase,
   type CaseHistoryEntry,
@@ -414,6 +415,64 @@ export async function softDeleteCase(
     .where(eq(cases.id, caseId));
 }
 
+export interface CaseAnalytics {
+  trend: { day: string; count: number }[];
+  byStatus: { id: number; name: string; arabicName: string | null; color: string | null; count: number }[];
+  byCategory: { id: number; name: string; arabicName: string | null; color: string | null; count: number }[];
+}
+
+/** Dashboard chart aggregates (SQL group-bys, permission-scoped). */
+export async function caseAnalytics(scope: QueryScope): Promise<CaseAnalytics> {
+  if (scope.kind === "none") return { trend: [], byStatus: [], byCategory: [] };
+
+  const conds = scopeConds(scope);
+  const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+  const [trend, byStatus, byCategory] = await Promise.all([
+    db
+      .select({
+        day: sql<string>`to_char(${cases.caseDate}::date, 'YYYY-MM-DD')`,
+        count: sql<number>`count(*)::int`,
+      })
+      .from(cases)
+      .where(and(...conds, gte(cases.caseDate, since)))
+      .groupBy(sql`${cases.caseDate}::date`)
+      .orderBy(sql`${cases.caseDate}::date`),
+    db
+      .select({
+        id: caseStatuses.id,
+        name: caseStatuses.name,
+        arabicName: caseStatuses.arabicName,
+        color: caseStatuses.color,
+        count: sql<number>`count(*)::int`,
+      })
+      .from(cases)
+      .innerJoin(caseStatuses, eq(caseStatuses.id, cases.statusId))
+      .where(and(...conds))
+      .groupBy(caseStatuses.id, caseStatuses.name, caseStatuses.arabicName, caseStatuses.color)
+      .orderBy(caseStatuses.id),
+    db
+      .select({
+        id: caseCategories.id,
+        name: caseCategories.name,
+        arabicName: caseCategories.arabicName,
+        color: caseCategories.color,
+        count: sql<number>`count(*)::int`,
+      })
+      .from(cases)
+      .innerJoin(caseCategories, eq(caseCategories.id, cases.categoryId))
+      .where(and(...conds))
+      .groupBy(caseCategories.id, caseCategories.name, caseCategories.arabicName, caseCategories.color)
+      .orderBy(caseCategories.id),
+  ]);
+
+  return {
+    trend: trend.map((r) => ({ day: r.day, count: Number(r.count) })),
+    byStatus: byStatus.map((r) => ({ ...r, count: Number(r.count) })),
+    byCategory: byCategory.map((r) => ({ ...r, count: Number(r.count) })),
+  };
+}
+
 export function listCaseHistory(caseId: number): Promise<CaseHistoryEntry[]> {
   return db
     .select()
@@ -422,17 +481,23 @@ export function listCaseHistory(caseId: number): Promise<CaseHistoryEntry[]> {
     .orderBy(desc(caseHistory.createdAt));
 }
 
+/** WHERE conditions applying a permission scope to the cases table. */
+function scopeConds(scope: QueryScope): (SQL | undefined)[] {
+  const conds: (SQL | undefined)[] = [live()];
+  if (scope.kind === "field") {
+    if (scope.field === "createdBy") conds.push(eq(cases.createdBy, scope.value));
+    else if (scope.field === "assignedTo") conds.push(eq(cases.assignedTo, scope.value));
+  }
+  return conds;
+}
+
 /** Aggregate case counts (total / open / resolved) honoring the permission scope. */
 export async function caseStats(
   scope: QueryScope,
 ): Promise<{ total: number; open: number; resolved: number }> {
   if (scope.kind === "none") return { total: 0, open: 0, resolved: 0 };
 
-  const conds: (SQL | undefined)[] = [live()];
-  if (scope.kind === "field") {
-    if (scope.field === "createdBy") conds.push(eq(cases.createdBy, scope.value));
-    else if (scope.field === "assignedTo") conds.push(eq(cases.assignedTo, scope.value));
-  }
+  const conds = scopeConds(scope);
 
   const [row] = await db
     .select({

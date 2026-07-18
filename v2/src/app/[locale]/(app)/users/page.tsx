@@ -9,6 +9,7 @@ import { useAuth } from "@/features/auth/AuthContext";
 import { DataTable, type Column } from "@/ui/DataTable";
 import { Avatar } from "@/ui/Avatar";
 import { ConfirmationModal } from "@/ui/Modal";
+import { useToast } from "@/ui/Toast";
 
 interface UserRow {
   id: number;
@@ -24,6 +25,8 @@ export default function UsersPage() {
   const qc = useQueryClient();
   const { user: me } = useAuth();
   const [pendingDeactivate, setPendingDeactivate] = useState<UserRow | null>(null);
+  const toast = useToast();
+  const tToast = useTranslations("toasts");
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["users", { page: 1, limit: 50 }],
@@ -33,13 +36,17 @@ export default function UsersPage() {
   const roleM = useMutation({
     mutationFn: (v: { id: number; role: Role }) =>
       apiFetch(`/api/users/${v.id}/role`, { method: "PATCH", body: { role: v.role } }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["users"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["users"] });
+      toast.success(tToast("userUpdated"));
+    },
   });
   const deactivateM = useMutation({
     mutationFn: (id: number) => apiFetch(`/api/users/${id}`, { method: "DELETE" }),
     onSuccess: () => {
       setPendingDeactivate(null);
       qc.invalidateQueries({ queryKey: ["users"] });
+      toast.success(tToast("userUpdated"));
     },
   });
 

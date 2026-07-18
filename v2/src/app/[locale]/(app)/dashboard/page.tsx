@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api/client";
 import { useAuth } from "@/features/auth/AuthContext";
+import { DashboardCharts } from "@/features/dashboard/DashboardCharts";
 
 interface CaseRow {
   id: number;
@@ -53,6 +54,8 @@ export default function DashboardPage() {
           <div className="stat__label">{t("resolved")}</div>
         </div>
       </div>
+
+      <DashboardCharts />
 
       <h2 style={{ marginBottom: "1.6rem", fontSize: "1.8rem" }}>
         {t("recent")}

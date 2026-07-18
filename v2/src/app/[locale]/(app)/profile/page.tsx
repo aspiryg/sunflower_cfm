@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api/client";
 import { useAuth } from "@/features/auth/AuthContext";
+import { useToast } from "@/ui/Toast";
 
 export default function ProfilePage() {
   const t = useTranslations("profile");
@@ -12,6 +13,8 @@ export default function ProfilePage() {
   const qc = useQueryClient();
   const { user, isLoading } = useAuth();
   const [saved, setSaved] = useState(false);
+  const toast = useToast();
+  const tToast = useTranslations("toasts");
 
   const save = useMutation({
     mutationFn: (body: Record<string, string>) =>
@@ -19,6 +22,7 @@ export default function ProfilePage() {
     onSuccess: () => {
       setSaved(true);
       qc.invalidateQueries({ queryKey: ["auth", "me"] });
+      toast.success(tToast("profileSaved"));
     },
   });
 

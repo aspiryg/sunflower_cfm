@@ -156,7 +156,12 @@
     "notFound": "الحالة غير موجودة.",
     "edit": "تعديل",
     "tabOverview": "نظرة عامة",
-    "tabAttachments": "المرفقات"
+    "tabAttachments": "المرفقات",
+    "delete": "حذف",
+    "confirmDeleteTitle": "حذف هذه الحالة؟",
+    "confirmDeleteBody": "ستُزال الحالة {number} من جميع القوائم. تُحفظ بياناتها للتدقيق.",
+    "confirmDelete": "حذف الحالة",
+    "cancel": "إلغاء"
   },
   "users": {
     "title": "المستخدمون",
@@ -353,5 +358,25 @@
     "communityHint": "اختر المنطقة والمحافظة أولاً. اتركه فارغاً للإبقاء عليه دون تغيير عند التعديل.",
     "locationText": "الموقع / المنطقة",
     "coordinates": "الإحداثيات"
+  },
+  "charts": {
+    "trend": "الحالات الجديدة — آخر 30 يوماً",
+    "byStatus": "الحالات حسب الوضع",
+    "byCategory": "الحالات حسب الفئة"
+  },
+  "toasts": {
+    "caseCreated": "تم إنشاء الحالة.",
+    "caseUpdated": "تم تحديث الحالة.",
+    "caseDeleted": "تم حذف الحالة.",
+    "statusChanged": "تم تحديث الوضع.",
+    "assigned": "تم تعيين الحالة.",
+    "escalated": "تم تصعيد الحالة.",
+    "commentPosted": "تم نشر التعليق.",
+    "attachmentUploaded": "تم رفع الملف.",
+    "attachmentDeleted": "تم حذف المرفق.",
+    "settingsSaved": "تم الحفظ.",
+    "profileSaved": "تم تحديث الملف الشخصي.",
+    "userUpdated": "تم تحديث المستخدم.",
+    "error": "حدث خطأ ما."
   }
 }

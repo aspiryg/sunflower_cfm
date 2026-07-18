@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api/client";
+import { useToast } from "@/ui/Toast";
 
 interface AttachmentRow {
   id: number;
@@ -27,6 +28,8 @@ export function AttachmentsCard({ caseId }: { caseId: number }) {
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const toast = useToast();
+  const tToast = useTranslations("toasts");
 
   const { data } = useQuery({
     queryKey: ["case-attachments", caseId],
@@ -55,6 +58,7 @@ export function AttachmentsCard({ caseId }: { caseId: number }) {
         return;
       }
       invalidate();
+      toast.success(tToast("attachmentUploaded"));
     } catch {
       setError(t("error"));
     } finally {
@@ -66,7 +70,10 @@ export function AttachmentsCard({ caseId }: { caseId: number }) {
   const deleteM = useMutation({
     mutationFn: (id: number) =>
       apiFetch(`/api/cases/${caseId}/attachments/${id}`, { method: "DELETE" }),
-    onSuccess: invalidate,
+    onSuccess: () => {
+      invalidate();
+      toast.success(tToast("attachmentDeleted"));
+    },
   });
 
   return (
