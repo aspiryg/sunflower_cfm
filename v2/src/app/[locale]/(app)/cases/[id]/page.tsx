@@ -11,6 +11,8 @@ import { hasRole, can } from "@/lib/rbac";
 import { AttachmentsCard } from "@/features/cases/AttachmentsCard";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/ui/Tabs";
 import { ConfirmationModal } from "@/ui/Modal";
+import { CheckboxField } from "@/ui/form";
+import { DatePicker } from "@/ui/DatePicker";
 import { useToast } from "@/ui/Toast";
 import { Breadcrumb } from "@/ui/Breadcrumb";
 import { UserSelect } from "@/ui/UserSelect";
@@ -40,6 +42,12 @@ interface Comment {
   comment: string;
   createdAt: string;
   createdBy: number | null;
+  isInternal: boolean;
+  commentType: string;
+  requiresFollowUp: boolean;
+  followUpDate: string | null;
+  followUpCompleted: boolean;
+  isEdited: boolean;
 }
 interface HistoryEntry {
   id: number;
@@ -86,6 +94,13 @@ export default function CaseDetailPage() {
   const [statusSel, setStatusSel] = useState<number | "">("");
   const [escalateReason, setEscalateReason] = useState("");
   const [aiSummary, setAiSummary] = useState<string | null>(null);
+  // Comment post-form + row-action state.
+  const [postInternal, setPostInternal] = useState(true);
+  const [postFollowUp, setPostFollowUp] = useState(false);
+  const [postFollowUpDate, setPostFollowUpDate] = useState<string | null>(null);
+  const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
+  const [editText, setEditText] = useState("");
+  const [deleteCommentId, setDeleteCommentId] = useState<number | null>(null);
   const toast = useToast();
   const tToast = useTranslations("toasts");
   const tAi = useTranslations("ai");
@@ -172,14 +187,62 @@ export default function CaseDetailPage() {
       toast.success(tToast("assigned"));
     },
   });
+  const invalidateComments = () =>
+    qc.invalidateQueries({ queryKey: ["case-comments", id] });
+
   const commentM = useMutation({
-    mutationFn: (comment: string) =>
-      apiFetch(`/api/cases/${id}/comments`, { method: "POST", body: { comment } }),
+    mutationFn: (body: {
+      comment: string;
+      isInternal?: boolean;
+      requiresFollowUp?: boolean;
+      followUpDate?: string;
+    }) => apiFetch(`/api/cases/${id}/comments`, { method: "POST", body }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["case-comments", id] });
+      invalidateComments();
       qc.invalidateQueries({ queryKey: ["case-history", id] });
       toast.success(tToast("commentPosted"));
+      setPostInternal(true);
+      setPostFollowUp(false);
+      setPostFollowUpDate(null);
     },
+  });
+  const editCommentM = useMutation({
+    mutationFn: (vars: { commentId: number; comment: string }) =>
+      apiFetch(`/api/cases/${id}/comments/${vars.commentId}`, {
+        method: "PATCH",
+        body: { comment: vars.comment },
+      }),
+    onSuccess: () => {
+      invalidateComments();
+      toast.success(t("commentUpdatedToast"));
+      setEditingCommentId(null);
+      setEditText("");
+    },
+    onError: () => toast.error(tToast("error")),
+  });
+  const deleteCommentM = useMutation({
+    mutationFn: (commentId: number) =>
+      apiFetch(`/api/cases/${id}/comments/${commentId}`, { method: "DELETE" }),
+    onSuccess: () => {
+      invalidateComments();
+      toast.success(t("commentDeletedToast"));
+      setDeleteCommentId(null);
+    },
+    onError: () => {
+      setDeleteCommentId(null);
+      toast.error(tToast("error"));
+    },
+  });
+  const followUpDoneM = useMutation({
+    mutationFn: (commentId: number) =>
+      apiFetch(`/api/cases/${id}/comments/${commentId}/follow-up`, {
+        method: "PATCH",
+      }),
+    onSuccess: () => {
+      invalidateComments();
+      toast.success(t("followUpDoneToast"));
+    },
+    onError: () => toast.error(tToast("error")),
   });
   const escalateM = useMutation({
     mutationFn: (reason: string) =>
@@ -253,6 +316,20 @@ export default function CaseDetailPage() {
         onCancel={() => setConfirmDelete(false)}
       />
 
+      <ConfirmationModal
+        open={deleteCommentId != null}
+        title={t("confirmDeleteCommentTitle")}
+        body={t("confirmDeleteCommentBody")}
+        confirmLabel={t("deleteComment")}
+        cancelLabel={t("cancel")}
+        danger
+        busy={deleteCommentM.isPending}
+        onConfirm={() => {
+          if (deleteCommentId != null) deleteCommentM.mutate(deleteCommentId);
+        }}
+        onCancel={() => setDeleteCommentId(null)}
+      />
+
       <div className="detail-grid">
         {/* ---- Main column: title/description + tabbed content ---- */}
         <div className="detail-main">
@@ -299,7 +376,18 @@ export default function CaseDetailPage() {
                     e.preventDefault();
                     const formEl = e.currentTarget;
                     const text = String(new FormData(formEl).get("comment") ?? "").trim();
-                    if (text) commentM.mutate(text);
+                    if (text) {
+                      commentM.mutate({
+                        comment: text,
+                        ...(canSeeUsers ? { isInternal: postInternal } : {}),
+                        ...(canSeeUsers && postFollowUp
+                          ? {
+                              requiresFollowUp: true,
+                              ...(postFollowUpDate ? { followUpDate: postFollowUpDate } : {}),
+                            }
+                          : {}),
+                      });
+                    }
                     formEl.reset();
                   }}
                 >
@@ -307,6 +395,29 @@ export default function CaseDetailPage() {
                     <label htmlFor="comment">{t("addComment")}</label>
                     <textarea id="comment" name="comment" dir="auto" placeholder={t("commentPlaceholder")} />
                   </div>
+                  {canSeeUsers && (
+                    <div className="comment-form__opts">
+                      <CheckboxField
+                        label={t("internalComment")}
+                        hint={t("internalCommentHint")}
+                        checked={postInternal}
+                        onChange={(e) => setPostInternal(e.target.checked)}
+                      />
+                      <CheckboxField
+                        label={t("requiresFollowUp")}
+                        checked={postFollowUp}
+                        onChange={(e) => setPostFollowUp(e.target.checked)}
+                      />
+                      {postFollowUp && (
+                        <DatePicker
+                          label={t("followUpDate")}
+                          labelSuffix={` ${t("optional")}`}
+                          value={postFollowUpDate}
+                          onChange={setPostFollowUpDate}
+                        />
+                      )}
+                    </div>
+                  )}
                   <button type="submit" className="btn btn-primary" disabled={commentM.isPending}>
                     {t("postComment")}
                   </button>
@@ -316,12 +427,110 @@ export default function CaseDetailPage() {
                   {comments.data?.data.length === 0 ? (
                     <p className="muted">{t("noComments")}</p>
                   ) : (
-                    comments.data?.data.map((cm) => (
-                      <div key={cm.id} className="comment">
-                        <p dir="auto">{cm.comment}</p>
-                        <p className="comment__meta">{new Date(cm.createdAt).toLocaleString()}</p>
-                      </div>
-                    ))
+                    comments.data?.data.map((cm) => {
+                      const canModify =
+                        !!user && (cm.createdBy === user.id || hasRole(user, "manager"));
+                      const editing = editingCommentId === cm.id;
+                      const followUpOpen = cm.requiresFollowUp && !cm.followUpCompleted;
+                      return (
+                        <div key={cm.id} className="comment">
+                          <div className="comment__badges">
+                            {cm.isInternal && (
+                              <span className="badge comment__badge--internal">
+                                {t("internal")}
+                              </span>
+                            )}
+                            {followUpOpen && (
+                              <span className="badge comment__badge--followup">
+                                {t("followUpDue")}
+                                {cm.followUpDate
+                                  ? ` · ${new Date(cm.followUpDate).toLocaleDateString(locale)}`
+                                  : ""}
+                              </span>
+                            )}
+                          </div>
+                          {editing ? (
+                            <div className="comment__edit">
+                              <textarea
+                                dir="auto"
+                                value={editText}
+                                onChange={(e) => setEditText(e.target.value)}
+                              />
+                              <div className="comment__actions">
+                                <button
+                                  type="button"
+                                  className="btn btn-primary btn-sm"
+                                  disabled={editCommentM.isPending || !editText.trim()}
+                                  onClick={() =>
+                                    editCommentM.mutate({
+                                      commentId: cm.id,
+                                      comment: editText.trim(),
+                                    })
+                                  }
+                                >
+                                  {t("save")}
+                                </button>
+                                <button
+                                  type="button"
+                                  className="btn btn-outline btn-sm"
+                                  onClick={() => {
+                                    setEditingCommentId(null);
+                                    setEditText("");
+                                  }}
+                                >
+                                  {t("cancel")}
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              <p dir="auto">{cm.comment}</p>
+                              <p className="comment__meta">
+                                {new Date(cm.createdAt).toLocaleString()}
+                                {cm.isEdited && (
+                                  <span className="comment__edited"> · {t("edited")}</span>
+                                )}
+                              </p>
+                              {(canModify || (followUpOpen && canSeeUsers)) && (
+                                <div className="comment__actions">
+                                  {canModify && (
+                                    <button
+                                      type="button"
+                                      className="comment__action"
+                                      onClick={() => {
+                                        setEditingCommentId(cm.id);
+                                        setEditText(cm.comment);
+                                      }}
+                                    >
+                                      {t("editComment")}
+                                    </button>
+                                  )}
+                                  {canModify && (
+                                    <button
+                                      type="button"
+                                      className="comment__action comment__action--danger"
+                                      onClick={() => setDeleteCommentId(cm.id)}
+                                    >
+                                      {t("deleteComment")}
+                                    </button>
+                                  )}
+                                  {followUpOpen && canSeeUsers && (
+                                    <button
+                                      type="button"
+                                      className="comment__action"
+                                      disabled={followUpDoneM.isPending}
+                                      onClick={() => followUpDoneM.mutate(cm.id)}
+                                    >
+                                      {t("markFollowUpDone")}
+                                    </button>
+                                  )}
+                                </div>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      );
+                    })
                   )}
                 </div>
               </section>

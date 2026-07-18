@@ -69,6 +69,9 @@ export function CreateUserModal({
       {tempPassword ? (
         <>
           <p style={{ marginBottom: "1.2rem" }}>{t("tempPasswordNote")}</p>
+          <p className="muted" style={{ marginBottom: "1.2rem", fontSize: "1.3rem" }}>
+            {t("welcomeEmailSent")}
+          </p>
           <p
             className="success__ref"
             dir="ltr"

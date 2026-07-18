@@ -1,18 +1,45 @@
 import type { NextRequest } from "next/server";
+import { z } from "zod";
 import { authed } from "@/lib/http/guard";
 import { ok, fail } from "@/lib/http/respond";
 import { paramStr } from "@/lib/http/params";
 import { can } from "@/lib/rbac";
-import { parseBody, lookupCreateSchema } from "@/lib/validation";
+import { parseBody } from "@/lib/validation";
 import * as ref from "@/db/repositories/referenceData";
 import {
   isEditableLookup,
+  isLifecycleLookup,
   createLookupRow,
   listLookupRowsAdmin,
   PARENT_OF,
   CODE_REQUIRED,
 } from "@/db/repositories/referenceAdmin";
 import { writeAudit } from "@/db/repositories/audit";
+
+/**
+ * Create-lookup body. A superset covering every editable resource; per-resource
+ * required fields (code, parent, color, level) are enforced in the handler so
+ * one schema serves all. Kept inline (validation.ts is shared-owned).
+ */
+const lookupCreateSchema = z.object({
+  name: z.string().min(1).max(200),
+  arabicName: z.string().max(200).optional(),
+  description: z.string().max(1000).optional(),
+  arabicDescription: z.string().max(1000).optional(),
+  code: z.string().min(1).max(20).optional(),
+  parentId: z.number().int().positive().optional(),
+  sortOrder: z.number().int().min(0).optional(),
+  color: z.string().max(20).optional(),
+  // Status-only lifecycle flags.
+  isInitial: z.boolean().optional(),
+  isFinal: z.boolean().optional(),
+  allowReopen: z.boolean().optional(),
+  // Priority-only ranking + SLA targets (hours).
+  level: z.number().int().positive().optional(),
+  responseTimeHours: z.number().int().min(0).optional(),
+  resolutionTimeHours: z.number().int().min(0).optional(),
+  escalationTimeHours: z.number().int().min(0).optional(),
+});
 
 /**
  * Unified reference-data reader. Flat lists:
@@ -90,8 +117,11 @@ export const POST = authed(
   async (req: NextRequest, auth, ctx) => {
     const resource = await paramStr(ctx, "resource");
     if (!resource || !isEditableLookup(resource)) {
-      // Statuses/priorities are lifecycle/SLA-critical → not editable via API.
       return fail(400, "This resource cannot be created via the API.", "UNSUPPORTED");
+    }
+    // Statuses/priorities are lifecycle/SLA-critical → admin-only.
+    if (isLifecycleLookup(resource) && !can(auth.user, "case_statuses", "create")) {
+      return fail(403, "Only administrators can manage statuses and priorities.", "FORBIDDEN");
     }
     const parsed = await parseBody(req, lookupCreateSchema);
     if (!parsed.ok) return parsed.response;
@@ -100,6 +130,12 @@ export const POST = authed(
     }
     if (PARENT_OF[resource] && !parsed.data.parentId) {
       return fail(400, "This resource requires a parent.", "MISSING_PARENT");
+    }
+    if (isLifecycleLookup(resource) && !parsed.data.color) {
+      return fail(400, "A color is required.", "MISSING_COLOR");
+    }
+    if (resource === "priorities" && parsed.data.level == null) {
+      return fail(400, "A priority level is required.", "MISSING_LEVEL");
     }
 
     try {
@@ -114,7 +150,7 @@ export const POST = authed(
       return ok({ item: row }, "Created.", { status: 201 });
     } catch (err: unknown) {
       if (err && typeof err === "object" && "code" in err && (err as { code?: string }).code === "23505") {
-        return fail(409, "A record with that name already exists.", "DUPLICATE");
+        return fail(409, "A record with that name, code, or level already exists.", "DUPLICATE");
       }
       throw err;
     }

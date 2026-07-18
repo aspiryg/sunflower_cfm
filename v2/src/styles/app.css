@@ -993,3 +993,66 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* ---- Comment thread: internal/follow-up badges, inline edit, row actions ---- */
+/* (Added for comment edit/delete/internal/follow-up parity.) */
+.comment-form__opts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+  margin: var(--spacing-3) 0;
+}
+.comment__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
+  margin-bottom: var(--spacing-2);
+}
+/* Grey + brand steps invert together (light↔dark), so both stay legible. */
+.comment__badge--internal {
+  background: var(--color-grey-200);
+  color: var(--color-grey-700);
+}
+.comment__badge--followup {
+  background: var(--color-brand-100);
+  color: var(--color-brand-700);
+}
+.comment__edited {
+  color: var(--color-grey-500);
+  font-style: italic;
+}
+.comment__edit textarea {
+  width: 100%;
+  min-height: 8rem;
+}
+.comment__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-3);
+  margin-top: var(--spacing-2);
+}
+.comment__action {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-brand-600);
+  cursor: pointer;
+}
+.comment__action:hover {
+  text-decoration: underline;
+}
+.comment__action:disabled {
+  opacity: 0.6;
+  cursor: default;
+  text-decoration: none;
+}
+.comment__action--danger {
+  color: var(--color-red-500);
+}
+.btn-sm {
+  padding: var(--spacing-2) var(--spacing-3);
+  font-size: var(--font-size-sm);
+}

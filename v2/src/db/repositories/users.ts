@@ -43,6 +43,17 @@ export async function findUserById(id: number): Promise<User | undefined> {
   return row;
 }
 
+/**
+ * Fetch a user regardless of active/deleted state. For admin management flows
+ * (edit / reactivate a deactivated user) — `findUserById` filters those out.
+ */
+export async function findUserByIdIncludingInactive(
+  id: number,
+): Promise<User | undefined> {
+  const [row] = await db.select().from(users).where(eq(users.id, id)).limit(1);
+  return row;
+}
+
 /** Minimal contact rows for a set of user ids (for notification emails). */
 export async function getUserContacts(
   ids: number[],
@@ -82,6 +93,8 @@ export interface ListParams {
   limit?: number;
   search?: string;
   role?: Role;
+  /** Include deactivated / soft-deleted users (admin management view). */
+  includeInactive?: boolean;
 }
 
 export async function listUsers({
@@ -90,6 +103,7 @@ export async function listUsers({
   limit = 20,
   search,
   role,
+  includeInactive = false,
 }: ListParams): Promise<{ data: SafeUser[]; total: number }> {
   if (scope.kind === "none") return { data: [], total: 0 };
 
@@ -103,7 +117,12 @@ export async function listUsers({
       )
     : undefined;
   const roleCond = role ? eq(users.role, role) : undefined;
-  const where = and(live(), scopeCond, searchCond, roleCond);
+  const where = and(
+    includeInactive ? undefined : live(),
+    scopeCond,
+    searchCond,
+    roleCond,
+  );
   const offset = (Math.max(1, page) - 1) * limit;
 
   const [rows, [{ total }]] = await Promise.all([
@@ -127,6 +146,23 @@ export async function updateUser(
     .update(users)
     .set(patch)
     .where(and(eq(users.id, id), live()))
+    .returning();
+  return row;
+}
+
+/**
+ * Admin update by id, WITHOUT the `live()` filter — so deactivated / soft-deleted
+ * users can be edited and reactivated. `updateUser` (which filters on live) is for
+ * flows that only ever touch active accounts (login, self-profile).
+ */
+export async function updateUserById(
+  id: number,
+  patch: Partial<NewUser>,
+): Promise<User | undefined> {
+  const [row] = await db
+    .update(users)
+    .set(patch)
+    .where(eq(users.id, id))
     .returning();
   return row;
 }

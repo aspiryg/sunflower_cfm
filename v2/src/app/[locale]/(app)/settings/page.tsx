@@ -2,26 +2,44 @@
 
 /**
  * Reference-data management (v1 Resources + HierarchicalResources parity):
- * flat lookups plus both hierarchies via config-driven parent chains
- * (region→governorate→community, program→project→activity).
+ * flat lookups, both hierarchies (region→governorate→community,
+ * program→project→activity), and the lifecycle/SLA lookups (statuses,
+ * priorities) with their rich fields — color, description, sort order, status
+ * flags, priority level + SLA hours — plus create/edit/delete.
  */
 import { useState, type FormEvent } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch, type ApiError } from "@/lib/api/client";
 import { useToast } from "@/ui/Toast";
-import { TextField } from "@/ui/form";
+import { TextField, TextAreaField, CheckboxField } from "@/ui/form";
+import { ConfirmationModal } from "@/ui/Modal";
 
 interface LookupRow {
   id: number;
   name: string;
   arabicName: string | null;
   code?: string | null;
+  description?: string | null;
+  arabicDescription?: string | null;
+  color?: string | null;
+  sortOrder?: number;
   isActive: boolean;
+  // status
+  isInitial?: boolean;
+  isFinal?: boolean;
+  allowReopen?: boolean;
+  // priority
+  level?: number | null;
+  responseTimeHours?: number | null;
+  resolutionTimeHours?: number | null;
+  escalationTimeHours?: number | null;
 }
 
 const RESOURCES = [
   "categories",
+  "statuses",
+  "priorities",
   "channels",
   "provider-types",
   "regions",
@@ -39,6 +57,8 @@ const CONFIG: Record<
   { parents: ResourceKey[]; code: "required" | "optional" | "none" }
 > = {
   categories: { parents: [], code: "none" },
+  statuses: { parents: [], code: "none" },
+  priorities: { parents: [], code: "none" },
   channels: { parents: [], code: "none" },
   "provider-types": { parents: [], code: "none" },
   regions: { parents: [], code: "required" },
@@ -49,6 +69,18 @@ const CONFIG: Record<
   activities: { parents: ["programs", "projects"], code: "required" },
 };
 
+const COLOR_RESOURCES = new Set<ResourceKey>([
+  "categories",
+  "statuses",
+  "priorities",
+  "channels",
+  "provider-types",
+  "programs",
+  "projects",
+  "activities",
+]);
+const hasColor = (r: ResourceKey) => COLOR_RESOURCES.has(r);
+
 /** Which public list endpoint provides options for chain level i. */
 function chainQuery(resource: ResourceKey, level: number, parentAbove?: number) {
   const kind = CONFIG[resource].parents[level];
@@ -57,6 +89,15 @@ function chainQuery(resource: ResourceKey, level: number, parentAbove?: number) 
     kind === "governorates" ? `regionId=${parentAbove}` : `programId=${parentAbove}`;
   return { kind, params: parentParam };
 }
+
+const numOrUndefined = (v: FormDataEntryValue | null) => {
+  const s = String(v ?? "").trim();
+  return s === "" ? undefined : Number(s);
+};
+const numOrNull = (v: FormDataEntryValue | null) => {
+  const s = String(v ?? "").trim();
+  return s === "" ? null : Number(s);
+};
 
 export default function SettingsPage() {
   const t = useTranslations("settings");
@@ -67,11 +108,15 @@ export default function SettingsPage() {
   const [resource, setResource] = useState<ResourceKey>("categories");
   const [chain, setChain] = useState<(number | undefined)[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [deleting, setDeleting] = useState<LookupRow | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const cfg = CONFIG[resource];
   const parentId = cfg.parents.length ? chain[cfg.parents.length - 1] : undefined;
   const parentsChosen = cfg.parents.every((_, i) => chain[i] != null);
+  const showColor = hasColor(resource);
+  const isStatus = resource === "statuses";
+  const isPriority = resource === "priorities";
 
   // Parent option lists (public endpoints, localized).
   const level0 = chainQuery(resource, 0);
@@ -124,9 +169,46 @@ export default function SettingsPage() {
     },
     onError: (e) => setError((e as unknown as ApiError)?.message ?? t("error")),
   });
+  const deleteM = useMutation({
+    mutationFn: (id: number) =>
+      apiFetch(`/api/reference/${resource}/${id}`, { method: "DELETE" }),
+    onSuccess: () => {
+      setDeleting(null);
+      invalidate();
+      toast.success(tToast("settingsSaved"));
+    },
+    onError: (e) => {
+      setDeleting(null);
+      setError((e as unknown as ApiError)?.message ?? t("error"));
+    },
+  });
 
   const label = (r: LookupRow) =>
     locale === "ar" && r.arabicName ? r.arabicName : r.name;
+
+  /** Collect the rich fields shared by add + edit forms into a request body. */
+  function readRichFields(f: FormData, body: Record<string, unknown>, forEdit: boolean) {
+    if (showColor) body.color = String(f.get("color") ?? "") || undefined;
+    const sort = f.get("sortOrder");
+    if (forEdit) body.sortOrder = numOrUndefined(sort) ?? 0;
+    else if (numOrUndefined(sort) != null) body.sortOrder = numOrUndefined(sort);
+
+    if (isStatus) {
+      body.isInitial = f.get("isInitial") === "on";
+      body.isFinal = f.get("isFinal") === "on";
+      body.allowReopen = f.get("allowReopen") === "on";
+    }
+    if (isPriority) {
+      const level = numOrUndefined(f.get("level"));
+      if (level != null) body.level = level;
+      const resp = forEdit ? numOrNull(f.get("responseTimeHours")) : numOrUndefined(f.get("responseTimeHours"));
+      const reso = forEdit ? numOrNull(f.get("resolutionTimeHours")) : numOrUndefined(f.get("resolutionTimeHours"));
+      const esc = forEdit ? numOrNull(f.get("escalationTimeHours")) : numOrUndefined(f.get("escalationTimeHours"));
+      if (resp !== undefined) body.responseTimeHours = resp;
+      if (reso !== undefined) body.resolutionTimeHours = reso;
+      if (esc !== undefined) body.escalationTimeHours = esc;
+    }
+  }
 
   function onAdd(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -136,12 +218,15 @@ export default function SettingsPage() {
     const body: Record<string, unknown> = {
       name: String(f.get("name")),
       arabicName: String(f.get("arabicName") ?? "") || undefined,
+      description: String(f.get("description") ?? "") || undefined,
+      arabicDescription: String(f.get("arabicDescription") ?? "") || undefined,
     };
     if (cfg.code !== "none") {
       const code = String(f.get("code") ?? "").trim();
       if (code) body.code = code;
     }
     if (parentId) body.parentId = parentId;
+    readRichFields(f, body, false);
     createM.mutate(body, { onSuccess: () => formEl.reset() });
   }
 
@@ -149,19 +234,17 @@ export default function SettingsPage() {
     e.preventDefault();
     setError(null);
     const f = new FormData(e.currentTarget);
-    updateM.mutate({
-      id,
-      body: {
-        name: String(f.get("name")),
-        arabicName: String(f.get("arabicName") ?? "") || null,
-      },
-    });
+    const body: Record<string, unknown> = {
+      name: String(f.get("name")),
+      arabicName: String(f.get("arabicName") ?? "") || null,
+      description: String(f.get("description") ?? "") || null,
+      arabicDescription: String(f.get("arabicDescription") ?? "") || null,
+    };
+    readRichFields(f, body, true);
+    updateM.mutate({ id, body });
   }
 
-  const parentSelect = (
-    level: number,
-    options: LookupRow[] | undefined,
-  ) => (
+  const parentSelect = (level: number, options: LookupRow[] | undefined) => (
     <select
       key={level}
       id={`parent-${level}`}
@@ -171,7 +254,6 @@ export default function SettingsPage() {
         setChain((c) => {
           const next = [...c];
           next[level] = v;
-          // Reset deeper levels.
           for (let i = level + 1; i < cfg.parents.length; i++) next[i] = undefined;
           return next;
         });
@@ -185,6 +267,88 @@ export default function SettingsPage() {
         </option>
       ))}
     </select>
+  );
+
+  /** Rich fields shared by add + edit forms; `row` supplies edit defaults. */
+  const richFields = (row?: LookupRow) => (
+    <>
+      <TextAreaField
+        name="description"
+        label={t("description")}
+        defaultValue={row?.description ?? ""}
+        rows={2}
+        fieldStyle={{ marginBottom: 0, flex: 1, minWidth: "16rem" }}
+      />
+      <TextAreaField
+        name="arabicDescription"
+        label={t("arabicDescription")}
+        defaultValue={row?.arabicDescription ?? ""}
+        dir="rtl"
+        rows={2}
+        fieldStyle={{ marginBottom: 0, flex: 1, minWidth: "16rem" }}
+      />
+      {showColor && (
+        <TextField
+          name="color"
+          type="color"
+          label={t("color")}
+          defaultValue={row?.color ?? "#4f46e5"}
+          fieldStyle={{ marginBottom: 0, width: "7rem" }}
+        />
+      )}
+      <TextField
+        name="sortOrder"
+        type="number"
+        label={t("sortOrder")}
+        min={0}
+        defaultValue={row?.sortOrder ?? 0}
+        fieldStyle={{ marginBottom: 0, width: "9rem" }}
+      />
+      {isPriority && (
+        <>
+          <TextField
+            name="level"
+            type="number"
+            label={t("level")}
+            min={1}
+            required
+            defaultValue={row?.level ?? ""}
+            fieldStyle={{ marginBottom: 0, width: "8rem" }}
+          />
+          <TextField
+            name="responseTimeHours"
+            type="number"
+            label={t("responseTimeHours")}
+            min={0}
+            defaultValue={row?.responseTimeHours ?? ""}
+            fieldStyle={{ marginBottom: 0, width: "11rem" }}
+          />
+          <TextField
+            name="resolutionTimeHours"
+            type="number"
+            label={t("resolutionTimeHours")}
+            min={0}
+            defaultValue={row?.resolutionTimeHours ?? ""}
+            fieldStyle={{ marginBottom: 0, width: "11rem" }}
+          />
+          <TextField
+            name="escalationTimeHours"
+            type="number"
+            label={t("escalationTimeHours")}
+            min={0}
+            defaultValue={row?.escalationTimeHours ?? ""}
+            fieldStyle={{ marginBottom: 0, width: "11rem" }}
+          />
+        </>
+      )}
+      {isStatus && (
+        <div style={{ display: "flex", gap: "1.4rem", alignItems: "center", flexWrap: "wrap" }}>
+          <CheckboxField name="isInitial" label={t("isInitial")} defaultChecked={row?.isInitial ?? false} />
+          <CheckboxField name="isFinal" label={t("isFinal")} defaultChecked={row?.isFinal ?? false} />
+          <CheckboxField name="allowReopen" label={t("allowReopen")} defaultChecked={row?.allowReopen ?? true} />
+        </div>
+      )}
+    </>
   );
 
   return (
@@ -250,11 +414,12 @@ export default function SettingsPage() {
                   name="code"
                   label={t("code")}
                   required={cfg.code === "required"}
-                  maxLength={10}
+                  maxLength={20}
                   dir="ltr"
                   fieldStyle={{ marginBottom: 0, width: "10rem" }}
                 />
               )}
+              {richFields()}
               <button type="submit" className="btn btn-primary" disabled={createM.isPending}>
                 {t("add")}
               </button>
@@ -269,15 +434,20 @@ export default function SettingsPage() {
                 <tr>
                   <th>{t("name")}</th>
                   <th>{t("arabicName")}</th>
+                  {showColor && <th>{t("color")}</th>}
+                  <th>{t("sortOrder")}</th>
+                  {isPriority && <th>{t("level")}</th>}
+                  {isStatus && <th>{t("flags")}</th>}
                   <th>{t("status")}</th>
                   <th />
                 </tr>
               </thead>
               <tbody>
-                {rows.map((r) =>
-                  editingId === r.id ? (
+                {rows.map((r) => {
+                  const protectedStatus = isStatus && (r.isInitial || r.isFinal);
+                  return editingId === r.id ? (
                     <tr key={r.id}>
-                      <td colSpan={4}>
+                      <td colSpan={9}>
                         <form
                           onSubmit={(e) => onSaveEdit(e, r.id)}
                           style={{ display: "flex", gap: "1rem", alignItems: "flex-end", flexWrap: "wrap" }}
@@ -296,6 +466,7 @@ export default function SettingsPage() {
                             dir="rtl"
                             fieldStyle={{ marginBottom: 0, flex: 1, minWidth: "14rem" }}
                           />
+                          {richFields(r)}
                           <button type="submit" className="btn btn-primary" disabled={updateM.isPending} style={{ padding: "0.6rem 1.4rem" }}>
                             {t("save")}
                           </button>
@@ -312,13 +483,46 @@ export default function SettingsPage() {
                         {r.code ? <span className="muted"> ({r.code})</span> : null}
                       </td>
                       <td dir="rtl">{r.arabicName}</td>
+                      {showColor && (
+                        <td>
+                          {r.color ? (
+                            <span
+                              aria-label={r.color}
+                              title={r.color}
+                              style={{
+                                display: "inline-block",
+                                width: "1.6rem",
+                                height: "1.6rem",
+                                borderRadius: "0.4rem",
+                                border: "1px solid var(--color-grey-300, #ccc)",
+                                background: r.color,
+                                verticalAlign: "middle",
+                              }}
+                            />
+                          ) : (
+                            <span className="muted">—</span>
+                          )}
+                        </td>
+                      )}
+                      <td>{r.sortOrder ?? 0}</td>
+                      {isPriority && <td>{r.level ?? "—"}</td>}
+                      {isStatus && (
+                        <td className="muted" style={{ fontSize: "1.2rem" }}>
+                          {[
+                            r.isInitial ? t("isInitial") : null,
+                            r.isFinal ? t("isFinal") : null,
+                          ]
+                            .filter(Boolean)
+                            .join(", ") || "—"}
+                        </td>
+                      )}
                       <td>
                         <span className={r.isActive ? "badge" : "muted"}>
                           {r.isActive ? t("active") : t("inactive")}
                         </span>
                       </td>
                       <td>
-                        <div style={{ display: "flex", gap: "0.8rem" }}>
+                        <div style={{ display: "flex", gap: "0.8rem", flexWrap: "wrap" }}>
                           <button
                             type="button"
                             className="btn btn-outline"
@@ -338,19 +542,41 @@ export default function SettingsPage() {
                           >
                             {r.isActive ? t("deactivate") : t("activate")}
                           </button>
+                          <button
+                            type="button"
+                            className="btn btn-outline"
+                            style={{ padding: "0.4rem 1rem", fontSize: "1.3rem" }}
+                            disabled={!!protectedStatus}
+                            title={protectedStatus ? t("protectedStatus") : undefined}
+                            onClick={() => setDeleting(r)}
+                          >
+                            {t("delete")}
+                          </button>
                         </div>
                       </td>
                     </tr>
-                  ),
-                )}
+                  );
+                })}
               </tbody>
             </table>
           )}
         </>
       )}
 
+      <ConfirmationModal
+        open={!!deleting}
+        title={t("deleteTitle")}
+        body={deleting ? t("deleteBody", { name: label(deleting) }) : ""}
+        confirmLabel={t("delete")}
+        cancelLabel={t("cancel")}
+        danger
+        busy={deleteM.isPending}
+        onConfirm={() => deleting && deleteM.mutate(deleting.id)}
+        onCancel={() => setDeleting(null)}
+      />
+
       <p className="muted" style={{ marginTop: "1.6rem", fontSize: "1.3rem" }}>
-        {t("lockedNote")}
+        {t("manageNote")}
       </p>
     </>
   );

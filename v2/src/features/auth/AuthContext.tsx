@@ -60,7 +60,10 @@ export function useLogin() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (body: { email: string; password: string; rememberMe?: boolean }) =>
-      apiFetch<{ user: CurrentUser }>("/api/auth/login", { method: "POST", body }),
+      apiFetch<{ user: CurrentUser; emailVerificationRequired?: boolean }>(
+        "/api/auth/login",
+        { method: "POST", body },
+      ),
     onSuccess: (res) => qc.setQueryData(["auth", "me"], res.data.user),
   });
 }
@@ -74,6 +77,7 @@ export function useRegister() {
       firstName: string;
       lastName: string;
       username?: string;
+      organization?: string;
     }) => apiFetch<{ user: CurrentUser }>("/api/auth/register", { method: "POST", body }),
     onSuccess: (res) => qc.setQueryData(["auth", "me"], res.data.user),
   });

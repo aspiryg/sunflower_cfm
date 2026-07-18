@@ -23,6 +23,7 @@ export function RegisterForm() {
         password: String(form.get("password")),
         firstName: String(form.get("firstName")),
         lastName: String(form.get("lastName")),
+        organization: String(form.get("organization")).trim() || undefined,
       });
       router.push("/dashboard");
     } catch (err) {
@@ -45,6 +46,14 @@ export function RegisterForm() {
         <TextField id="firstName" name="firstName" type="text" label={t("firstName")} required />
         <TextField id="lastName" name="lastName" type="text" label={t("lastName")} required />
         <TextField id="email" name="email" type="email" label={t("email")} required autoComplete="email" />
+        <TextField
+          id="organization"
+          name="organization"
+          type="text"
+          label={t("organization")}
+          labelSuffix={` ${t("optional")}`}
+          autoComplete="organization"
+        />
         <TextField
           id="password"
           name="password"

@@ -197,6 +197,27 @@ export const updateRoleSchema = z.object({
   reason: z.string().max(500).optional(),
 });
 
+/**
+ * Admin edit of another user. All fields optional (PATCH semantics). Distinct
+ * from `updateProfileSchema` (self-service) because it exposes privileged fields
+ * — email/username/role/isActive — that a user may not change on their own
+ * account. Role/isActive changes are further gated in the route by
+ * canManageUser + assignableRoles. `reason` is the audit justification for a
+ * role change.
+ */
+export const adminUpdateUserSchema = z
+  .object({
+    firstName: personName,
+    lastName: personName,
+    email: z.string().email().max(100),
+    username: z.string().min(3).max(50),
+    organization: z.string().max(100).nullable(),
+    role: ROLE,
+    isActive: z.boolean(),
+    reason: z.string().max(500),
+  })
+  .partial();
+
 export const lookupCreateSchema = z.object({
   name: z.string().min(1).max(100),
   arabicName: z.string().max(100).optional(),

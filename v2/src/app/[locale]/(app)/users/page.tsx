@@ -15,6 +15,7 @@ import { FilterBar, type FilterChipDef } from "@/ui/FilterBar";
 import { Avatar } from "@/ui/Avatar";
 import { ConfirmationModal } from "@/ui/Modal";
 import { CreateUserModal } from "@/features/users/CreateUserModal";
+import { EditUserModal } from "@/features/users/EditUserModal";
 import { useToast } from "@/ui/Toast";
 
 interface UserRow {
@@ -22,6 +23,7 @@ interface UserRow {
   firstName: string;
   lastName: string;
   email: string;
+  organization?: string | null;
   role: Role;
   isActive: boolean;
 }
@@ -32,6 +34,7 @@ export default function UsersPage() {
   const qc = useQueryClient();
   const { user: me } = useAuth();
   const [pendingDeactivate, setPendingDeactivate] = useState<UserRow | null>(null);
+  const [editing, setEditing] = useState<UserRow | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const toast = useToast();
   const tToast = useTranslations("toasts");
@@ -51,7 +54,12 @@ export default function UsersPage() {
     return () => clearTimeout(id);
   }, [searchInput]);
 
-  const params = new URLSearchParams({ page: String(page), limit: String(pageSize) });
+  const params = new URLSearchParams({
+    page: String(page),
+    limit: String(pageSize),
+    // Surface deactivated users so they can be reactivated (admins only).
+    includeInactive: "true",
+  });
   if (search) params.set("search", search);
   if (role) params.set("role", role);
   const qs = params.toString();
@@ -64,7 +72,11 @@ export default function UsersPage() {
 
   const roleM = useMutation({
     mutationFn: (v: { id: number; role: Role }) =>
-      apiFetch(`/api/users/${v.id}/role`, { method: "PATCH", body: { role: v.role } }),
+      apiFetch(`/api/users/${v.id}/role`, {
+        method: "PATCH",
+        // Always attach an audit reason so the change isn't silently unexplained.
+        body: { role: v.role, reason: t("roleChangeDefaultReason") },
+      }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["users"] });
       toast.success(tToast("userUpdated"));
@@ -74,6 +86,14 @@ export default function UsersPage() {
     mutationFn: (id: number) => apiFetch(`/api/users/${id}`, { method: "DELETE" }),
     onSuccess: () => {
       setPendingDeactivate(null);
+      qc.invalidateQueries({ queryKey: ["users"] });
+      toast.success(tToast("userUpdated"));
+    },
+  });
+  const reactivateM = useMutation({
+    mutationFn: (id: number) =>
+      apiFetch(`/api/users/${id}`, { method: "PATCH", body: { isActive: true } }),
+    onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["users"] });
       toast.success(tToast("userUpdated"));
     },
@@ -167,6 +187,7 @@ export default function UsersPage() {
       </div>
 
       <CreateUserModal open={createOpen} onClose={() => setCreateOpen(false)} />
+      <EditUserModal user={editing} onClose={() => setEditing(null)} />
 
       <FilterBar
         chips={chips}
@@ -223,15 +244,37 @@ export default function UsersPage() {
             },
           }}
           rowActions={(u) =>
-            me?.id !== u.id && u.isActive ? (
-              <button
-                type="button"
-                className="btn btn-outline"
-                style={{ padding: "0.4rem 1rem", fontSize: "1.3rem" }}
-                onClick={() => setPendingDeactivate(u)}
-              >
-                {t("deactivate")}
-              </button>
+            me?.id !== u.id ? (
+              <span style={{ display: "inline-flex", gap: "0.6rem" }}>
+                <button
+                  type="button"
+                  className="btn btn-outline"
+                  style={{ padding: "0.4rem 1rem", fontSize: "1.3rem" }}
+                  onClick={() => setEditing(u)}
+                >
+                  {t("edit")}
+                </button>
+                {u.isActive ? (
+                  <button
+                    type="button"
+                    className="btn btn-outline"
+                    style={{ padding: "0.4rem 1rem", fontSize: "1.3rem" }}
+                    onClick={() => setPendingDeactivate(u)}
+                  >
+                    {t("deactivate")}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="btn btn-outline"
+                    style={{ padding: "0.4rem 1rem", fontSize: "1.3rem" }}
+                    disabled={reactivateM.isPending}
+                    onClick={() => reactivateM.mutate(u.id)}
+                  >
+                    {t("reactivate")}
+                  </button>
+                )}
+              </span>
             ) : null
           }
         />

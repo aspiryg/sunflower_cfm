@@ -85,7 +85,11 @@
     "haveAccount": "Already have an account?",
     "loginError": "Invalid email or password.",
     "registerError": "Could not create the account.",
-    "passwordHint": "At least 8 characters, with upper, lower, and a digit."
+    "passwordHint": "At least 8 characters, with upper, lower, and a digit.",
+    "organization": "Organization",
+    "optional": "(optional)",
+    "rememberMe": "Remember me",
+    "accountLocked": "This account is temporarily locked after too many failed sign-in attempts. Please try again later."
   },
   "shell": {
     "dashboard": "Dashboard",
@@ -169,7 +173,24 @@
     "cancel": "Cancel",
     "details": "Details",
     "relatedCases": "Related cases",
-    "relatedHint": "Ranked by semantic similarity — check for possible duplicates."
+    "relatedHint": "Ranked by semantic similarity — check for possible duplicates.",
+    "internalComment": "Internal comment",
+    "internalCommentHint": "Only staff can see internal comments.",
+    "requiresFollowUp": "Requires follow-up",
+    "followUpDate": "Follow-up date",
+    "optional": "(optional)",
+    "internal": "Internal",
+    "followUpDue": "Follow-up due",
+    "edited": "edited",
+    "editComment": "Edit",
+    "deleteComment": "Delete",
+    "markFollowUpDone": "Mark follow-up done",
+    "save": "Save",
+    "confirmDeleteCommentTitle": "Delete comment?",
+    "confirmDeleteCommentBody": "This comment will be removed. This action cannot be undone.",
+    "commentUpdatedToast": "Comment updated.",
+    "commentDeletedToast": "Comment deleted.",
+    "followUpDoneToast": "Follow-up marked as done."
   },
   "users": {
     "title": "Users",
@@ -193,7 +214,16 @@
     "lastName": "Last name",
     "create": "Create",
     "done": "Done",
-    "tempPasswordNote": "Share this temporary password securely — it is shown only once."
+    "tempPasswordNote": "Share this temporary password securely — it is shown only once.",
+    "edit": "Edit",
+    "editUser": "Edit user",
+    "save": "Save changes",
+    "reactivate": "Reactivate",
+    "organization": "Organization",
+    "roleChangeReason": "Reason for role change",
+    "roleChangeReasonHint": "Recorded in the audit trail.",
+    "roleChangeDefaultReason": "Role changed by administrator",
+    "welcomeEmailSent": "A welcome email with sign-in instructions has been sent to the user."
   },
   "profile": {
     "title": "My profile",
@@ -271,7 +301,12 @@
     "verifying": "Verifying your email…",
     "verifySuccess": "Your email has been verified.",
     "verifyError": "This verification link is invalid or has expired.",
-    "backToLogin": "Back to sign in"
+    "backToLogin": "Back to sign in",
+    "unverifiedTitle": "Verify your email",
+    "unverifiedBody": "Your email address hasn't been verified yet. Check your inbox for the verification link, or request a new one below.",
+    "resendVerification": "Resend verification email",
+    "verifySentNote": "If that email is registered, a verification message has been sent.",
+    "continueAnyway": "Continue to dashboard"
   },
   "settings": {
     "title": "Settings — Reference data",
@@ -285,7 +320,9 @@
       "communities": "Communities",
       "programs": "Programs",
       "projects": "Projects",
-      "activities": "Activities"
+      "activities": "Activities",
+      "statuses": "Statuses",
+      "priorities": "Priorities"
     },
     "addTitle": "Add new",
     "name": "Name",
@@ -308,7 +345,24 @@
       "governorates": "Choose governorate…",
       "programs": "Choose program…",
       "projects": "Choose project…"
-    }
+    },
+    "description": "Description",
+    "arabicDescription": "Arabic description",
+    "color": "Color",
+    "sortOrder": "Sort order",
+    "level": "Level",
+    "responseTimeHours": "Response SLA (hrs)",
+    "resolutionTimeHours": "Resolution SLA (hrs)",
+    "escalationTimeHours": "Escalation SLA (hrs)",
+    "isInitial": "Initial",
+    "isFinal": "Final",
+    "allowReopen": "Allow reopen",
+    "flags": "Flags",
+    "delete": "Delete",
+    "deleteTitle": "Delete value",
+    "deleteBody": "Delete “{name}”? This cannot be undone.",
+    "protectedStatus": "The initial and final statuses cannot be deleted.",
+    "manageNote": "Deactivating keeps a value on existing cases but hides it from new forms. Statuses and priorities drive the case lifecycle and SLA timers — edit them with care; the initial and final statuses and any value already in use cannot be deleted."
   },
   "userMenu": {
     "label": "Account",
