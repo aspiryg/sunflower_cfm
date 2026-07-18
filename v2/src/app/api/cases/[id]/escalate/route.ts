@@ -6,6 +6,7 @@ import { paramInt } from "@/lib/http/params";
 import { parseBody, escalateSchema } from "@/lib/validation";
 import { findCaseById, escalateCase } from "@/db/repositories/cases";
 import { writeAudit } from "@/db/repositories/audit";
+import { notifyCaseStakeholders } from "@/lib/notify";
 
 export const PATCH = authed(
   async (req: NextRequest, auth, ctx) => {
@@ -28,6 +29,14 @@ export const PATCH = authed(
       action: "ESCALATE",
       entityType: "case",
       entityId: id,
+    });
+    // Notify stakeholders + whoever it was escalated to (was silently missing).
+    await notifyCaseStakeholders({
+      caseRow: found,
+      actorId: auth.user.id,
+      type: "escalation",
+      message: parsed.data.reason,
+      alsoNotify: [parsed.data.escalatedTo],
     });
     return ok({ case: updated }, "Case escalated.");
   },
