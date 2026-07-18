@@ -1,13 +1,28 @@
-/** Initials avatar (reusable). Deterministic hue from the name. */
+/* eslint-disable @next/next/no-img-element -- avatar src is a same-origin
+   presigned redirect; next/image optimization would break the auth cookie. */
+/** Initials avatar (reusable); renders the profile picture when one exists. */
 export function Avatar({
   firstName,
   lastName,
+  src,
   size = 3.6,
 }: {
   firstName: string;
   lastName: string;
+  /** Optional image URL (e.g. /api/profile/picture). */
+  src?: string | null;
   size?: number; // rem
 }) {
+  if (src) {
+    return (
+      <img
+        className="avatar avatar--img"
+        src={src}
+        alt=""
+        style={{ width: `${size}rem`, height: `${size}rem` }}
+      />
+    );
+  }
   const initials =
     `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || "?";
   let h = 0;

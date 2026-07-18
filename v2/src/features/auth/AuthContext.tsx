@@ -13,6 +13,7 @@ export interface CurrentUser {
   lastName: string;
   role: Role;
   organization: string | null;
+  profilePicture: string | null;
   isEmailVerified: boolean;
 }
 

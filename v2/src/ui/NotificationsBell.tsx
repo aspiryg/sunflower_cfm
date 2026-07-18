@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api/client";
 import { useRouter } from "@/i18n/navigation";
+import { Link } from "@/i18n/navigation";
 
 interface NotificationRow {
   id: number;
@@ -122,6 +123,13 @@ export function NotificationsBell() {
               </button>
             ))
           )}
+          <Link
+            href="/notifications"
+            className="bell__view-all"
+            onClick={() => setOpen(false)}
+          >
+            {t("viewAll")}
+          </Link>
         </div>
       )}
     </div>

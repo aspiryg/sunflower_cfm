@@ -198,6 +198,7 @@ export const lookupCreateSchema = z.object({
   arabicName: z.string().max(100).optional(),
   description: z.string().max(500).optional(),
   code: z.string().min(1).max(10).optional(),
+  parentId: z.number().int().positive().optional(),
   sortOrder: z.number().int().min(0).optional(),
 });
 

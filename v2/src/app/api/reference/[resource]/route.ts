@@ -9,6 +9,8 @@ import {
   isEditableLookup,
   createLookupRow,
   listLookupRowsAdmin,
+  PARENT_OF,
+  CODE_REQUIRED,
 } from "@/db/repositories/referenceAdmin";
 import { writeAudit } from "@/db/repositories/audit";
 
@@ -34,7 +36,8 @@ export const GET = authed(
       if (!can(auth.user, "categories", "update")) {
         return fail(403, "You cannot manage reference data.", "FORBIDDEN");
       }
-      return ok(await listLookupRowsAdmin(resource));
+      const parentId = Number(q.get("parentId")) || undefined;
+      return ok(await listLookupRowsAdmin(resource, parentId));
     }
     const parent = (key: string) => {
       const n = Number(q.get(key));
@@ -92,8 +95,11 @@ export const POST = authed(
     }
     const parsed = await parseBody(req, lookupCreateSchema);
     if (!parsed.ok) return parsed.response;
-    if (resource === "regions" && !parsed.data.code) {
-      return fail(400, "Regions require a code.", "MISSING_CODE");
+    if (CODE_REQUIRED.has(resource) && !parsed.data.code) {
+      return fail(400, "This resource requires a code.", "MISSING_CODE");
+    }
+    if (PARENT_OF[resource] && !parsed.data.parentId) {
+      return fail(400, "This resource requires a parent.", "MISSING_PARENT");
     }
 
     try {

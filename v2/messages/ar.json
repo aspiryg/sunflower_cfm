@@ -93,7 +93,8 @@
     "users": "المستخدمون",
     "settings": "الإعدادات",
     "signOut": "تسجيل الخروج",
-    "menu": "القائمة"
+    "menu": "القائمة",
+    "notifications": "الإشعارات"
   },
   "dashboard": {
     "title": "لوحة التحكم",
@@ -179,7 +180,13 @@
     "confirmDeactivateTitle": "إلغاء تفعيل المستخدم؟",
     "confirmDeactivateBody": "سيفقد {name} الوصول فوراً. تبقى حالاته وسجله محفوظة.",
     "confirm": "إلغاء التفعيل",
-    "cancel": "إلغاء"
+    "cancel": "إلغاء",
+    "addUser": "إضافة مستخدم",
+    "firstName": "الاسم الأول",
+    "lastName": "اسم العائلة",
+    "create": "إنشاء",
+    "done": "تم",
+    "tempPasswordNote": "شارك كلمة المرور المؤقتة هذه بأمان — تُعرض مرة واحدة فقط."
   },
   "profile": {
     "title": "ملفي الشخصي",
@@ -190,7 +197,15 @@
     "organization": "المؤسسة",
     "save": "حفظ التغييرات",
     "saving": "جارٍ الحفظ…",
-    "saved": "تم تحديث الملف الشخصي."
+    "saved": "تم تحديث الملف الشخصي.",
+    "picture": "الصورة الشخصية",
+    "pictureHint": "‏JPEG أو PNG أو WebP — حتى 5 ميغابايت.",
+    "pictureUpdated": "تم تحديث الصورة.",
+    "changePassword": "تغيير كلمة المرور",
+    "currentPassword": "كلمة المرور الحالية",
+    "newPassword": "كلمة المرور الجديدة",
+    "confirmPassword": "تأكيد كلمة المرور",
+    "passwordChanged": "تم تحديث كلمة المرور."
   },
   "common": {
     "loading": "جارٍ التحميل…",
@@ -210,7 +225,10 @@
       "case_resolved": "تم حل الحالة {caseNumber}",
       "assignment_transferred": "تم نقل تعيين الحالة {caseNumber}",
       "quality_review_required": "مطلوب مراجعة جودة للحالة {caseNumber}"
-    }
+    },
+    "viewAll": "عرض الكل",
+    "pageTitle": "الإشعارات",
+    "delete": "حذف"
   },
   "attachments": {
     "title": "المرفقات",
@@ -249,7 +267,12 @@
       "categories": "الفئات",
       "channels": "القنوات",
       "provider-types": "أنواع مقدمي الملاحظات",
-      "regions": "المناطق"
+      "regions": "المناطق",
+      "governorates": "المحافظات",
+      "communities": "المجتمعات",
+      "programs": "البرامج",
+      "projects": "المشاريع",
+      "activities": "الأنشطة"
     },
     "addTitle": "إضافة جديد",
     "name": "الاسم",
@@ -265,7 +288,14 @@
     "activate": "تفعيل",
     "deactivate": "تعطيل",
     "error": "تعذّر حفظ التغيير.",
-    "lockedNote": "تتحكم الحالات والأولويات في دورة حياة الحالة ومؤقتات اتفاقية مستوى الخدمة، لذا لا يمكن تعديلها هنا."
+    "lockedNote": "تتحكم الحالات والأولويات في دورة حياة الحالة ومؤقتات اتفاقية مستوى الخدمة، لذا لا يمكن تعديلها هنا.",
+    "chooseParent": "اختر الأصل أعلاه لإدارة العناصر.",
+    "pickParent": {
+      "regions": "اختر المنطقة…",
+      "governorates": "اختر المحافظة…",
+      "programs": "اختر البرنامج…",
+      "projects": "اختر المشروع…"
+    }
   },
   "userMenu": {
     "label": "الحساب",

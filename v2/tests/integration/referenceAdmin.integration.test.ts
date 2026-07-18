@@ -171,6 +171,68 @@ describe.skipIf(!hasDb)("Reference admin (integration)", () => {
     expect(mine!.isActive).toBe(false);
   });
 
+  it("hierarchy: creates a governorate under a region (code required, parent required)", async () => {
+    const cookie = await cookieFor(manager);
+    // Find the seeded West Bank region.
+    const regions = await refRoute(
+      req("/api/reference/regions", { cookie }),
+      ctx({ resource: "regions" }),
+    );
+    const wb = ((await regions.json()).data as { id: number; name: string }[]).find(
+      (r) => r.name === "West Bank",
+    )!;
+
+    // Missing parent → 400.
+    const noParent = await refCreateRoute(
+      req("/api/reference/governorates", {
+        method: "POST",
+        cookie,
+        body: { name: `Gov ${stamp}`, code: "GV" },
+      }),
+      ctx({ resource: "governorates" }),
+    );
+    expect(noParent.status).toBe(400);
+    expect((await noParent.json()).error).toBe("MISSING_PARENT");
+
+    // Missing code → 400.
+    const noCode = await refCreateRoute(
+      req("/api/reference/governorates", {
+        method: "POST",
+        cookie,
+        body: { name: `Gov ${stamp}`, parentId: wb.id },
+      }),
+      ctx({ resource: "governorates" }),
+    );
+    expect(noCode.status).toBe(400);
+    expect((await noCode.json()).error).toBe("MISSING_CODE");
+
+    // Valid create.
+    const created = await refCreateRoute(
+      req("/api/reference/governorates", {
+        method: "POST",
+        cookie,
+        body: { name: `Gov ${stamp}`, arabicName: "محافظة اختبار", code: "GV", parentId: wb.id, sortOrder: 9999 },
+      }),
+      ctx({ resource: "governorates" }),
+    );
+    expect(created.status).toBe(201);
+    const gov = (await created.json()).data.item as { id: number; regionId: number };
+    expect(gov.regionId).toBe(wb.id);
+
+    // Public drill-down sees it under the region.
+    const drill = await refRoute(
+      req(`/api/reference/governorates?regionId=${wb.id}`, { cookie }),
+      ctx({ resource: "governorates" }),
+    );
+    const drillRows = (await drill.json()).data as { id: number }[];
+    expect(drillRows.some((g) => g.id === gov.id)).toBe(true);
+
+    // Cleanup (region cascade would also cover it, but the region is seeded).
+    const { governorates } = await import("@/db/schema");
+    const { eq: eqOp } = await import("drizzle-orm");
+    await db.delete(governorates).where(eqOp(governorates.id, gov.id));
+  });
+
   it("renaming works; the admin listing is forbidden for plain users", async () => {
     const cookie = await cookieFor(manager);
     const rename = await refUpdateRoute(

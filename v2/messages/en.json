@@ -93,7 +93,8 @@
     "users": "Users",
     "settings": "Settings",
     "signOut": "Sign out",
-    "menu": "Menu"
+    "menu": "Menu",
+    "notifications": "Notifications"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -179,7 +180,13 @@
     "confirmDeactivateTitle": "Deactivate user?",
     "confirmDeactivateBody": "{name} will lose access immediately. Their cases and history remain.",
     "confirm": "Deactivate",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "addUser": "Add user",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "create": "Create",
+    "done": "Done",
+    "tempPasswordNote": "Share this temporary password securely — it is shown only once."
   },
   "profile": {
     "title": "My profile",
@@ -190,7 +197,15 @@
     "organization": "Organization",
     "save": "Save changes",
     "saving": "Saving…",
-    "saved": "Profile updated."
+    "saved": "Profile updated.",
+    "picture": "Profile picture",
+    "pictureHint": "JPEG, PNG, or WebP — up to 5MB.",
+    "pictureUpdated": "Picture updated.",
+    "changePassword": "Change password",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm password",
+    "passwordChanged": "Password updated."
   },
   "common": {
     "loading": "Loading…",
@@ -210,7 +225,10 @@
       "case_resolved": "Case {caseNumber} was resolved",
       "assignment_transferred": "Assignment of case {caseNumber} was transferred",
       "quality_review_required": "Quality review required for case {caseNumber}"
-    }
+    },
+    "viewAll": "View all",
+    "pageTitle": "Notifications",
+    "delete": "Delete"
   },
   "attachments": {
     "title": "Attachments",
@@ -249,7 +267,12 @@
       "categories": "Categories",
       "channels": "Channels",
       "provider-types": "Provider types",
-      "regions": "Regions"
+      "regions": "Regions",
+      "governorates": "Governorates",
+      "communities": "Communities",
+      "programs": "Programs",
+      "projects": "Projects",
+      "activities": "Activities"
     },
     "addTitle": "Add new",
     "name": "Name",
@@ -265,7 +288,14 @@
     "activate": "Activate",
     "deactivate": "Deactivate",
     "error": "The change could not be saved.",
-    "lockedNote": "Statuses and priorities drive the case lifecycle and SLA timers, so they cannot be edited here."
+    "lockedNote": "Statuses and priorities drive the case lifecycle and SLA timers, so they cannot be edited here.",
+    "chooseParent": "Choose the parent above to manage entries.",
+    "pickParent": {
+      "regions": "Choose region…",
+      "governorates": "Choose governorate…",
+      "programs": "Choose program…",
+      "projects": "Choose project…"
+    }
   },
   "userMenu": {
     "label": "Account",

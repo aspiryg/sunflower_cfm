@@ -28,7 +28,17 @@ export function UserMenu() {
   return (
     <Menu
       ariaLabel={t("label")}
-      trigger={<Avatar firstName={user.firstName} lastName={user.lastName} />}
+      trigger={
+        <Avatar
+          firstName={user.firstName}
+          lastName={user.lastName}
+          src={
+            user.profilePicture
+              ? `/api/profile/picture?v=${encodeURIComponent(user.profilePicture)}`
+              : undefined
+          }
+        />
+      }
     >
       {(close) => (
         <>

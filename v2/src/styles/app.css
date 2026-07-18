@@ -383,6 +383,10 @@
 }
 
 /* ---- Avatar ---- */
+.avatar--img {
+  object-fit: cover;
+  border-radius: 50%;
+}
 .avatar {
   display: inline-flex;
   align-items: center;
@@ -653,6 +657,17 @@
 }
 .bell__item.is-unread {
   background: var(--color-brand-50);
+}
+.bell__view-all {
+  display: block;
+  text-align: center;
+  padding: var(--spacing-3);
+  color: var(--color-brand-600);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+.bell__view-all:hover {
+  background: var(--color-grey-50);
 }
 .bell__time {
   font-size: var(--font-size-xs);

@@ -222,11 +222,14 @@ depth — no minimal stand-ins — built as reusable components.** Parity checkl
   donut, category breakdown bar — colored from reference-data hex colors,
   localized labels, backed by a permission-scoped SQL group-by endpoint
   `GET /api/cases/analytics`.
-- ☐ Profile: picture upload (S3 layer), contact/security editing, completion.
-- ☐ Users: create-user flow (admin), role modal limited to assignable roles.
-- ☐ Resources: hierarchical management (region→governorate→community,
-  program→project→activity).
-- ☐ Notifications full page (beyond the bell).
+- ✅ Profile: picture upload (S3 layer; avatar image shows in header + profile),
+  change-password section (new POST /api/auth/change-password).
+- ✅ Users: create-user modal (assignable roles only, one-time temp password).
+- ✅ Resources: hierarchical management — settings now covers all 9 lookup types
+  with config-driven parent chains (region→governorate→community,
+  program→project→activity), code requirements enforced.
+- ✅ Notifications full page (pagination, mark read/all, delete) + bell
+  "View all" link.
 
 Then: Phase 6 (AI) → advanced features → deploy (Phase 7).
 

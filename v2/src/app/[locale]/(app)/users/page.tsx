@@ -9,6 +9,7 @@ import { useAuth } from "@/features/auth/AuthContext";
 import { DataTable, type Column } from "@/ui/DataTable";
 import { Avatar } from "@/ui/Avatar";
 import { ConfirmationModal } from "@/ui/Modal";
+import { CreateUserModal } from "@/features/users/CreateUserModal";
 import { useToast } from "@/ui/Toast";
 
 interface UserRow {
@@ -25,6 +26,7 @@ export default function UsersPage() {
   const qc = useQueryClient();
   const { user: me } = useAuth();
   const [pendingDeactivate, setPendingDeactivate] = useState<UserRow | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
   const toast = useToast();
   const tToast = useTranslations("toasts");
 
@@ -103,7 +105,12 @@ export default function UsersPage() {
     <>
       <div className="page-head">
         <h1>{t("title")}</h1>
+        <button type="button" className="btn btn-primary" onClick={() => setCreateOpen(true)}>
+          {t("addUser")}
+        </button>
       </div>
+
+      <CreateUserModal open={createOpen} onClose={() => setCreateOpen(false)} />
 
       {isError ? (
         <p className="center-note">{t("loadError")}</p>

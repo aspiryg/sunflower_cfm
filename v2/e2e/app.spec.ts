@@ -212,6 +212,54 @@ test("cases scope tabs switch between all / assigned / created", async ({ page }
   await expect(page.locator("table, .center-note").first()).toBeVisible();
 });
 
+test("admin creates a user via the modal and gets a one-time temp password", async ({ page }) => {
+  await login(page);
+  await page.goto("/en/users");
+  await page.getByRole("button", { name: /Add user/i }).click();
+  const stamp = Date.now();
+  await page.locator("#nu-firstName").fill("Modal");
+  await page.locator("#nu-lastName").fill("Created");
+  await page.locator("#nu-email").fill(`modal_${stamp}@test.local`);
+  await page.locator("#nu-role").selectOption("staff");
+  await page.getByRole("button", { name: /^Create$/i }).click();
+  await expect(page.getByTestId("temp-password")).toBeVisible();
+  await page.getByRole("button", { name: /^Done$/i }).click();
+  await expect(page.getByText(`modal_${stamp}@test.local`)).toBeVisible();
+});
+
+test("bell links to the full notifications page", async ({ page }) => {
+  await login(page);
+  await page.getByRole("button", { name: /Notifications|الإشعارات/ }).click();
+  await page.getByRole("link", { name: /View all/i }).click();
+  await expect(page).toHaveURL(/\/en\/notifications$/);
+  await expect(page.getByRole("heading", { name: /Notifications/i })).toBeVisible();
+});
+
+test("settings manages the geographic hierarchy (governorate under region)", async ({ page }) => {
+  await login(page);
+  await page.goto("/en/settings");
+  await page.locator("#resource-type").selectOption("governorates");
+  await expect(page.getByText(/Choose the parent above/i)).toBeVisible();
+  await page.locator("#parent-0").selectOption({ label: "West Bank" });
+  const name = `Gov ${Date.now()}`;
+  await page.locator("#name").fill(name);
+  await page.locator("#code").fill("GV9");
+  await page.getByRole("button", { name: /^Add$/i }).click();
+  await expect(page.getByText(name)).toBeVisible();
+});
+
+test("profile picture upload shows the avatar image", async ({ page }) => {
+  await login(page);
+  await page.goto("/en/profile");
+  await page.locator("#picture").setInputFiles({
+    name: "avatar.png",
+    mimeType: "image/png",
+    buffer: Buffer.from("not-really-a-png-but-mime-checked-only"),
+  });
+  await expect(page.getByText(/Picture updated/i)).toBeVisible();
+  await expect(page.locator(".avatar--img").first()).toBeVisible();
+});
+
 test("account menu shows identity and signs out", async ({ page }) => {
   await login(page);
   await page.getByRole("button", { name: /Account|الحساب/ }).click();
