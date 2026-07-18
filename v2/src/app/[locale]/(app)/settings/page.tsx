@@ -10,6 +10,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch, type ApiError } from "@/lib/api/client";
 import { useToast } from "@/ui/Toast";
+import { TextField } from "@/ui/form";
 
 interface LookupRow {
   id: number;
@@ -229,19 +230,30 @@ export default function SettingsPage() {
           <div className="form-card" style={{ marginBottom: "2.4rem" }}>
             <h3 style={{ marginBottom: "1.2rem" }}>{t("addTitle")}</h3>
             <form onSubmit={onAdd} style={{ display: "flex", gap: "1rem", flexWrap: "wrap", alignItems: "flex-end" }}>
-              <div className="field" style={{ marginBottom: 0, flex: 1, minWidth: "16rem" }}>
-                <label htmlFor="name">{t("name")}</label>
-                <input id="name" name="name" required />
-              </div>
-              <div className="field" style={{ marginBottom: 0, flex: 1, minWidth: "16rem" }}>
-                <label htmlFor="arabicName">{t("arabicName")}</label>
-                <input id="arabicName" name="arabicName" dir="rtl" />
-              </div>
+              <TextField
+                id="name"
+                name="name"
+                label={t("name")}
+                required
+                fieldStyle={{ marginBottom: 0, flex: 1, minWidth: "16rem" }}
+              />
+              <TextField
+                id="arabicName"
+                name="arabicName"
+                label={t("arabicName")}
+                dir="rtl"
+                fieldStyle={{ marginBottom: 0, flex: 1, minWidth: "16rem" }}
+              />
               {cfg.code !== "none" && (
-                <div className="field" style={{ marginBottom: 0, width: "10rem" }}>
-                  <label htmlFor="code">{t("code")}</label>
-                  <input id="code" name="code" required={cfg.code === "required"} maxLength={10} dir="ltr" />
-                </div>
+                <TextField
+                  id="code"
+                  name="code"
+                  label={t("code")}
+                  required={cfg.code === "required"}
+                  maxLength={10}
+                  dir="ltr"
+                  fieldStyle={{ marginBottom: 0, width: "10rem" }}
+                />
               )}
               <button type="submit" className="btn btn-primary" disabled={createM.isPending}>
                 {t("add")}
@@ -268,10 +280,22 @@ export default function SettingsPage() {
                       <td colSpan={4}>
                         <form
                           onSubmit={(e) => onSaveEdit(e, r.id)}
-                          style={{ display: "flex", gap: "1rem", alignItems: "center", flexWrap: "wrap" }}
+                          style={{ display: "flex", gap: "1rem", alignItems: "flex-end", flexWrap: "wrap" }}
                         >
-                          <input name="name" defaultValue={r.name} required style={{ flex: 1, minWidth: "14rem" }} />
-                          <input name="arabicName" defaultValue={r.arabicName ?? ""} dir="rtl" style={{ flex: 1, minWidth: "14rem" }} />
+                          <TextField
+                            name="name"
+                            label={t("name")}
+                            defaultValue={r.name}
+                            required
+                            fieldStyle={{ marginBottom: 0, flex: 1, minWidth: "14rem" }}
+                          />
+                          <TextField
+                            name="arabicName"
+                            label={t("arabicName")}
+                            defaultValue={r.arabicName ?? ""}
+                            dir="rtl"
+                            fieldStyle={{ marginBottom: 0, flex: 1, minWidth: "14rem" }}
+                          />
                           <button type="submit" className="btn btn-primary" disabled={updateM.isPending} style={{ padding: "0.6rem 1.4rem" }}>
                             {t("save")}
                           </button>

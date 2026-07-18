@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api/client";
 import { useToast } from "@/ui/Toast";
+import { TextField } from "@/ui/form";
 
 interface AttachmentRow {
   id: number;
@@ -27,7 +28,6 @@ export function AttachmentsCard({ caseId }: { caseId: number }) {
   const qc = useQueryClient();
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
   const toast = useToast();
   const tToast = useTranslations("toasts");
 
@@ -40,7 +40,7 @@ export function AttachmentsCard({ caseId }: { caseId: number }) {
   const invalidate = () =>
     qc.invalidateQueries({ queryKey: ["case-attachments", caseId] });
 
-  async function onFileChosen(file: File) {
+  async function onFileChosen(file: File, input: HTMLInputElement) {
     setError(null);
     setUploading(true);
     try {
@@ -63,7 +63,7 @@ export function AttachmentsCard({ caseId }: { caseId: number }) {
       setError(t("error"));
     } finally {
       setUploading(false);
-      if (inputRef.current) inputRef.current.value = "";
+      input.value = "";
     }
   }
 
@@ -85,22 +85,18 @@ export function AttachmentsCard({ caseId }: { caseId: number }) {
         </div>
       )}
 
-      <div className="field">
-        <input
-          ref={inputRef}
-          id="attachment-file"
-          type="file"
-          accept="image/jpeg,image/png,image/webp,application/pdf,.doc,.docx,text/plain"
-          disabled={uploading}
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            if (f) void onFileChosen(f);
-          }}
-        />
-        <span className="muted" style={{ fontSize: "1.2rem" }}>
-          {uploading ? t("uploading") : t("hint")}
-        </span>
-      </div>
+      <TextField
+        id="attachment-file"
+        type="file"
+        label={t("upload")}
+        hint={uploading ? t("uploading") : t("hint")}
+        accept="image/jpeg,image/png,image/webp,application/pdf,.doc,.docx,text/plain"
+        disabled={uploading}
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) void onFileChosen(f, e.target);
+        }}
+      />
 
       {rows.length === 0 ? (
         <p className="muted">{t("empty")}</p>

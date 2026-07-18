@@ -249,7 +249,9 @@ Port the UI to App Router with AR/EN + RTL as a first-class concern.
   Lighthouse/SEO check on public pages.
 
 ## Phase 6 — AI classification / smart features — ◐ (part 1 done)
-**Part 1 ✅ — classification + summarization (Claude API, `claude-opus-4-8`):**
+**Part 1 ✅ — classification + summarization (OpenAI API — owner decision
+2026-07-17, switched from the original Claude implementation; default model
+`gpt-4o`, override via `OPENAI_MODEL`):**
 - `src/lib/ai`: classifier with **structured outputs** (zod schema via
   `messages.parse` — guaranteed JSON: categoryId/priorityId/urgency/
   isSensitive/confidence/rationale, hallucinated-ID guard) + case summarizer
@@ -265,14 +267,14 @@ Port the UI to App Router with AR/EN + RTL as a first-class concern.
 - Also: shared **form-field components** (`src/ui/form.tsx` — TextField/
   SelectField/TextAreaField/CheckboxField, owner directive) used by the rebuilt
   CaseForm; migrating remaining screens onto them is on the parity checklist.
-- Verified: typecheck/lint/build green; 75 vitest; a live-API integration test
-  self-skips without ANTHROPIC_API_KEY (⚠️ v2/.env with the key doesn't exist
-  yet — owner to create it; everything degrades until then).
+- **Verified LIVE** (2026-07-17): real OpenAI round-trip — the ordnance-report
+  test returned a valid seeded category/priority at high/critical urgency with
+  rationale. Key wired in v2/.env (exposed in chat — owner advised to rotate).
 
-**Part 2 — remaining:** embeddings on `cases.embedding` (needs an embeddings
-provider — Anthropic has none; **Voyage AI recommended, needs VOYAGE_API_KEY
-decision**), semantic search + duplicate detection via pgvector, optional Redis
-queue for async classification at scale.
+**Part 2 — remaining:** embeddings on `cases.embedding` (OpenAI
+`text-embedding-3-small/large` now the natural choice given the provider
+switch — same key), semantic search + duplicate detection via pgvector,
+optional Redis queue for async classification at scale.
 
 ## Phase 7 — Infra, backups, deploy to Hetzner
 - Finalize `docker compose`: web, postgres(pgvector), caddy(TLS), redis,

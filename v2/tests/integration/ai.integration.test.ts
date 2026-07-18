@@ -1,6 +1,6 @@
 /**
  * AI classification (Phase 6) — one live round-trip through the real route.
- * Self-skips unless BOTH DATABASE_URL and ANTHROPIC_API_KEY are set (never
+ * Self-skips unless BOTH DATABASE_URL and OPENAI_API_KEY are set (never
  * runs in CI; runs locally when the owner's key is configured).
  */
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
@@ -18,7 +18,7 @@ import { listCategories, listPriorities } from "@/db/repositories/referenceData"
 import { POST as classifyRoute } from "@/app/api/cases/classify/route";
 
 const hasDb = !!process.env.DATABASE_URL;
-const hasAi = !!process.env.ANTHROPIC_API_KEY;
+const hasAi = !!process.env.OPENAI_API_KEY;
 
 type Ctx = { params: Promise<Record<string, string>> };
 const ctx = (): Ctx => ({ params: Promise.resolve({}) });

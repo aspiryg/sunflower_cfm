@@ -7,6 +7,7 @@ import { apiFetch } from "@/lib/api/client";
 import { useAuth } from "@/features/auth/AuthContext";
 import { useToast } from "@/ui/Toast";
 import { Avatar } from "@/ui/Avatar";
+import { TextField } from "@/ui/form";
 import type { ApiError } from "@/lib/api/client";
 
 export default function ProfilePage() {
@@ -96,23 +97,20 @@ export default function ProfilePage() {
                 : undefined
             }
           />
-          <div className="field" style={{ marginBottom: 0, flex: 1, minWidth: "20rem" }}>
-            <label htmlFor="picture">{t("picture")}</label>
-            <input
-              id="picture"
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              disabled={uploadingPic}
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) void onPictureChosen(f);
-                e.target.value = "";
-              }}
-            />
-            <span className="muted" style={{ fontSize: "1.2rem" }}>
-              {t("pictureHint")}
-            </span>
-          </div>
+          <TextField
+            id="picture"
+            type="file"
+            label={t("picture")}
+            hint={t("pictureHint")}
+            fieldStyle={{ marginBottom: 0, flex: 1, minWidth: "20rem" }}
+            accept="image/jpeg,image/png,image/webp"
+            disabled={uploadingPic}
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) void onPictureChosen(f);
+              e.target.value = "";
+            }}
+          />
         </div>
       </div>
 
@@ -126,22 +124,10 @@ export default function ProfilePage() {
           </div>
         )}
         <form onSubmit={onSubmit}>
-          <div className="field">
-            <label htmlFor="firstName">{t("firstName")}</label>
-            <input id="firstName" name="firstName" defaultValue={user.firstName} required />
-          </div>
-          <div className="field">
-            <label htmlFor="lastName">{t("lastName")}</label>
-            <input id="lastName" name="lastName" defaultValue={user.lastName} required />
-          </div>
-          <div className="field">
-            <label htmlFor="email">{t("email")}</label>
-            <input id="email" type="email" defaultValue={user.email} dir="ltr" disabled />
-          </div>
-          <div className="field">
-            <label htmlFor="organization">{t("organization")}</label>
-            <input id="organization" name="organization" defaultValue={user.organization ?? ""} />
-          </div>
+          <TextField id="firstName" name="firstName" label={t("firstName")} defaultValue={user.firstName} required />
+          <TextField id="lastName" name="lastName" label={t("lastName")} defaultValue={user.lastName} required />
+          <TextField id="email" type="email" label={t("email")} defaultValue={user.email} dir="ltr" disabled />
+          <TextField id="organization" name="organization" label={t("organization")} defaultValue={user.organization ?? ""} />
           <button type="submit" className="btn btn-primary" disabled={save.isPending}>
             {save.isPending ? t("saving") : t("save")}
           </button>
@@ -172,19 +158,10 @@ export default function ProfilePage() {
             );
           }}
         >
-          <div className="field">
-            <label htmlFor="currentPassword">{t("currentPassword")}</label>
-            <input id="currentPassword" name="currentPassword" type="password" required autoComplete="current-password" />
-          </div>
+          <TextField id="currentPassword" name="currentPassword" type="password" label={t("currentPassword")} required autoComplete="current-password" />
           <div className="field-row">
-            <div className="field">
-              <label htmlFor="newPassword">{t("newPassword")}</label>
-              <input id="newPassword" name="newPassword" type="password" required autoComplete="new-password" />
-            </div>
-            <div className="field">
-              <label htmlFor="confirmPassword">{t("confirmPassword")}</label>
-              <input id="confirmPassword" name="confirmPassword" type="password" required autoComplete="new-password" />
-            </div>
+            <TextField id="newPassword" name="newPassword" type="password" label={t("newPassword")} required autoComplete="new-password" />
+            <TextField id="confirmPassword" name="confirmPassword" type="password" label={t("confirmPassword")} required autoComplete="new-password" />
           </div>
           <button type="submit" className="btn btn-primary" disabled={changePw.isPending}>
             {changePw.isPending ? t("saving") : t("changePassword")}

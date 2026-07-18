@@ -4,6 +4,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { apiFetch, type ApiError } from "@/lib/api/client";
+import { TextField } from "@/ui/form";
 
 export function ForgotPasswordForm() {
   const t = useTranslations("authFlows");
@@ -36,10 +37,7 @@ export function ForgotPasswordForm() {
             {t("forgotIntro")}
           </p>
           <form onSubmit={onSubmit}>
-            <div className="field">
-              <label htmlFor="email">{tAuth("email")}</label>
-              <input id="email" name="email" type="email" required autoComplete="email" />
-            </div>
+            <TextField id="email" name="email" type="email" label={tAuth("email")} required autoComplete="email" />
             <button type="submit" className="btn btn-primary" disabled={busy}>
               {busy ? t("sending") : t("sendReset")}
             </button>
@@ -94,14 +92,8 @@ export function ResetPasswordForm({ token }: { token: string }) {
             </div>
           )}
           <form onSubmit={onSubmit}>
-            <div className="field">
-              <label htmlFor="password">{t("newPassword")}</label>
-              <input id="password" name="password" type="password" required autoComplete="new-password" />
-            </div>
-            <div className="field">
-              <label htmlFor="confirmPassword">{t("confirmPassword")}</label>
-              <input id="confirmPassword" name="confirmPassword" type="password" required autoComplete="new-password" />
-            </div>
+            <TextField id="password" name="password" type="password" label={t("newPassword")} required autoComplete="new-password" />
+            <TextField id="confirmPassword" name="confirmPassword" type="password" label={t("confirmPassword")} required autoComplete="new-password" />
             <button type="submit" className="btn btn-primary" disabled={busy}>
               {busy ? t("resetting") : t("resetSubmit")}
             </button>

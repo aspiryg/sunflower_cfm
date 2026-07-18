@@ -8,6 +8,7 @@ import { apiFetch, type ApiError } from "@/lib/api/client";
 import { Link, useRouter } from "@/i18n/navigation";
 import { CaseForm, type CaseFormValues } from "@/features/cases/CaseForm";
 import { useToast } from "@/ui/Toast";
+import { Breadcrumb } from "@/ui/Breadcrumb";
 
 interface CaseFull extends CaseFormValues {
   id: number;
@@ -51,25 +52,30 @@ export default function EditCasePage() {
 
   return (
     <>
+      <Breadcrumb
+        items={[
+          { label: t("title"), href: "/cases" },
+          { label: <span dir="ltr">{c.caseNumber}</span> },
+        ]}
+      />
       <div className="page-head">
         <h1 dir="ltr">{c.caseNumber}</h1>
         <Link href={`/cases/${id}`} className="btn btn-outline">
           {td("back")}
         </Link>
       </div>
-      <div className="form-card">
-        <CaseForm
-          initial={c}
-          submitLabel={t("saveChanges")}
-          busyLabel={t("saving")}
-          busy={save.isPending}
-          error={error}
-          onSubmit={(values) => {
-            setError(null);
-            save.mutate(values);
-          }}
-        />
-      </div>
+      <CaseForm
+        initial={c}
+        submitLabel={t("saveChanges")}
+        busyLabel={t("saving")}
+        busy={save.isPending}
+        error={error}
+        onSubmit={(values) => {
+          setError(null);
+          save.mutate(values);
+        }}
+        onCancel={() => router.push(`/cases/${id}`)}
+      />
     </>
   );
 }

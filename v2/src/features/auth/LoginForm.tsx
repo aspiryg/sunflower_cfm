@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useLogin } from "./AuthContext";
+import { TextField } from "@/ui/form";
 
 export function LoginForm() {
   const t = useTranslations("auth");
@@ -40,14 +41,8 @@ export function LoginForm() {
         </div>
       )}
       <form onSubmit={onSubmit}>
-        <div className="field">
-          <label htmlFor="email">{t("email")}</label>
-          <input id="email" name="email" type="email" required autoComplete="email" />
-        </div>
-        <div className="field">
-          <label htmlFor="password">{t("password")}</label>
-          <input id="password" name="password" type="password" required autoComplete="current-password" />
-        </div>
+        <TextField id="email" name="email" type="email" label={t("email")} required autoComplete="email" />
+        <TextField id="password" name="password" type="password" label={t("password")} required autoComplete="current-password" />
         <button type="submit" className="btn btn-primary" disabled={login.isPending}>
           {login.isPending ? t("signingIn") : t("signIn")}
         </button>

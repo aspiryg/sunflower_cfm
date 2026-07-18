@@ -218,50 +218,7 @@ html[dir="rtl"] .feedback__badge {
   padding: var(--spacing-8);
   box-shadow: var(--shadow-sm);
 }
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-2);
-  margin-bottom: var(--spacing-5);
-}
-.field label {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-grey-700);
-}
-.field label span {
-  color: var(--color-grey-400);
-  font-weight: 400;
-  margin-inline-start: var(--spacing-1);
-}
-.field input,
-.field select,
-.field textarea {
-  width: 100%;
-  padding: var(--spacing-3);
-  border: 1px solid var(--color-grey-300);
-  border-radius: var(--radius-md);
-  background: var(--color-grey-0);
-  color: var(--color-grey-800);
-  font-family: inherit;
-  font-size: var(--font-size-sm);
-}
-.field textarea {
-  min-height: 14rem;
-  resize: vertical;
-  line-height: 1.6;
-}
-.field input:focus,
-.field select:focus,
-.field textarea:focus {
-  outline: none;
-  border-color: var(--color-brand-500);
-  box-shadow: 0 0 0 3px var(--color-brand-100);
-}
-.field__error {
-  color: var(--color-red-700);
-  font-size: var(--font-size-xs);
-}
+/* .field styles moved to styles/forms.css (loaded globally). */
 .feedback__help {
   margin-top: var(--spacing-4);
   padding-top: var(--spacing-4);

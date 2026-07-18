@@ -4,7 +4,7 @@
  * Every mutation writes a case_history row — the audit trail v1 maintained by
  * hand is centralized here.
  */
-import { and, asc, count, desc, eq, gte, ilike, lt, or, sql, type SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, ilike, like, or, sql, type SQL } from "drizzle-orm";
 import { db } from "../index";
 import {
   cases,
@@ -18,7 +18,7 @@ import {
   type CaseHistoryEntry,
 } from "../schema";
 import type { QueryScope } from "@/lib/rbac";
-import { formatCaseNumber, dayBounds } from "@/lib/cases/caseNumber";
+import { formatCaseNumber, caseNumberDayPrefix } from "@/lib/cases/caseNumber";
 import { computeDueDate } from "@/lib/cases/sla";
 import { canTransition, type StatusFlags } from "@/lib/cases/lifecycle";
 import { getCasePrefix } from "./settings";
@@ -60,14 +60,8 @@ async function initialStatusId(): Promise<number> {
   return s.id;
 }
 
-async function nextSequence(when: Date): Promise<number> {
-  const { start, end } = dayBounds(when);
-  const [{ c }] = await db
-    .select({ c: count() })
-    .from(cases)
-    .where(and(gte(cases.caseDate, start), lt(cases.caseDate, end)));
-  return Number(c) + 1;
-}
+// (daily sequence is computed inside the createCase transaction, under an
+// advisory lock, so concurrent creations can never collide on caseNumber)
 
 async function writeHistory(entry: {
   caseId: number;
@@ -139,51 +133,48 @@ export async function createCase(
     .limit(1);
   const dueDate = computeDueDate(now, priority?.hours ?? null);
 
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const sequence = (await nextSequence(now)) + attempt;
-    const caseNumber = formatCaseNumber(prefix, now, sequence);
-    try {
-      const [row] = await db
-        .insert(cases)
-        .values({
-          ...input,
-          statusId,
-          caseNumber,
-          dueDate,
-          caseDate: now,
-          submittedAt: now,
-          submittedBy: actorId, // nullable — null for anonymous public intake
-          createdBy: actorId,
-        })
-        .returning();
+  // Allocate the daily sequence and insert atomically. The transaction-scoped
+  // advisory lock serializes concurrent creations; the next number derives
+  // from the MAX existing number for the day (zero-padded, so lexicographic
+  // max == numeric max) — count-based numbering breaks when cases are deleted,
+  // and plain count+insert also races under concurrency.
+  const row = await db.transaction(async (tx) => {
+    await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext('cfm_case_number'))`);
+    const dayPrefix = caseNumberDayPrefix(prefix, now);
+    const [{ m }] = await tx
+      .select({ m: sql<string | null>`max(${cases.caseNumber})` })
+      .from(cases)
+      .where(like(cases.caseNumber, `${dayPrefix}%`));
+    const next = m ? parseInt(m.slice(dayPrefix.length), 10) + 1 : 1;
+    const caseNumber = formatCaseNumber(prefix, now, next);
+    const [inserted] = await tx
+      .insert(cases)
+      .values({
+        ...input,
+        statusId,
+        caseNumber,
+        dueDate,
+        caseDate: now,
+        submittedAt: now,
+        submittedBy: actorId, // nullable — null for anonymous public intake
+        createdBy: actorId,
+      })
+      .returning();
+    return inserted;
+  });
 
-      // case_history is a user-action log (createdBy is NOT NULL). Anonymous
-      // creation is recorded in audit_logs (userId nullable) by the caller.
-      if (actorId != null) {
-        await writeHistory({
-          caseId: row.id,
-          actorId,
-          actionType: "CREATION",
-          changeDescription: `Case ${caseNumber} created.`,
-          statusId,
-        });
-      }
-      return row;
-    } catch (err: unknown) {
-      // 23505 = unique_violation (case_number collision) → retry with next seq.
-      if (
-        typeof err === "object" &&
-        err !== null &&
-        "code" in err &&
-        (err as { code?: string }).code === "23505" &&
-        attempt < 4
-      ) {
-        continue;
-      }
-      throw err;
-    }
+  // case_history is a user-action log (createdBy is NOT NULL). Anonymous
+  // creation is recorded in audit_logs (userId nullable) by the caller.
+  if (actorId != null) {
+    await writeHistory({
+      caseId: row.id,
+      actorId,
+      actionType: "CREATION",
+      changeDescription: `Case ${row.caseNumber} created.`,
+      statusId,
+    });
   }
-  throw new Error("Could not allocate a unique case number after retries.");
+  return row;
 }
 
 export interface CaseFilters {
@@ -195,13 +186,45 @@ export interface CaseFilters {
   search?: string;
 }
 
+/** Whitelisted sortable fields — keys map to column refs, never raw SQL. */
+export const CASE_SORT_KEYS = [
+  "createdAt",
+  "updatedAt",
+  "caseNumber",
+  "title",
+  "priorityId",
+  "statusId",
+  "dueDate",
+] as const;
+export type CaseSortKey = (typeof CASE_SORT_KEYS)[number];
+export type CaseSortDir = "asc" | "desc";
+
+const CASE_SORT_COLUMNS = {
+  createdAt: cases.createdAt,
+  updatedAt: cases.updatedAt,
+  caseNumber: cases.caseNumber,
+  title: cases.title,
+  priorityId: cases.priorityId,
+  statusId: cases.statusId,
+  dueDate: cases.dueDate,
+} as const satisfies Record<CaseSortKey, unknown>;
+
 export async function listCases(params: {
   scope: QueryScope;
   filters?: CaseFilters;
   page?: number;
   limit?: number;
+  sortBy?: CaseSortKey;
+  sortDir?: CaseSortDir;
 }): Promise<{ data: Case[]; total: number }> {
-  const { scope, filters = {}, page = 1, limit = 20 } = params;
+  const {
+    scope,
+    filters = {},
+    page = 1,
+    limit = 20,
+    sortBy = "createdAt",
+    sortDir = "desc",
+  } = params;
   if (scope.kind === "none") return { data: [], total: 0 };
 
   const conds: (SQL | undefined)[] = [live()];
@@ -226,13 +249,16 @@ export async function listCases(params: {
 
   const where = and(...conds);
   const offset = (Math.max(1, page) - 1) * limit;
+  const sortCol = CASE_SORT_COLUMNS[sortBy] ?? cases.createdAt;
+  const order = sortDir === "asc" ? asc(sortCol) : desc(sortCol);
 
   const [data, [{ total }]] = await Promise.all([
     db
       .select()
       .from(cases)
       .where(where)
-      .orderBy(desc(cases.caseDate))
+      // Stable id tiebreaker keeps pagination deterministic on equal keys.
+      .orderBy(order, desc(cases.id))
       .limit(limit)
       .offset(offset),
     db.select({ total: count() }).from(cases).where(where),

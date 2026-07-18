@@ -209,7 +209,11 @@
   },
   "common": {
     "loading": "Loading…",
-    "required": "Required"
+    "required": "Required",
+    "clear": "Clear",
+    "noResults": "No results",
+    "breadcrumb": "Breadcrumb",
+    "cancel": "Cancel"
   },
   "notifs": {
     "label": "Notifications",
@@ -387,7 +391,56 @@
     "community": "Community",
     "communityHint": "Pick region and governorate first. Leave empty to keep unchanged when editing.",
     "locationText": "Location / area",
-    "coordinates": "Coordinates"
+    "coordinates": "Coordinates",
+    "titlePlaceholder": "Enter a clear, descriptive case title…",
+    "titleHint": "Be specific — include the location or nature of the issue",
+    "descriptionPlaceholder": "What happened, when it occurred, who was affected, where it took place, and any immediate actions taken",
+    "descriptionHint": "Include who, what, when, and where",
+    "beneficiariesHint": "Estimated number of people affected",
+    "sections": {
+      "identification": "Case identification",
+      "identificationSub": "Primary case details and description",
+      "impact": "Impact assessment",
+      "impactSub": "Scope and consequences of this case",
+      "classification": "Classification",
+      "classificationSub": "Category, priority, channel and confidentiality",
+      "programLinks": "Program links",
+      "programLinksSub": "Link this case to a program, project or activity",
+      "tagsRefs": "Tags & references",
+      "tagsRefsSub": "Free-form tags and external reference numbers",
+      "provider": "Provider details",
+      "providerSub": "Who submitted or reported this case",
+      "demographics": "Demographics",
+      "demographicsSub": "Optional demographic details about the provider",
+      "consent": "Consent & follow-up",
+      "consentSub": "Data-sharing consent and preferred follow-up",
+      "location": "Location",
+      "locationSub": "Where the case occurred"
+    },
+    "guide": {
+      "title": "Case information guidelines",
+      "g1": "Be specific and descriptive in the title",
+      "g2": "Describe what happened, when, and who was affected",
+      "g3": "Mention the location if relevant",
+      "g4": "Note any immediate actions already taken"
+    },
+    "suggestions": {
+      "title0": "Smart suggestions",
+      "title": "Consider adding more detail to the title for easier identification.",
+      "description": "A more detailed description helps with case processing.",
+      "highImpactTitle": "High-impact case",
+      "highImpact": "This case affects many beneficiaries — consider escalating it and involving additional resources."
+    },
+    "nav": {
+      "prev": "Previous",
+      "next": "Next"
+    },
+    "errors": {
+      "summary": "Please fix the highlighted fields on the Basic info tab.",
+      "titleMin": "Title must be at least 3 characters.",
+      "descriptionMin": "Description must be at least 10 characters.",
+      "tooLong": "This text is too long."
+    }
   },
   "charts": {
     "trend": "New cases — last 30 days",
@@ -422,5 +475,52 @@
     },
     "summarize": "AI summary",
     "summarizing": "Summarizing…"
+  },
+  "table": {
+    "showing": "Showing {from}–{to} of {total}",
+    "perPage": "{count} per page",
+    "pagination": "Pagination",
+    "prev": "Previous page",
+    "next": "Next page",
+    "goToPage": "Go to page {page}",
+    "columns": "Columns",
+    "actions": "Actions",
+    "clearAll": "Clear all",
+    "removeFilter": "Remove filter",
+    "results": "{count, plural, one {# result} other {# results}}",
+    "search": "Search…",
+    "all": "All",
+    "sortBy": "Sort by",
+    "sortAsc": "Ascending",
+    "sortDesc": "Descending",
+    "sortCreatedAt": "Date created",
+    "sortUpdatedAt": "Last updated",
+    "sortCaseNumber": "Case number",
+    "sortTitle": "Title",
+    "sortPriority": "Priority",
+    "sortStatus": "Status",
+    "sortDueDate": "Due date"
+  },
+  "pickers": {
+    "openCalendar": "Open calendar",
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month",
+    "previousYear": "Previous year",
+    "nextYear": "Next year",
+    "chooseMonthYear": "Choose month and year",
+    "today": "Today",
+    "clear": "Clear",
+    "clearSelection": "Clear selection",
+    "dateFormat": "YYYY-MM-DD",
+    "select": "Select…",
+    "search": "Search…",
+    "noResults": "No results",
+    "removeItem": "Remove {label}",
+    "selectUser": "Select a user…",
+    "noUsers": "No matching users",
+    "unnamedUser": "Unnamed user",
+    "addTag": "Add a tag and press Enter",
+    "removeTag": "Remove tag {tag}",
+    "moreActions": "More actions"
   }
 }

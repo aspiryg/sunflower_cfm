@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useRegister } from "./AuthContext";
 import type { ApiError } from "@/lib/api/client";
+import { TextField } from "@/ui/form";
 
 export function RegisterForm() {
   const t = useTranslations("auth");
@@ -41,25 +42,18 @@ export function RegisterForm() {
         </div>
       )}
       <form onSubmit={onSubmit}>
-        <div className="field">
-          <label htmlFor="firstName">{t("firstName")}</label>
-          <input id="firstName" name="firstName" type="text" required />
-        </div>
-        <div className="field">
-          <label htmlFor="lastName">{t("lastName")}</label>
-          <input id="lastName" name="lastName" type="text" required />
-        </div>
-        <div className="field">
-          <label htmlFor="email">{t("email")}</label>
-          <input id="email" name="email" type="email" required autoComplete="email" />
-        </div>
-        <div className="field">
-          <label htmlFor="password">{t("password")}</label>
-          <input id="password" name="password" type="password" required autoComplete="new-password" />
-          <span className="muted" style={{ fontSize: "1.2rem" }}>
-            {t("passwordHint")}
-          </span>
-        </div>
+        <TextField id="firstName" name="firstName" type="text" label={t("firstName")} required />
+        <TextField id="lastName" name="lastName" type="text" label={t("lastName")} required />
+        <TextField id="email" name="email" type="email" label={t("email")} required autoComplete="email" />
+        <TextField
+          id="password"
+          name="password"
+          type="password"
+          label={t("password")}
+          required
+          autoComplete="new-password"
+          hint={t("passwordHint")}
+        />
         <button type="submit" className="btn btn-primary" disabled={register.isPending}>
           {register.isPending ? t("creatingAccount") : t("signUp")}
         </button>

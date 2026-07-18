@@ -19,7 +19,6 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.112.3",
     "@aws-sdk/client-s3": "^3.1090.0",
     "@aws-sdk/s3-request-presigner": "^3.1090.0",
     "@tanstack/react-query": "^5.64.1",
@@ -29,6 +28,7 @@
     "next": "^15.1.6",
     "next-intl": "^3.26.3",
     "nodemailer": "^9.0.3",
+    "openai": "^6.48.0",
     "pg": "^8.13.1",
     "postgres": "^3.4.5",
     "react": "^19.0.0",

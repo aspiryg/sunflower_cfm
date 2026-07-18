@@ -3,7 +3,13 @@ import { ok, fail } from "@/lib/http/respond";
 import { queryScope } from "@/lib/rbac";
 import { LIMITS } from "@/lib/http/rateLimit";
 import { parseBody, createCaseSchema } from "@/lib/validation";
-import { listCases, createCase, type CaseFilters } from "@/db/repositories/cases";
+import {
+  listCases,
+  createCase,
+  CASE_SORT_KEYS,
+  type CaseFilters,
+  type CaseSortKey,
+} from "@/db/repositories/cases";
 import { writeAudit } from "@/db/repositories/audit";
 
 function intParam(v: string | null): number | undefined {
@@ -18,6 +24,14 @@ export const GET = authed(
     const q = url.searchParams;
     const page = intParam(q.get("page")) ?? 1;
     const limit = Math.min(intParam(q.get("limit")) ?? 20, 100);
+    // Strict whitelist — unknown values fall back to the default sort.
+    const sortByRaw = q.get("sortBy");
+    const sortBy: CaseSortKey = (CASE_SORT_KEYS as readonly string[]).includes(
+      sortByRaw ?? "",
+    )
+      ? (sortByRaw as CaseSortKey)
+      : "createdAt";
+    const sortDir = q.get("sortDir") === "asc" ? "asc" : "desc";
     const filters: CaseFilters = {
       statusId: intParam(q.get("statusId")),
       priorityId: intParam(q.get("priorityId")),
@@ -32,7 +46,14 @@ export const GET = authed(
     else if (mine === "created") filters.createdBy = auth.user.id;
 
     const scope = queryScope(auth.user, "cases", "read");
-    const { data, total } = await listCases({ scope, filters, page, limit });
+    const { data, total } = await listCases({
+      scope,
+      filters,
+      page,
+      limit,
+      sortBy,
+      sortDir,
+    });
 
     return ok(data, undefined, {
       extra: {

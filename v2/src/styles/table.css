@@ -1,0 +1,279 @@
+/* Styles for the advanced table system (DataTable, Pagination, FilterBar). */
+
+/* ---- Table wrapper + toolbar ---- */
+.table-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+.table-toolbar {
+  display: flex;
+  justify-content: flex-end;
+}
+.table-cols__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  padding: var(--spacing-2) var(--spacing-3);
+  border: 1px solid var(--color-grey-300);
+  border-radius: var(--radius-md);
+  background: var(--color-grey-0);
+  color: var(--color-grey-700);
+  font-size: var(--font-size-sm);
+}
+.table-cols__item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-2) var(--spacing-4);
+  color: var(--color-grey-700);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.table-cols__item:hover {
+  background: var(--color-grey-100);
+}
+.table-cols__item input {
+  accent-color: var(--color-brand-600);
+}
+
+/* ---- Sortable headers / clickable rows ---- */
+.table__sort.is-active {
+  color: var(--color-brand-600);
+}
+.table__sort.is-active .table__sort-icon {
+  color: var(--color-brand-600);
+}
+.table tr.is-clickable {
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease);
+}
+.table tr.is-clickable:hover {
+  background: var(--color-grey-50);
+}
+@media (prefers-reduced-motion: reduce) {
+  .table tr.is-clickable {
+    transition: none;
+  }
+}
+.table__menu-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.8rem;
+  height: 2.8rem;
+  border-radius: var(--radius-md);
+  color: var(--color-grey-600);
+  font-size: var(--font-size-lg);
+  line-height: 1;
+}
+.table__menu-trigger:hover {
+  background: var(--color-grey-100);
+}
+
+/* ---- Loading skeleton (shimmer) ---- */
+.skeleton {
+  display: block;
+  height: 1.4rem;
+  width: 80%;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--color-grey-100) 25%,
+    var(--color-grey-200) 50%,
+    var(--color-grey-100) 75%
+  );
+  background-size: 200% 100%;
+  animation: table-shimmer 1.2s linear infinite;
+}
+.table__skeleton-row td:nth-child(2n) .skeleton {
+  width: 55%;
+}
+.table__skeleton-row td:nth-child(3n) .skeleton {
+  width: 65%;
+}
+@keyframes table-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}
+
+/* ---- Table footer (summary + pagination + page size) ---- */
+.table-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-4);
+  flex-wrap: wrap;
+  padding-block-start: var(--spacing-2);
+}
+.table-footer__summary {
+  color: var(--color-grey-500);
+  font-size: var(--font-size-sm);
+}
+.table-footer__size {
+  padding: var(--spacing-2) var(--spacing-3);
+  border: 1px solid var(--color-grey-300);
+  border-radius: var(--radius-md);
+  background: var(--color-grey-0);
+  color: var(--color-grey-800);
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+}
+
+/* ---- Pagination ---- */
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1);
+}
+.pagination__btn {
+  min-width: 3.2rem;
+  height: 3.2rem;
+  padding: 0 var(--spacing-2);
+  border: 1px solid var(--color-grey-300);
+  border-radius: var(--radius-md);
+  background: var(--color-grey-0);
+  color: var(--color-grey-700);
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+.pagination__btn:hover:not(:disabled):not(.is-active) {
+  background: var(--color-grey-100);
+}
+.pagination__btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.pagination__btn.is-active {
+  background: var(--color-brand-600);
+  border-color: var(--color-brand-600);
+  color: var(--color-brand-50);
+  font-weight: var(--font-weight-semibold);
+}
+/* Arrows are direction glyphs — mirror them in RTL. */
+[dir="rtl"] .pagination__arrow span {
+  display: inline-block;
+  transform: scaleX(-1);
+}
+.pagination__ellipsis {
+  min-width: 2.4rem;
+  text-align: center;
+  color: var(--color-grey-400);
+}
+
+/* ---- FilterBar ---- */
+.filter-bar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  margin-block-end: var(--spacing-5);
+}
+/* Controls row reuses .filters-bar input/select styling from app.css.
+   Extra specificity so this wins regardless of stylesheet order. */
+.filter-bar .filter-bar__controls {
+  margin-block-end: 0;
+  margin-bottom: 0;
+  align-items: center;
+}
+.filter-bar__sort {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  font-size: var(--font-size-sm);
+}
+.filter-bar__sort select {
+  padding: var(--spacing-2) var(--spacing-3);
+  border: 1px solid var(--color-grey-300);
+  border-radius: var(--radius-md);
+  background: var(--color-grey-0);
+  color: var(--color-grey-800);
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+}
+.filter-bar__dir {
+  padding: var(--spacing-2) var(--spacing-3);
+}
+.filter-bar__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-3);
+  flex-wrap: wrap;
+}
+.filter-bar__chips {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  flex-wrap: wrap;
+}
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  padding-block: 0.2rem;
+  padding-inline-start: var(--spacing-3);
+  padding-inline-end: var(--spacing-2);
+  border-radius: var(--radius-full);
+  background: var(--color-brand-50);
+  color: var(--color-brand-600);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+}
+.filter-chip__x {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border: none;
+  border-radius: var(--radius-full);
+  background: none;
+  color: inherit;
+  font-size: var(--font-size-sm);
+  line-height: 1;
+  cursor: pointer;
+}
+.filter-chip__x:hover {
+  background: var(--color-brand-100);
+}
+.filter-bar__clear {
+  border: none;
+  background: none;
+  color: var(--color-grey-500);
+  font-family: inherit;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.filter-bar__clear:hover {
+  color: var(--color-grey-700);
+}
+.filter-bar__count {
+  color: var(--color-grey-500);
+  font-size: var(--font-size-sm);
+}
+
+@media (max-width: 640px) {
+  .table-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .pagination {
+    justify-content: center;
+  }
+  .table-footer__summary {
+    text-align: center;
+  }
+}

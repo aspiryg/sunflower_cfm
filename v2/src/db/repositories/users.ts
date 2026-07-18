@@ -3,10 +3,10 @@
  * (password hash included) for the auth flow; everything user-facing should pass
  * results through `toSafeUser` to strip secrets.
  */
-import { and, count, eq } from "drizzle-orm";
+import { and, count, eq, ilike, or } from "drizzle-orm";
 import { db } from "../index";
 import { users, type User, type NewUser } from "../schema";
-import type { QueryScope } from "@/lib/rbac";
+import type { QueryScope, Role } from "@/lib/rbac";
 
 export type SafeUser = Omit<
   User,
@@ -69,18 +69,30 @@ export interface ListParams {
   scope: QueryScope;
   page?: number;
   limit?: number;
+  search?: string;
+  role?: Role;
 }
 
 export async function listUsers({
   scope,
   page = 1,
   limit = 20,
+  search,
+  role,
 }: ListParams): Promise<{ data: SafeUser[]; total: number }> {
   if (scope.kind === "none") return { data: [], total: 0 };
 
   const scopeCond =
     scope.kind === "field" ? eq(users.id, scope.value) : undefined;
-  const where = and(live(), scopeCond);
+  const searchCond = search
+    ? or(
+        ilike(users.firstName, `%${search}%`),
+        ilike(users.lastName, `%${search}%`),
+        ilike(users.email, `%${search}%`),
+      )
+    : undefined;
+  const roleCond = role ? eq(users.role, role) : undefined;
+  const where = and(live(), scopeCond, searchCond, roleCond);
   const offset = (Math.max(1, page) - 1) * limit;
 
   const [rows, [{ total }]] = await Promise.all([

@@ -10,6 +10,7 @@ import { Modal } from "@/ui/Modal";
 import { useToast } from "@/ui/Toast";
 import { useAuth } from "@/features/auth/AuthContext";
 import { assignableRoles } from "@/lib/rbac";
+import { TextField, SelectField } from "@/ui/form";
 
 export function CreateUserModal({
   open,
@@ -91,29 +92,18 @@ export function CreateUserModal({
           )}
           <form onSubmit={onSubmit}>
             <div className="field-row">
-              <div className="field">
-                <label htmlFor="nu-firstName">{t("firstName")}</label>
-                <input id="nu-firstName" name="firstName" required />
-              </div>
-              <div className="field">
-                <label htmlFor="nu-lastName">{t("lastName")}</label>
-                <input id="nu-lastName" name="lastName" required />
-              </div>
+              <TextField id="nu-firstName" name="firstName" label={t("firstName")} required />
+              <TextField id="nu-lastName" name="lastName" label={t("lastName")} required />
             </div>
-            <div className="field">
-              <label htmlFor="nu-email">{t("email")}</label>
-              <input id="nu-email" name="email" type="email" required dir="ltr" />
-            </div>
-            <div className="field">
-              <label htmlFor="nu-role">{t("role")}</label>
-              <select id="nu-role" name="role" defaultValue="user" required>
-                {roles.map((r) => (
-                  <option key={r} value={r}>
-                    {tMenu(`roles.${r}`)}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <TextField id="nu-email" name="email" type="email" label={t("email")} required dir="ltr" />
+            <SelectField
+              id="nu-role"
+              name="role"
+              label={t("role")}
+              defaultValue="user"
+              required
+              options={roles.map((r) => ({ value: r, label: tMenu(`roles.${r}`) }))}
+            />
             <div className="modal__actions">
               <button type="button" className="btn btn-outline" onClick={handleClose}>
                 {t("cancel")}

@@ -1,6 +1,6 @@
 import { authed } from "@/lib/http/guard";
 import { ok, fail } from "@/lib/http/respond";
-import { queryScope, assignableRoles, type Role } from "@/lib/rbac";
+import { queryScope, assignableRoles, ROLES, type Role } from "@/lib/rbac";
 import { parseBody, createUserSchema } from "@/lib/validation";
 import {
   listUsers,
@@ -23,8 +23,14 @@ export const GET = authed(
     const url = new URL(req.url);
     const page = intParam(url.searchParams.get("page")) ?? 1;
     const limit = Math.min(intParam(url.searchParams.get("limit")) ?? 20, 100);
+    const search = url.searchParams.get("search")?.trim() || undefined;
+    // Strict whitelist — unknown roles are ignored.
+    const roleRaw = url.searchParams.get("role");
+    const role = (ROLES as readonly string[]).includes(roleRaw ?? "")
+      ? (roleRaw as Role)
+      : undefined;
     const scope = queryScope(auth.user, "users", "read");
-    const { data, total } = await listUsers({ scope, page, limit });
+    const { data, total } = await listUsers({ scope, page, limit, search, role });
     return ok(data, undefined, {
       extra: {
         pagination: {

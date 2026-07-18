@@ -7,6 +7,7 @@ import { apiFetch, type ApiError } from "@/lib/api/client";
 import { Link, useRouter } from "@/i18n/navigation";
 import { CaseForm, type CaseFormValues } from "@/features/cases/CaseForm";
 import { useToast } from "@/ui/Toast";
+import { Breadcrumb } from "@/ui/Breadcrumb";
 
 export default function NewCasePage() {
   const t = useTranslations("cases");
@@ -30,24 +31,29 @@ export default function NewCasePage() {
 
   return (
     <>
+      <Breadcrumb
+        items={[
+          { label: t("title"), href: "/cases" },
+          { label: t("createTitle") },
+        ]}
+      />
       <div className="page-head">
         <h1>{t("createTitle")}</h1>
         <Link href="/cases" className="btn btn-outline">
           {t("backToList")}
         </Link>
       </div>
-      <div className="form-card">
-        <CaseForm
-          submitLabel={t("submit")}
-          busyLabel={t("creating")}
-          busy={create.isPending}
-          error={error}
-          onSubmit={(values) => {
-            setError(null);
-            create.mutate(values);
-          }}
-        />
-      </div>
+      <CaseForm
+        submitLabel={t("submit")}
+        busyLabel={t("creating")}
+        busy={create.isPending}
+        error={error}
+        onSubmit={(values) => {
+          setError(null);
+          create.mutate(values);
+        }}
+        onCancel={() => router.push("/cases")}
+      />
     </>
   );
 }

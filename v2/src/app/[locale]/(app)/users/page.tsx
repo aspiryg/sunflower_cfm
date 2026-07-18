@@ -1,12 +1,17 @@
 "use client";
 
-import { useState } from "react";
+/**
+ * User management: FilterBar (search + role filter with chips) and DataTable
+ * with server-side pagination, inline role change, and deactivation.
+ */
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api/client";
 import { ROLES, type Role } from "@/lib/rbac";
 import { useAuth } from "@/features/auth/AuthContext";
 import { DataTable, type Column } from "@/ui/DataTable";
+import { FilterBar, type FilterChipDef } from "@/ui/FilterBar";
 import { Avatar } from "@/ui/Avatar";
 import { ConfirmationModal } from "@/ui/Modal";
 import { CreateUserModal } from "@/features/users/CreateUserModal";
@@ -23,6 +28,7 @@ interface UserRow {
 
 export default function UsersPage() {
   const t = useTranslations("users");
+  const tt = useTranslations("table");
   const qc = useQueryClient();
   const { user: me } = useAuth();
   const [pendingDeactivate, setPendingDeactivate] = useState<UserRow | null>(null);
@@ -30,9 +36,30 @@ export default function UsersPage() {
   const toast = useToast();
   const tToast = useTranslations("toasts");
 
+  // Filters + pagination
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
+  const [role, setRole] = useState<"" | Role>("");
+
+  useEffect(() => {
+    const id = setTimeout(() => {
+      setSearch(searchInput.trim());
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(id);
+  }, [searchInput]);
+
+  const params = new URLSearchParams({ page: String(page), limit: String(pageSize) });
+  if (search) params.set("search", search);
+  if (role) params.set("role", role);
+  const qs = params.toString();
+
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["users", { page: 1, limit: 50 }],
-    queryFn: () => apiFetch<UserRow[]>(`/api/users?limit=50`),
+    queryKey: ["users", qs],
+    queryFn: () => apiFetch<UserRow[]>(`/api/users?${qs}`),
+    placeholderData: keepPreviousData,
   });
 
   const roleM = useMutation({
@@ -52,10 +79,34 @@ export default function UsersPage() {
     },
   });
 
+  const chips: FilterChipDef[] = [];
+  if (search) {
+    chips.push({
+      key: "search",
+      label: `"${search}"`,
+      onRemove: () => {
+        setSearchInput("");
+        setSearch("");
+        setPage(1);
+      },
+    });
+  }
+  if (role) {
+    chips.push({
+      key: "role",
+      label: `${t("role")}: ${role}`,
+      onRemove: () => {
+        setRole("");
+        setPage(1);
+      },
+    });
+  }
+
   const columns: Column<UserRow>[] = [
     {
       key: "name",
       header: t("name"),
+      label: t("name"),
       value: (u) => `${u.firstName} ${u.lastName}`,
       render: (u) => (
         <span style={{ display: "inline-flex", alignItems: "center", gap: "1rem" }}>
@@ -67,13 +118,16 @@ export default function UsersPage() {
     {
       key: "email",
       header: t("email"),
+      label: t("email"),
       dir: "ltr",
+      hideable: true,
       value: (u) => u.email,
       render: (u) => u.email,
     },
     {
       key: "role",
       header: t("role"),
+      label: t("role"),
       value: (u) => u.role,
       render: (u) => (
         <select
@@ -92,6 +146,8 @@ export default function UsersPage() {
     {
       key: "status",
       header: t("status"),
+      label: t("status"),
+      hideable: true,
       value: (u) => (u.isActive ? 1 : 0),
       render: (u) => (
         <span className={u.isActive ? "badge" : "muted"}>
@@ -112,15 +168,60 @@ export default function UsersPage() {
 
       <CreateUserModal open={createOpen} onClose={() => setCreateOpen(false)} />
 
+      <FilterBar
+        chips={chips}
+        onClearAll={() => {
+          setSearchInput("");
+          setSearch("");
+          setRole("");
+          setPage(1);
+        }}
+        total={data?.pagination?.total}
+      >
+        <input
+          id="user-search"
+          type="search"
+          placeholder={tt("search")}
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          dir="auto"
+        />
+        <select
+          id="filter-role"
+          value={role}
+          onChange={(e) => {
+            setRole(e.target.value as "" | Role);
+            setPage(1);
+          }}
+          style={{ minWidth: "14rem" }}
+        >
+          <option value="">{tt("all")}</option>
+          {ROLES.map((r) => (
+            <option key={r} value={r}>
+              {r}
+            </option>
+          ))}
+        </select>
+      </FilterBar>
+
       {isError ? (
         <p className="center-note">{t("loadError")}</p>
-      ) : isLoading ? (
-        <p className="muted">…</p>
       ) : (
         <DataTable<UserRow>
           empty={t("loadError")}
           rows={data?.data ?? []}
           columns={columns}
+          loading={isLoading}
+          pagination={{
+            page,
+            pageSize,
+            total: data?.pagination?.total ?? 0,
+            onPageChange: setPage,
+            onPageSizeChange: (s) => {
+              setPageSize(s);
+              setPage(1);
+            },
+          }}
           rowActions={(u) =>
             me?.id !== u.id && u.isActive ? (
               <button

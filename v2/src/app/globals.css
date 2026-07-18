@@ -1,4 +1,7 @@
 @import "../styles/tokens.css";
+@import "../styles/forms.css";
+@import "../styles/pickers.css";
+@import "../styles/table.css";
 
 * {
   box-sizing: border-box;

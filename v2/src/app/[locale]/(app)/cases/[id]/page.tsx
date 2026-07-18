@@ -12,6 +12,8 @@ import { AttachmentsCard } from "@/features/cases/AttachmentsCard";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/ui/Tabs";
 import { ConfirmationModal } from "@/ui/Modal";
 import { useToast } from "@/ui/Toast";
+import { Breadcrumb } from "@/ui/Breadcrumb";
+import { UserSelect } from "@/ui/UserSelect";
 
 interface Ref {
   id: number;
@@ -47,6 +49,8 @@ interface UserRow {
   id: number;
   firstName: string;
   lastName: string;
+  email: string;
+  role?: string;
 }
 
 function useRef(resource: string) {
@@ -61,6 +65,7 @@ export default function CaseDetailPage() {
   const params = useParams();
   const id = Number(params.id);
   const t = useTranslations("caseDetail");
+  const tCases = useTranslations("cases");
   const locale = useLocale();
   const qc = useQueryClient();
   const { user } = useAuth();
@@ -69,6 +74,7 @@ export default function CaseDetailPage() {
 
   const [actionError, setActionError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [assignee, setAssignee] = useState<number | null>(null);
   const [aiSummary, setAiSummary] = useState<string | null>(null);
   const toast = useToast();
   const tToast = useTranslations("toasts");
@@ -183,6 +189,12 @@ export default function CaseDetailPage() {
 
   return (
     <>
+      <Breadcrumb
+        items={[
+          { label: tCases("title"), href: "/cases" },
+          { label: <span dir="ltr">{c.caseNumber}</span> },
+        ]}
+      />
       <div className="page-head">
         <h1 dir="ltr">{c.caseNumber}</h1>
         <div style={{ display: "flex", gap: "1rem" }}>
@@ -343,21 +355,19 @@ export default function CaseDetailPage() {
           <div className="field">
             <label htmlFor="assignSel">{t("assign")}</label>
             <div style={{ display: "flex", gap: "1rem" }}>
-              <select id="assignSel" defaultValue={c.assignedTo ?? ""}>
-                <option value="">—</option>
-                {users.data.data.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.firstName} {u.lastName}
-                  </option>
-                ))}
-              </select>
+              <UserSelect
+                id="assignSel"
+                users={users.data.data}
+                value={assignee}
+                onChange={setAssignee}
+                placeholder={t("unassigned")}
+              />
               <button
                 type="button"
                 className="btn btn-primary"
-                disabled={assignM.isPending}
+                disabled={assignM.isPending || assignee == null}
                 onClick={() => {
-                  const sel = document.getElementById("assignSel") as HTMLSelectElement;
-                  if (sel.value) assignM.mutate(Number(sel.value));
+                  if (assignee != null) assignM.mutate(assignee);
                 }}
               >
                 {t("assign")}

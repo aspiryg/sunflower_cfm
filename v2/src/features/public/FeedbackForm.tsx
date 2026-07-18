@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
+import { TextField, TextAreaField, SelectField } from "@/ui/form";
 
 const CATEGORY_KEYS = [
   "general",
@@ -87,49 +88,49 @@ export function FeedbackForm() {
         </div>
       )}
       <form onSubmit={onSubmit} noValidate>
-        <div className="field">
-          <label htmlFor="name">
-            {t("name")} <span>({t("optional")})</span>
-          </label>
-          <input id="name" name="name" type="text" placeholder={t("namePlaceholder")} />
-        </div>
+        <TextField
+          id="name"
+          name="name"
+          type="text"
+          label={t("name")}
+          labelSuffix={` (${t("optional")})`}
+          placeholder={t("namePlaceholder")}
+        />
 
-        <div className="field">
-          <label htmlFor="contact">
-            {t("contact")} <span>({t("optional")})</span>
-          </label>
-          <input id="contact" name="contact" type="text" placeholder={t("contactPlaceholder")} />
-        </div>
+        <TextField
+          id="contact"
+          name="contact"
+          type="text"
+          label={t("contact")}
+          labelSuffix={` (${t("optional")})`}
+          placeholder={t("contactPlaceholder")}
+        />
 
-        <div className="field">
-          <label htmlFor="category">{t("category")}</label>
-          <select id="category" name="category" defaultValue="general">
-            {CATEGORY_KEYS.map((key) => (
-              <option key={key} value={key}>
-                {t(`categories.${key}`)}
-              </option>
-            ))}
-          </select>
-        </div>
+        <SelectField
+          id="category"
+          name="category"
+          label={t("category")}
+          defaultValue="general"
+          options={CATEGORY_KEYS.map((key) => ({ value: key, label: t(`categories.${key}`) }))}
+        />
 
-        <div className="field">
-          <label htmlFor="location">
-            {t("location")} <span>({t("optional")})</span>
-          </label>
-          <input id="location" name="location" type="text" placeholder={t("locationPlaceholder")} />
-        </div>
+        <TextField
+          id="location"
+          name="location"
+          type="text"
+          label={t("location")}
+          labelSuffix={` (${t("optional")})`}
+          placeholder={t("locationPlaceholder")}
+        />
 
-        <div className="field">
-          <label htmlFor="description">{t("description")}</label>
-          <textarea
-            id="description"
-            name="description"
-            dir="auto"
-            placeholder={t("descriptionPlaceholder")}
-            aria-invalid={!!fieldError}
-          />
-          {fieldError && <span className="field__error">{fieldError}</span>}
-        </div>
+        <TextAreaField
+          id="description"
+          name="description"
+          label={t("description")}
+          dir="auto"
+          placeholder={t("descriptionPlaceholder")}
+          error={fieldError}
+        />
 
         <button type="submit" className="btn btn-primary" disabled={submitting}>
           {submitting ? t("submitting") : t("submit")}

@@ -1,22 +1,24 @@
 /**
  * AI services (Phase 6): case auto-classification + case summarization via the
- * Claude API. Structured outputs guarantee the classifier's JSON shape.
- * Everything degrades gracefully — callers must handle isAiConfigured()=false
- * and thrown errors (an AI outage must never break intake).
+ * OpenAI API (owner decision 2026-07-17 — switched from the original Claude
+ * implementation because the owner uses an OpenAI key). Structured outputs
+ * guarantee the classifier's JSON shape. Everything degrades gracefully —
+ * callers must handle isAiConfigured()=false and thrown errors (an AI outage
+ * must never break intake).
  */
-import Anthropic from "@anthropic-ai/sdk";
-import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
-import { z } from "zod/v4";
+import OpenAI from "openai";
+import { zodResponseFormat } from "openai/helpers/zod";
+import { z } from "zod";
 
-const MODEL = "claude-opus-4-8";
+const MODEL = process.env.OPENAI_MODEL ?? "gpt-4o";
 
 export function isAiConfigured(): boolean {
-  return !!process.env.ANTHROPIC_API_KEY;
+  return !!process.env.OPENAI_API_KEY;
 }
 
-let cached: Anthropic | null = null;
-function client(): Anthropic {
-  if (!cached) cached = new Anthropic(); // reads ANTHROPIC_API_KEY
+let cached: OpenAI | null = null;
+function client(): OpenAI {
+  if (!cached) cached = new OpenAI(); // reads OPENAI_API_KEY
   return cached;
 }
 
@@ -37,11 +39,15 @@ const classificationSchema = z.object({
   urgencyLevel: z.enum(["low", "medium", "high", "critical"]),
   isSensitive: z
     .boolean()
-    .describe("True for protection-sensitive content: abuse, exploitation, safety threats, discrimination against the reporter"),
+    .describe(
+      "True for protection-sensitive content: abuse, exploitation, safety threats, discrimination against the reporter",
+    ),
   confidence: z.enum(["low", "medium", "high"]),
   rationale: z
     .string()
-    .describe("One short sentence explaining the classification, understandable by case staff"),
+    .describe(
+      "One short sentence explaining the classification, understandable by case staff",
+    ),
 });
 
 export type CaseClassification = z.infer<typeof classificationSchema>;
@@ -63,18 +69,23 @@ export async function classifyCase(input: {
   categories: RefOption[];
   priorities: RefOption[];
 }): Promise<CaseClassification> {
-  const response = await client().messages.parse({
+  const completion = await client().chat.completions.parse({
     model: MODEL,
-    max_tokens: 2048,
-    system: CLASSIFIER_SYSTEM,
-    output_config: { format: zodOutputFormat(classificationSchema) },
+    max_completion_tokens: 2048,
+    response_format: zodResponseFormat(classificationSchema, "classification"),
     messages: [
+      { role: "system", content: CLASSIFIER_SYSTEM },
       {
         role: "user",
         content: [
           "## Categories",
           JSON.stringify(
-            input.categories.map(({ id, name, arabicName, description }) => ({ id, name, arabicName, description })),
+            input.categories.map(({ id, name, arabicName, description }) => ({
+              id,
+              name,
+              arabicName,
+              description,
+            })),
           ),
           "## Priorities (level 1 = most urgent)",
           JSON.stringify(
@@ -88,7 +99,7 @@ export async function classifyCase(input: {
     ],
   });
 
-  const parsed = response.parsed_output;
+  const parsed = completion.choices[0]?.message?.parsed;
   if (!parsed) throw new Error("Classifier returned no parseable output");
 
   // Guard against hallucinated ids even though the prompt pins the lists.
@@ -113,15 +124,17 @@ export async function summarizeCase(input: {
   /** Respond in this language ("en" | "ar"). */
   locale: string;
 }): Promise<string> {
-  const response = await client().messages.create({
+  const completion = await client().chat.completions.create({
     model: MODEL,
-    max_tokens: 2048,
-    thinking: { type: "adaptive" },
-    system: `You summarize community-feedback cases for staff. Write a tight
+    max_completion_tokens: 1024,
+    messages: [
+      {
+        role: "system",
+        content: `You summarize community-feedback cases for staff. Write a tight
 summary: what was reported, what has happened since (comments/history), current
 state, and any open action. Max ~120 words, plain prose, no headings.
 Respond in ${input.locale === "ar" ? "Arabic" : "English"}.`,
-    messages: [
+      },
       {
         role: "user",
         content: [
@@ -132,7 +145,8 @@ Respond in ${input.locale === "ar" ? "Arabic" : "English"}.`,
           ...input.comments.map((c) => `- [${c.createdAt}] ${c.comment}`),
           "## History",
           ...input.history.map(
-            (h) => `- [${h.createdAt}] ${h.actionType}${h.changeDescription ? `: ${h.changeDescription}` : ""}`,
+            (h) =>
+              `- [${h.createdAt}] ${h.actionType}${h.changeDescription ? `: ${h.changeDescription}` : ""}`,
           ),
         ]
           .filter(Boolean)
@@ -141,11 +155,7 @@ Respond in ${input.locale === "ar" ? "Arabic" : "English"}.`,
     ],
   });
 
-  const text = response.content
-    .filter((b): b is Anthropic.TextBlock => b.type === "text")
-    .map((b) => b.text)
-    .join("\n")
-    .trim();
+  const text = completion.choices[0]?.message?.content?.trim();
   if (!text) throw new Error("Summarizer returned no text");
   return text;
 }

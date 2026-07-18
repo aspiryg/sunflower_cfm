@@ -241,9 +241,11 @@ test("settings manages the geographic hierarchy (governorate under region)", asy
   await page.locator("#resource-type").selectOption("governorates");
   await expect(page.getByText(/Choose the parent above/i)).toBeVisible();
   await page.locator("#parent-0").selectOption({ label: "West Bank" });
-  const name = `Gov ${Date.now()}`;
+  const stamp = Date.now();
+  const name = `Gov ${stamp}`;
   await page.locator("#name").fill(name);
-  await page.locator("#code").fill("GV9");
+  // Governorate codes are unique — derive one per run to keep the test isolated.
+  await page.locator("#code").fill(`G${String(stamp).slice(-6)}`);
   await page.getByRole("button", { name: /^Add$/i }).click();
   await expect(page.getByText(name)).toBeVisible();
 });
@@ -271,7 +273,8 @@ test("account menu shows identity and signs out", async ({ page }) => {
 test("cases table sorts by title", async ({ page }) => {
   await login(page);
   await page.goto("/en/cases");
-  await page.getByRole("button", { name: /Sort by title/i }).click();
+  // The Title column header is the sort control (accessible name "Sort by: Title").
+  await page.getByRole("button", { name: /Sort by.*title/i }).click();
   await expect(page.locator("tbody tr").first()).toBeVisible();
   // Status badges render colored reference values.
   await expect(page.locator("tbody .badge").first()).toBeVisible();

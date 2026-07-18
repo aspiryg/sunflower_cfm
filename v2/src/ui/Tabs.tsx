@@ -18,14 +18,24 @@ const TabsCtx = createContext<{
 
 export function Tabs({
   defaultValue,
+  value,
+  onValueChange,
   children,
   className = "",
 }: {
   defaultValue: string;
+  /** Controlled mode: pass value + onValueChange to own the active tab. */
+  value?: string;
+  onValueChange?: (v: string) => void;
   children: ReactNode;
   className?: string;
 }) {
-  const [active, setActive] = useState(defaultValue);
+  const [internal, setInternal] = useState(defaultValue);
+  const active = value ?? internal;
+  const setActive = (v: string) => {
+    setInternal(v);
+    onValueChange?.(v);
+  };
   return (
     <TabsCtx.Provider value={{ active, setActive }}>
       <div className={`tabs ${className}`}>{children}</div>

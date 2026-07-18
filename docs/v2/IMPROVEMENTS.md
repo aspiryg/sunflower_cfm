@@ -149,3 +149,22 @@ continuously as each phase uncovers more. Grouped by area; each item tagged
   301 redirects in v1). _Phase 2: not carried into the v2 Drizzle schema._
 - ☐ Unmounted/unused: `documentUpload` (until re-wired), `requireRole`,
   `applyResourceFilter`, orphan pages (`Feedback*`, `FeaturesPage`).
+
+## UI depth pass (owner directive 2026-07-17: "at least better than v1")
+- ☑ `[fix]` In-app forms rendered unstyled native inputs: `.field` styles lived
+  only in `public.css` (public layout) so the authed layout never loaded them.
+  Moved the whole field system to `styles/forms.css`, imported globally, with
+  disabled/invalid states added.
+- ☑ `[fix]` Case create silently blocked: required category/priority/channel
+  selects started empty on a hidden tab — browser can't focus a hidden invalid
+  control, so submit did nothing. Now they default to the first reference
+  option (v1 behavior) and the form validates manually (`noValidate`), jumping
+  to the tab that holds the first invalid field.
+- ☑ `[update]` CaseForm rebuilt at v1 depth: section cards with icon headers,
+  2fr/1fr guidelines sidebar with smart suggestions, character counters,
+  prev/next tab navigation, footer action bar with Cancel.
+- ◐ `[add]` Port v1 advanced components: DatePicker, EnhancedSelect, UserSelect,
+  ContextMenu, TagInput (in progress — background agent).
+- ◐ `[add]` Advanced table system: DataTable pagination + column visibility +
+  skeletons, FilterBar with chips, server-side sort/limit params, cases/users
+  list rebuild (in progress — background agent).
