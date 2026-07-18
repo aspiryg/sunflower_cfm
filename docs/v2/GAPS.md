@@ -10,24 +10,23 @@ Legend: ☐ open · ◐ partial/in-progress · ☑ done. Priority: [C]ritical [H
 Recurring pattern: **v2's repo/backend often supports a feature that no route or
 UI wires up** — many gaps are "unwire → wire", not new design.
 
-## Tier 1 — Functional gaps / near-bugs
-- ☑ [C] Escalation notified nobody (no in-app, no email). Fixed: escalate route
-  now calls `notifyCaseStakeholders` (in-app). Email still pending (see below).
-- ☐ [C] No transactional emails on case events (assignment / status / comment /
-  escalation / resolution). v1 sent branded emails; v2 does in-app only.
-  Templates to add: caseAssigned, caseStatusChanged, caseEscalated,
-  caseCommentAdded, caseResolved. Extend `notify.ts` to also email recipients.
-- ☐ [H] Welcome/invite email on admin user-create + verification email to
-  admin-created users (v2 only returns temp password in JSON).
-- ☐ [H] Comments: edit + delete (repo methods exist, no `[commentId]` route/UI);
-  internal-vs-public toggle (schema supports, UI posts only `{comment}`);
-  follow-up (requiresFollowUp/date + mark-complete + cross-case queue).
-- ☐ [H] Reference data: no DELETE route/UI; statuses & priorities not manageable
-  at all; only name/arabicName/code editable (no color/description/sortOrder/SLA
-  fields/program dates).
-- ☐ [H] Users: reactivate (deactivate is one-way), edit-user modal (email/username/
-  status), resend-verification UI, post-login email-verification-required flow,
-  account-lockout UX (423 countdown), remember-me checkbox (backend supports).
+## Tier 1 — Functional gaps / near-bugs — ✅ DONE (2026-07-18)
+- ☑ [C] Escalation notified nobody → escalate route now calls
+  `notifyCaseStakeholders`.
+- ☑ [C] Transactional emails on case events → `notify.ts` now emails
+  creator+assignee (+extras) on assign/status/comment/escalation via
+  `caseNotificationEmail`; verified live.
+- ☑ [H] Welcome email (temp password + verification link) on admin user-create.
+- ☑ [H] Comments: edit + delete + internal toggle + follow-up (mark-complete +
+  cross-case `/api/comments/follow-up` queue) — routes + UI.
+- ☑ [H] Reference data: DELETE (guarded), statuses/priorities management
+  (admin), rich fields (color/description/arabicDescription/sortOrder/SLA/flags).
+- ☑ [H] Users: reactivate, EditUserModal (email/username/org/role/status),
+  role-change audit reason, remember-me, account-locked (423) message,
+  email-not-verified state + resend-verification button.
+- _Deferred within Tier 1_: distinct `case_resolved` email content (currently
+  folded into status-changed); comment threading/reply rendering (parentCommentId
+  is persisted but not visualized).
 
 ## Tier 2 — Dashboard & lists
 - ☐ [C] Dashboard has no filters (v1: date-range/status/priority/category);
