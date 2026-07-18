@@ -130,7 +130,10 @@
     "allCategories": "كل الفئات",
     "scopeAll": "كل الحالات",
     "scopeAssigned": "المعيّنة إليّ",
-    "scopeCreated": "التي أنشأتها"
+    "scopeCreated": "التي أنشأتها",
+    "open": "فتح",
+    "deleted": "تم حذف الحالة.",
+    "rowActions": "إجراءات {number}"
   },
   "caseDetail": {
     "back": "العودة إلى الحالات",
@@ -213,7 +216,9 @@
     "clear": "مسح",
     "noResults": "لا توجد نتائج",
     "breadcrumb": "مسار التنقل",
-    "cancel": "إلغاء"
+    "cancel": "إلغاء",
+    "edit": "تعديل",
+    "delete": "حذف"
   },
   "notifs": {
     "label": "الإشعارات",

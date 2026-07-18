@@ -8,13 +8,16 @@
  */
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { apiFetch } from "@/lib/api/client";
 import { Link, useRouter, usePathname } from "@/i18n/navigation";
 import { DataTable, type Column } from "@/ui/DataTable";
 import { FilterBar, type FilterChipDef } from "@/ui/FilterBar";
 import { StatusBadge } from "@/ui/StatusBadge";
+import { ContextMenu } from "@/ui/ContextMenu";
+import { ConfirmationModal } from "@/ui/Modal";
+import { useToast } from "@/ui/Toast";
 
 interface CaseRow {
   id: number;
@@ -65,9 +68,25 @@ function CasesPageInner() {
   const t = useTranslations("cases");
   const tt = useTranslations("table");
   const locale = useLocale();
+  const tc = useTranslations("common");
+  const tDetail = useTranslations("caseDetail");
   const router = useRouter();
   const pathname = usePathname();
   const sp = useSearchParams();
+  const qc = useQueryClient();
+  const toast = useToast();
+  const [deleteTarget, setDeleteTarget] = useState<CaseRow | null>(null);
+
+  const deleteM = useMutation({
+    mutationFn: (caseId: number) =>
+      apiFetch(`/api/cases/${caseId}`, { method: "DELETE" }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cases"] });
+      toast.success(t("deleted"));
+      setDeleteTarget(null);
+    },
+    onError: () => toast.error(t("loadError")),
+  });
 
   // --- URL-backed filter state ---
   const page = Math.max(1, Number(sp.get("page")) || 1);
@@ -361,6 +380,16 @@ function CasesPageInner() {
           columns={columns}
           loading={isLoading}
           onRowClick={(c) => router.push(`/cases/${c.id}`)}
+          rowActions={(c) => (
+            <ContextMenu
+              ariaLabel={t("rowActions", { number: c.caseNumber })}
+              items={[
+                { key: "open", label: t("open"), onClick: () => router.push(`/cases/${c.id}`) },
+                { key: "edit", label: tc("edit"), onClick: () => router.push(`/cases/${c.id}/edit`) },
+                { key: "delete", label: tc("delete"), danger: true, onClick: () => setDeleteTarget(c) },
+              ]}
+            />
+          )}
           sort={{
             sortBy,
             sortDir,
@@ -378,6 +407,18 @@ function CasesPageInner() {
           }}
         />
       )}
+
+      <ConfirmationModal
+        open={deleteTarget != null}
+        title={tDetail("confirmDeleteTitle")}
+        body={tDetail("confirmDeleteBody", { number: deleteTarget?.caseNumber ?? "" })}
+        confirmLabel={tDetail("confirmDelete")}
+        cancelLabel={tc("cancel")}
+        danger
+        busy={deleteM.isPending}
+        onConfirm={() => deleteTarget && deleteM.mutate(deleteTarget.id)}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </>
   );
 }

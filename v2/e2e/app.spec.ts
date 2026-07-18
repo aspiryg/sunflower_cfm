@@ -176,6 +176,27 @@ test("delete a case via the confirmation modal (with toast)", async ({ page }) =
   await expect(page.getByRole("link", { name: title })).toHaveCount(0);
 });
 
+test("delete a case from the list row action menu", async ({ page }) => {
+  await login(page);
+  await page.goto("/en/cases/new");
+  const title = `Row-menu case ${Date.now()}`;
+  await page.locator("#title").fill(title);
+  await page.locator("#description").fill("Case for the list row-action e2e.");
+  await page.locator('button[type="submit"]').click();
+  await expect(page).toHaveURL(/\/en\/cases$/);
+
+  // Search to isolate the row, then open its actions menu and delete.
+  await page.locator("#case-search").fill(title);
+  const row = page.getByRole("row").filter({ hasText: title });
+  await row.getByRole("button", { name: /Actions for/i }).click();
+  await page.getByRole("menuitem", { name: /^Delete$/i }).click();
+  await expect(page.getByText(/Delete this case\?/i)).toBeVisible();
+  await page.getByRole("button", { name: /Delete case/i }).click();
+
+  await expect(page.getByText(/Case deleted/i)).toBeVisible();
+  await expect(page.getByRole("link", { name: title })).toHaveCount(0);
+});
+
 test("multi-tab case form captures provider details and location", async ({ page }) => {
   await login(page);
   await page.goto("/en/cases/new");

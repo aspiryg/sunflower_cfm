@@ -130,7 +130,10 @@
     "allCategories": "All categories",
     "scopeAll": "All cases",
     "scopeAssigned": "Assigned to me",
-    "scopeCreated": "Created by me"
+    "scopeCreated": "Created by me",
+    "open": "Open",
+    "deleted": "Case deleted.",
+    "rowActions": "Actions for {number}"
   },
   "caseDetail": {
     "back": "Back to cases",
@@ -213,7 +216,9 @@
     "clear": "Clear",
     "noResults": "No results",
     "breadcrumb": "Breadcrumb",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete"
   },
   "notifs": {
     "label": "Notifications",
