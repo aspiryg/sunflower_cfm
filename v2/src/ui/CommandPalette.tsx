@@ -108,6 +108,7 @@ export function CommandPalette({
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
   const [hits, setHits] = useState<CaseHit[]>([]);
+  const [semanticHits, setSemanticHits] = useState<CaseHit[]>([]);
   const [recent, setRecent] = useState<CaseHit[]>([]);
   const [searching, setSearching] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -148,28 +149,49 @@ export function CommandPalette({
     }
   }, [open]);
 
-  // Debounced case search.
+  // Debounced case search: fast text match first, then a semantic fallback
+  // (embeds the query) only when the text search finds nothing — so different
+  // wording still surfaces the right case without an embedding call per keystroke.
   useEffect(() => {
     const q = query.trim();
     if (q.length < 2) {
       setHits([]);
+      setSemanticHits([]);
       setSearching(false);
       return;
     }
     setSearching(true);
+    let cancelled = false;
     const handle = setTimeout(async () => {
       try {
         const res = await apiFetch<CaseHit[]>(
           `/api/cases?search=${encodeURIComponent(q)}&limit=8`,
         );
-        setHits(res.data ?? []);
+        if (cancelled) return;
+        const textHits = res.data ?? [];
+        setHits(textHits);
+        setSemanticHits([]);
+        // Semantic fallback only when text found nothing.
+        if (textHits.length === 0 && q.length >= 3) {
+          try {
+            const sem = await apiFetch<CaseHit[]>(
+              `/api/cases/search/semantic?q=${encodeURIComponent(q)}&limit=6`,
+            );
+            if (!cancelled) setSemanticHits(sem.data ?? []);
+          } catch {
+            /* AI unavailable → text-only, no error surfaced */
+          }
+        }
       } catch {
-        setHits([]);
+        if (!cancelled) setHits([]);
       } finally {
-        setSearching(false);
+        if (!cancelled) setSearching(false);
       }
     }, 250);
-    return () => clearTimeout(handle);
+    return () => {
+      cancelled = true;
+      clearTimeout(handle);
+    };
   }, [query]);
 
   const chooseCase = useCallback(
@@ -241,6 +263,15 @@ export function CommandPalette({
         onChoose: () => chooseCase(c),
       }));
       if (caseRows.length) out.push({ heading: t("groupCases"), rows: caseRows });
+      // Semantic fallback group (only populated when text search found nothing).
+      const semRows: Row[] = semanticHits.map((c) => ({
+        id: `sem:${c.id}`,
+        label: c.title,
+        hint: c.caseNumber,
+        icon: "✨",
+        onChoose: () => chooseCase(c),
+      }));
+      if (semRows.length) out.push({ heading: t("groupSimilar"), rows: semRows });
     } else if (recent.length) {
       const recentRows: Row[] = recent.map((c) => ({
         id: `recent:${c.id}`,
@@ -253,7 +284,7 @@ export function CommandPalette({
     }
 
     return out;
-  }, [query, actions, navItems, newCaseHref, hits, recent, t, close, onNavigate, chooseCase]);
+  }, [query, actions, navItems, newCaseHref, hits, semanticHits, recent, t, close, onNavigate, chooseCase]);
 
   // Flatten for keyboard navigation.
   const flat = useMemo(() => groups.flatMap((g) => g.rows), [groups]);
