@@ -15,6 +15,7 @@ import { apiFetch, type ApiError } from "@/lib/api/client";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/ui/Tabs";
 import { TextField, TextAreaField, SelectField, CheckboxField, type SelectOption } from "@/ui/form";
 import { TagInput } from "@/ui/TagInput";
+import { DatePicker } from "@/ui/DatePicker";
 
 interface Ref {
   id: number;
@@ -28,6 +29,8 @@ export interface CaseFormValues {
   categoryId: number;
   priorityId: number;
   channelId: number;
+  caseDate?: string;
+  dueDate?: string;
   impactDescription?: string;
   urgencyLevel?: string;
   affectedBeneficiaries?: number;
@@ -84,6 +87,23 @@ const DISABILITIES = ["none", "physical", "visual", "hearing", "cognitive", "mul
 const FOLLOW_UP = ["email", "phone", "in_person", "sms", "none"] as const;
 
 const TAB_ORDER = ["basic", "classification", "provider", "location"] as const;
+
+/** Narrow an incoming value (ISO date or datetime) to a yyyy-mm-dd input value. */
+function toDateInput(v?: string): string | null {
+  if (!v) return null;
+  return v.slice(0, 10);
+}
+/** Today as yyyy-mm-dd (local), for bounding the case date. */
+function todayISO(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+/** date + n days as yyyy-mm-dd. */
+function addDays(iso: string, n: number): string {
+  const d = new Date(`${iso}T00:00:00`);
+  d.setDate(d.getDate() + n);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
 const TITLE_MAX = 255;
 const DESC_MAX = 2000;
 const IMPACT_MAX = 1000;
@@ -230,6 +250,8 @@ export function CaseForm({
   const [tags, setTags] = useState<string[]>(
     (initial?.tags ?? "").split(",").map((s) => s.trim()).filter(Boolean),
   );
+  const [caseDate, setCaseDate] = useState<string | null>(toDateInput(initial?.caseDate));
+  const [dueDate, setDueDate] = useState<string | null>(toDateInput(initial?.dueDate));
 
   // AI suggestion state.
   const [suggesting, setSuggesting] = useState(false);
@@ -327,6 +349,8 @@ export function CaseForm({
       categoryId: Number(categoryId),
       priorityId: Number(priorityId),
       channelId: Number(f.get("channelId")),
+      caseDate: caseDate ?? undefined,
+      dueDate: dueDate ?? undefined,
       impactDescription: impact.trim() || undefined,
       urgencyLevel: urgencyLevel || undefined,
       affectedBeneficiaries: beneficiaries ? Number(beneficiaries) : undefined,
@@ -416,6 +440,31 @@ export function CaseForm({
                     style={{ minHeight: "14rem" }}
                   />
                   <CharCounter len={description.length} max={DESC_MAX} hint={tf("descriptionHint")} />
+                </Section>
+
+                <Section icon="info" title={tf("sections.timeline")} sub={tf("sections.timelineSub")}>
+                  <div className="field-row">
+                    <DatePicker
+                      id="caseDate"
+                      label={tf("caseDate")}
+                      hint={tf("caseDateHint")}
+                      value={caseDate}
+                      max={todayISO()}
+                      onChange={(v) => {
+                        setCaseDate(v);
+                        // Suggest a due date 7 days out if none set yet (v1 behavior).
+                        if (v && !dueDate) setDueDate(addDays(v, 7));
+                      }}
+                    />
+                    <DatePicker
+                      id="dueDate"
+                      label={tf("dueDate")}
+                      hint={tf("dueDateHint")}
+                      value={dueDate}
+                      min={caseDate ? addDays(caseDate, 1) : undefined}
+                      onChange={setDueDate}
+                    />
+                  </div>
                 </Section>
 
                 <Section icon="users" title={tf("sections.impact")} sub={tf("sections.impactSub")}>

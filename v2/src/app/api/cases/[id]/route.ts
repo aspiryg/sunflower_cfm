@@ -42,7 +42,15 @@ export const PUT = authed(
     const parsed = await parseBody(req, updateCaseSchema);
     if (!parsed.ok) return parsed.response;
 
-    const updated = await updateCase(id, parsed.data, auth.user.id);
+    // Timeline fields validate as yyyy-mm-dd strings; the timestamp columns
+    // need Date objects.
+    const { caseDate, dueDate, ...rest } = parsed.data;
+    const patch = {
+      ...rest,
+      ...(caseDate ? { caseDate: new Date(caseDate) } : {}),
+      ...(dueDate ? { dueDate: new Date(dueDate) } : {}),
+    };
+    const updated = await updateCase(id, patch, auth.user.id);
     await writeAudit({
       userId: auth.user.id,
       action: "UPDATE",

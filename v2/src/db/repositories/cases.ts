@@ -30,6 +30,7 @@ export type CaseCreateInput = Omit<
   | "id"
   | "caseNumber"
   | "statusId"
+  | "caseDate"
   | "dueDate"
   | "createdAt"
   | "updatedAt"
@@ -47,6 +48,9 @@ export type CaseCreateInput = Omit<
   channelId: number;
   /** Defaults to the seeded initial status when omitted. */
   statusId?: number;
+  /** yyyy-mm-dd; caseDate defaults to now, dueDate to the SLA-computed target. */
+  caseDate?: string;
+  dueDate?: string;
 };
 
 async function initialStatusId(): Promise<number> {
@@ -123,6 +127,9 @@ export async function createCase(
   actorId: number | null,
 ): Promise<Case> {
   const now = new Date();
+  // Timeline fields arrive as yyyy-mm-dd strings; strip them from the spread so
+  // Drizzle receives Date objects for the timestamp columns.
+  const { caseDate: caseDateStr, dueDate: dueDateStr, ...values } = input;
   const statusId = input.statusId ?? (await initialStatusId());
   const prefix = await getCasePrefix();
 
@@ -131,7 +138,9 @@ export async function createCase(
     .from(casePriorities)
     .where(eq(casePriorities.id, input.priorityId))
     .limit(1);
-  const dueDate = computeDueDate(now, priority?.hours ?? null);
+  const caseDate = caseDateStr ? new Date(caseDateStr) : now;
+  // A user-provided due date overrides the SLA-computed target.
+  const dueDate = dueDateStr ? new Date(dueDateStr) : computeDueDate(now, priority?.hours ?? null);
 
   // Allocate the daily sequence and insert atomically. The transaction-scoped
   // advisory lock serializes concurrent creations; the next number derives
@@ -150,11 +159,11 @@ export async function createCase(
     const [inserted] = await tx
       .insert(cases)
       .values({
-        ...input,
+        ...values,
         statusId,
         caseNumber,
         dueDate,
-        caseDate: now,
+        caseDate,
         submittedAt: now,
         submittedBy: actorId, // nullable — null for anonymous public intake
         createdBy: actorId,

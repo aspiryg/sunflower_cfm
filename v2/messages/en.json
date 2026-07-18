@@ -415,7 +415,9 @@
       "consent": "Consent & follow-up",
       "consentSub": "Data-sharing consent and preferred follow-up",
       "location": "Location",
-      "locationSub": "Where the case occurred"
+      "locationSub": "Where the case occurred",
+      "timeline": "Case timeline",
+      "timelineSub": "Key dates for tracking and resolution"
     },
     "guide": {
       "title": "Case information guidelines",
@@ -440,6 +442,14 @@
       "titleMin": "Title must be at least 3 characters.",
       "descriptionMin": "Description must be at least 10 characters.",
       "tooLong": "This text is too long."
+    },
+    "caseDate": "Case date",
+    "caseDateHint": "When the incident occurred",
+    "dueDate": "Due date",
+    "dueDateHint": "Target resolution date (auto-suggested)",
+    "_sections": {
+      "timeline": "Case timeline",
+      "timelineSub": "Key dates for tracking and resolution"
     }
   },
   "charts": {

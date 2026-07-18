@@ -68,6 +68,10 @@ export const createCaseSchema = z.object({
   priorityId: z.number().int().positive(),
   channelId: z.number().int().positive(),
   statusId: z.number().int().positive().optional(),
+  // Timeline (yyyy-mm-dd). caseDate = when the incident occurred (defaults to
+  // now); dueDate overrides the SLA-computed target when provided.
+  caseDate: z.string().date().optional(),
+  dueDate: z.string().date().optional(),
   // Impact
   impactDescription: z.string().max(10000).optional(),
   urgencyLevel: z.enum(["low", "medium", "high", "critical"]).optional(),
