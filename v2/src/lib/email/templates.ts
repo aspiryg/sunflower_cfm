@@ -51,3 +51,70 @@ export function passwordResetEmail(to: string, token: string): OutgoingEmail {
     text: `Reset your password / إعادة تعيين كلمة المرور: ${url}`,
   };
 }
+
+/** Confirmation that the account password changed (security notice). */
+export function passwordChangedEmail(to: string): OutgoingEmail {
+  const url = `${baseUrl()}/en/login`;
+  return {
+    to,
+    subject: `Your password was changed — ${BRAND}`,
+    html: shell(
+      "Your password was just changed. If this was you, no action is needed. If you did not make this change, reset your password immediately and contact an administrator.",
+      "تم تغيير كلمة المرور الخاصة بك للتو. إذا كنت أنت من قام بذلك، فلا حاجة لأي إجراء. وإذا لم تقم بهذا التغيير، فأعد تعيين كلمة المرور فوراً وتواصل مع المسؤول.",
+      { url, labelEn: "Go to sign in", labelAr: "الذهاب لتسجيل الدخول" },
+    ),
+    text: `Your password was changed / تم تغيير كلمة المرور: ${url}`,
+  };
+}
+
+/**
+ * Welcome email for a newly-created account. When an admin creates the user we
+ * include the one-time temporary password and the verification link.
+ */
+export function welcomeEmail(
+  to: string,
+  opts: { firstName?: string | null; temporaryPassword?: string; verificationToken?: string } = {},
+): OutgoingEmail {
+  const url = opts.verificationToken
+    ? `${baseUrl()}/en/verify-email/${opts.verificationToken}`
+    : `${baseUrl()}/en/login`;
+  const hi = opts.firstName ? ` ${opts.firstName}` : "";
+  const tempEn = opts.temporaryPassword
+    ? ` An administrator created your account. Your temporary password is <b>${opts.temporaryPassword}</b> — please sign in and change it right away.`
+    : "";
+  const tempAr = opts.temporaryPassword
+    ? ` أنشأ أحد المسؤولين حسابك. كلمة المرور المؤقتة الخاصة بك هي <b>${opts.temporaryPassword}</b> — يرجى تسجيل الدخول وتغييرها فوراً.`
+    : "";
+  return {
+    to,
+    subject: `Welcome to ${BRAND}`,
+    html: shell(
+      `Welcome${hi}! Your account is ready.${tempEn}${opts.verificationToken ? " Confirm your email to activate it." : ""}`,
+      `مرحباً${hi}! حسابك جاهز.${tempAr}${opts.verificationToken ? " أكّد بريدك الإلكتروني لتفعيله." : ""}`,
+      {
+        url,
+        labelEn: opts.verificationToken ? "Verify email" : "Go to sign in",
+        labelAr: opts.verificationToken ? "تأكيد البريد الإلكتروني" : "الذهاب لتسجيل الدخول",
+      },
+    ),
+    text: `Welcome to ${BRAND}${opts.temporaryPassword ? ` — temporary password: ${opts.temporaryPassword}` : ""}: ${url}`,
+  };
+}
+
+/** Generic case-activity email; body text is supplied by the notifier per event. */
+export function caseNotificationEmail(
+  to: string,
+  opts: { caseId: number; caseNumber: string; subject: string; bodyEn: string; bodyAr: string },
+): OutgoingEmail {
+  const url = `${baseUrl()}/en/cases/${opts.caseId}`;
+  return {
+    to,
+    subject: `${opts.subject} — ${opts.caseNumber}`,
+    html: shell(opts.bodyEn, opts.bodyAr, {
+      url,
+      labelEn: "View case",
+      labelAr: "عرض الحالة",
+    }),
+    text: `${opts.subject} (${opts.caseNumber}): ${url}`,
+  };
+}

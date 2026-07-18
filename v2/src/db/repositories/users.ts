@@ -3,7 +3,7 @@
  * (password hash included) for the auth flow; everything user-facing should pass
  * results through `toSafeUser` to strip secrets.
  */
-import { and, count, eq, ilike, or } from "drizzle-orm";
+import { and, count, eq, ilike, inArray, or } from "drizzle-orm";
 import { db } from "../index";
 import { users, type User, type NewUser } from "../schema";
 import type { QueryScope, Role } from "@/lib/rbac";
@@ -41,6 +41,17 @@ export async function findUserById(id: number): Promise<User | undefined> {
     .where(and(eq(users.id, id), live()))
     .limit(1);
   return row;
+}
+
+/** Minimal contact rows for a set of user ids (for notification emails). */
+export async function getUserContacts(
+  ids: number[],
+): Promise<{ id: number; email: string; firstName: string }[]> {
+  if (ids.length === 0) return [];
+  return db
+    .select({ id: users.id, email: users.email, firstName: users.firstName })
+    .from(users)
+    .where(and(inArray(users.id, ids), live()));
 }
 
 export async function findUserByEmail(
