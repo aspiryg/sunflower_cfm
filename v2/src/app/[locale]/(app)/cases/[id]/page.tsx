@@ -9,6 +9,7 @@ import { Link } from "@/i18n/navigation";
 import { useAuth } from "@/features/auth/AuthContext";
 import { hasRole, can } from "@/lib/rbac";
 import { AttachmentsCard } from "@/features/cases/AttachmentsCard";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/ui/Tabs";
 
 interface Ref {
   id: number;
@@ -154,6 +155,17 @@ export default function CaseDetailPage() {
         </div>
       </div>
 
+      <Tabs defaultValue="overview">
+        <TabsList>
+          <TabsTrigger value="overview">{t("tabOverview")}</TabsTrigger>
+          <TabsTrigger value="comments" badge={comments.data?.data.length ?? 0}>
+            {t("comments")}
+          </TabsTrigger>
+          <TabsTrigger value="attachments">{t("tabAttachments")}</TabsTrigger>
+          <TabsTrigger value="history">{t("history")}</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview">
       <div className="form-card" style={{ maxWidth: "72rem", marginBottom: "2.4rem" }}>
         <h2 style={{ marginBottom: "1.2rem" }}>{c.title}</h2>
         <p style={{ marginBottom: "1.6rem" }} dir="auto">
@@ -275,9 +287,13 @@ export default function CaseDetailPage() {
         )}
       </div>
 
-      <AttachmentsCard caseId={id} />
+        </TabsContent>
 
-      {/* Comments */}
+        <TabsContent value="attachments">
+          <AttachmentsCard caseId={id} />
+        </TabsContent>
+
+        <TabsContent value="comments">
       <div className="form-card" style={{ maxWidth: "72rem", marginBottom: "2.4rem" }}>
         <h3 style={{ marginBottom: "1.6rem" }}>{t("comments")}</h3>
         <form
@@ -320,7 +336,9 @@ export default function CaseDetailPage() {
         </div>
       </div>
 
-      {/* History */}
+        </TabsContent>
+
+        <TabsContent value="history">
       <div className="form-card" style={{ maxWidth: "72rem" }}>
         <h3 style={{ marginBottom: "1.6rem" }}>{t("history")}</h3>
         {history.data?.data.map((h) => (
@@ -332,6 +350,8 @@ export default function CaseDetailPage() {
           </div>
         ))}
       </div>
+        </TabsContent>
+      </Tabs>
     </>
   );
 }

@@ -126,7 +126,10 @@
     "searchPlaceholder": "Search by title or case number…",
     "allStatuses": "All statuses",
     "allPriorities": "All priorities",
-    "allCategories": "All categories"
+    "allCategories": "All categories",
+    "scopeAll": "All cases",
+    "scopeAssigned": "Assigned to me",
+    "scopeCreated": "Created by me"
   },
   "caseDetail": {
     "back": "Back to cases",
@@ -151,7 +154,9 @@
     "history": "History",
     "transitionError": "That status change is not allowed.",
     "notFound": "Case not found.",
-    "edit": "Edit"
+    "edit": "Edit",
+    "tabOverview": "Overview",
+    "tabAttachments": "Attachments"
   },
   "users": {
     "title": "Users",
@@ -267,5 +272,86 @@
       "admin": "Administrator",
       "super_admin": "Super administrator"
     }
+  },
+  "caseForm": {
+    "tabs": {
+      "basic": "Basic info",
+      "classification": "Classification",
+      "provider": "Provider",
+      "location": "Location"
+    },
+    "impactDescription": "Impact description",
+    "urgencyLevel": "Urgency",
+    "affectedBeneficiaries": "Affected beneficiaries",
+    "urgency": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "critical": "Critical"
+    },
+    "confidentiality": "Confidentiality",
+    "confidentialityLevels": {
+      "public": "Public",
+      "internal": "Internal",
+      "restricted": "Restricted",
+      "confidential": "Confidential"
+    },
+    "program": "Program",
+    "project": "Project",
+    "activity": "Activity",
+    "tags": "Tags",
+    "tagsPlaceholder": "Comma-separated tags",
+    "externalReferences": "External references",
+    "isSensitive": "This case is sensitive",
+    "providerType": "Provider type",
+    "providerName": "Provider name",
+    "providerOrganization": "Organization",
+    "providerEmail": "Email",
+    "providerPhone": "Phone",
+    "providerAddress": "Address",
+    "gender": "Gender",
+    "genders": {
+      "male": "Male",
+      "female": "Female",
+      "other": "Other",
+      "prefer_not_to_say": "Prefer not to say"
+    },
+    "ageGroup": "Age group",
+    "ageGroups": {
+      "under_18": "Under 18",
+      "18_25": "18–25",
+      "26_35": "26–35",
+      "36_50": "36–50",
+      "51_65": "51–65",
+      "over_65": "Over 65"
+    },
+    "disability": "Disability status",
+    "disabilities": {
+      "none": "None",
+      "physical": "Physical",
+      "visual": "Visual",
+      "hearing": "Hearing",
+      "cognitive": "Cognitive",
+      "multiple": "Multiple",
+      "prefer_not_to_say": "Prefer not to say"
+    },
+    "groupSize": "Group size",
+    "dataSharingConsent": "Consents to data sharing",
+    "followUpConsent": "Consents to follow-up contact",
+    "followUpMethod": "Preferred follow-up method",
+    "followUpMethods": {
+      "email": "Email",
+      "phone": "Phone",
+      "in_person": "In person",
+      "sms": "SMS",
+      "none": "None"
+    },
+    "isAnonymized": "Anonymize this case",
+    "region": "Region",
+    "governorate": "Governorate",
+    "community": "Community",
+    "communityHint": "Pick region and governorate first. Leave empty to keep unchanged when editing.",
+    "locationText": "Location / area",
+    "coordinates": "Coordinates"
   }
 }

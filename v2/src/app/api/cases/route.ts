@@ -23,8 +23,13 @@ export const GET = authed(
       priorityId: intParam(q.get("priorityId")),
       categoryId: intParam(q.get("categoryId")),
       assignedTo: intParam(q.get("assignedTo")),
+      createdBy: intParam(q.get("createdBy")),
       search: q.get("search") ?? undefined,
     };
+    // Convenience scopes for "assigned to me" / "created by me" views.
+    const mine = q.get("mine");
+    if (mine === "assigned") filters.assignedTo = auth.user.id;
+    else if (mine === "created") filters.createdBy = auth.user.id;
 
     const scope = queryScope(auth.user, "cases", "read");
     const { data, total } = await listCases({ scope, filters, page, limit });

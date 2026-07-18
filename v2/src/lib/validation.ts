@@ -68,21 +68,50 @@ export const createCaseSchema = z.object({
   priorityId: z.number().int().positive(),
   channelId: z.number().int().positive(),
   statusId: z.number().int().positive().optional(),
-  communityId: z.number().int().positive().optional(),
-  providerTypeId: z.number().int().positive().optional(),
+  // Impact
+  impactDescription: z.string().max(10000).optional(),
+  urgencyLevel: z.enum(["low", "medium", "high", "critical"]).optional(),
+  affectedBeneficiaries: z.number().int().min(0).optional(),
+  // Program context
   programId: z.number().int().positive().optional(),
   projectId: z.number().int().positive().optional(),
   activityId: z.number().int().positive().optional(),
-  urgencyLevel: z.enum(["low", "medium", "high", "critical"]).optional(),
-  confidentialityLevel: z
-    .enum(["public", "internal", "restricted", "confidential"])
-    .optional(),
-  isSensitive: z.boolean().optional(),
-  location: z.string().max(255).optional(),
-  tags: z.string().max(1000).optional(),
+  // Provider
+  providerTypeId: z.number().int().positive().optional(),
   providerName: z.string().max(255).optional(),
   providerEmail: z.string().email().max(255).optional(),
   providerPhone: z.string().max(50).optional(),
+  providerOrganization: z.string().max(255).optional(),
+  providerAddress: z.string().max(255).optional(),
+  individualProviderGender: z
+    .enum(["male", "female", "other", "prefer_not_to_say"])
+    .optional(),
+  individualProviderAgeGroup: z
+    .enum(["under_18", "18_25", "26_35", "36_50", "51_65", "over_65"])
+    .optional(),
+  individualProviderDisabilityStatus: z
+    .enum(["none", "physical", "visual", "hearing", "cognitive", "multiple", "prefer_not_to_say"])
+    .optional(),
+  groupProviderSize: z.number().int().min(0).optional(),
+  // Consent / privacy
+  dataSharingConsent: z.boolean().optional(),
+  followUpConsent: z.boolean().optional(),
+  followUpContactMethod: z
+    .enum(["email", "phone", "in_person", "sms", "none"])
+    .optional(),
+  privacyPolicyAccepted: z.boolean().optional(),
+  isSensitive: z.boolean().optional(),
+  isAnonymized: z.boolean().optional(),
+  confidentialityLevel: z
+    .enum(["public", "internal", "restricted", "confidential"])
+    .optional(),
+  // Location
+  communityId: z.number().int().positive().optional(),
+  location: z.string().max(255).optional(),
+  coordinates: z.string().max(50).optional(),
+  // Metadata
+  tags: z.string().max(1000).optional(),
+  externalReferences: z.string().max(500).optional(),
 });
 
 /** Field updates only — status transitions go through the status endpoint. */

@@ -71,12 +71,14 @@ test("open a case, add a comment, and change status", async ({ page }) => {
   await expect(page).toHaveURL(/\/en\/cases\/\d+$/);
   await expect(page.getByRole("heading", { name: /CFM-\d{8}-\d{4}/ })).toBeVisible();
 
-  // Add a comment.
+  // Add a comment (Comments tab).
+  await page.getByRole("tab", { name: /Comments/i }).click();
   await page.locator("#comment").fill("Investigating this now.");
   await page.getByRole("button", { name: /Post comment/i }).click();
   await expect(page.getByText("Investigating this now.")).toBeVisible();
 
-  // Change status to In Progress.
+  // Change status to In Progress (Overview tab).
+  await page.getByRole("tab", { name: /Overview/i }).click();
   await page.locator("#statusSel").selectOption({ label: "In Progress" });
   await page.getByRole("button", { name: /Apply/i }).click();
   await expect(page.locator(".badge").filter({ hasText: "In Progress" })).toBeVisible();
@@ -137,7 +139,8 @@ test("upload an attachment through the case detail UI", async ({ page }) => {
   await page.getByRole("link", { name: title }).click();
   await expect(page).toHaveURL(/\/en\/cases\/\d+$/);
 
-  // Upload a small text file.
+  // Upload a small text file (Attachments tab).
+  await page.getByRole("tab", { name: /Attachments/i }).click();
   await page.locator("#attachment-file").setInputFiles({
     name: "e2e-note.txt",
     mimeType: "text/plain",
@@ -145,6 +148,42 @@ test("upload an attachment through the case detail UI", async ({ page }) => {
   });
   await expect(page.getByText("e2e-note.txt")).toBeVisible();
   await expect(page.getByRole("link", { name: /Download/i })).toBeVisible();
+});
+
+test("multi-tab case form captures provider details and location", async ({ page }) => {
+  await login(page);
+  await page.goto("/en/cases/new");
+  const title = `Full form case ${Date.now()}`;
+
+  // Basic tab (default).
+  await page.locator("#title").fill(title);
+  await page.locator("#description").fill("Filed through the multi-tab form.");
+  await page.locator("#impactDescription").fill("Water outage for two blocks.");
+  await page.locator("#urgencyLevel").selectOption("high");
+
+  // Provider tab.
+  await page.getByRole("tab", { name: /Provider/i }).click();
+  await page.locator("#providerName").fill("Um Ahmad");
+  await page.locator("#individualProviderGender").selectOption("female");
+  await page.locator("#dataSharingConsent").check();
+
+  // Location tab (cascade: region -> governorate list loads).
+  await page.getByRole("tab", { name: /Location/i }).click();
+  await page.locator("#regionSel").selectOption({ label: "West Bank" });
+  await page.locator("#location").fill("Old town area");
+
+  await page.locator('button[type="submit"]').click();
+  await expect(page).toHaveURL(/\/en\/cases$/);
+  await expect(page.getByRole("link", { name: title })).toBeVisible();
+});
+
+test("cases scope tabs switch between all / assigned / created", async ({ page }) => {
+  await login(page);
+  await page.goto("/en/cases");
+  await page.getByRole("tab", { name: /Created by me/i }).click();
+  await expect(page.locator(".scope-tab.is-active")).toHaveText(/Created by me/);
+  // Admin created cases in earlier tests — the list still renders (rows or empty state).
+  await expect(page.locator("table, .center-note").first()).toBeVisible();
 });
 
 test("account menu shows identity and signs out", async ({ page }) => {

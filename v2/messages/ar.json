@@ -126,7 +126,10 @@
     "searchPlaceholder": "ابحث بالعنوان أو رقم الحالة…",
     "allStatuses": "كل الحالات",
     "allPriorities": "كل الأولويات",
-    "allCategories": "كل الفئات"
+    "allCategories": "كل الفئات",
+    "scopeAll": "كل الحالات",
+    "scopeAssigned": "المعيّنة إليّ",
+    "scopeCreated": "التي أنشأتها"
   },
   "caseDetail": {
     "back": "العودة إلى الحالات",
@@ -151,7 +154,9 @@
     "history": "السجل",
     "transitionError": "تغيير الحالة هذا غير مسموح.",
     "notFound": "الحالة غير موجودة.",
-    "edit": "تعديل"
+    "edit": "تعديل",
+    "tabOverview": "نظرة عامة",
+    "tabAttachments": "المرفقات"
   },
   "users": {
     "title": "المستخدمون",
@@ -267,5 +272,86 @@
       "admin": "مسؤول",
       "super_admin": "مسؤول أعلى"
     }
+  },
+  "caseForm": {
+    "tabs": {
+      "basic": "معلومات أساسية",
+      "classification": "التصنيف",
+      "provider": "مقدم الملاحظة",
+      "location": "الموقع"
+    },
+    "impactDescription": "وصف الأثر",
+    "urgencyLevel": "درجة الإلحاح",
+    "affectedBeneficiaries": "المستفيدون المتأثرون",
+    "urgency": {
+      "low": "منخفض",
+      "medium": "متوسط",
+      "high": "مرتفع",
+      "critical": "حرج"
+    },
+    "confidentiality": "السرية",
+    "confidentialityLevels": {
+      "public": "عام",
+      "internal": "داخلي",
+      "restricted": "مقيّد",
+      "confidential": "سرّي"
+    },
+    "program": "البرنامج",
+    "project": "المشروع",
+    "activity": "النشاط",
+    "tags": "الوسوم",
+    "tagsPlaceholder": "وسوم مفصولة بفواصل",
+    "externalReferences": "مراجع خارجية",
+    "isSensitive": "هذه الحالة حساسة",
+    "providerType": "نوع مقدم الملاحظة",
+    "providerName": "اسم مقدم الملاحظة",
+    "providerOrganization": "المؤسسة",
+    "providerEmail": "البريد الإلكتروني",
+    "providerPhone": "الهاتف",
+    "providerAddress": "العنوان",
+    "gender": "الجنس",
+    "genders": {
+      "male": "ذكر",
+      "female": "أنثى",
+      "other": "آخر",
+      "prefer_not_to_say": "أفضّل عدم الإفصاح"
+    },
+    "ageGroup": "الفئة العمرية",
+    "ageGroups": {
+      "under_18": "أقل من 18",
+      "18_25": "18–25",
+      "26_35": "26–35",
+      "36_50": "36–50",
+      "51_65": "51–65",
+      "over_65": "فوق 65"
+    },
+    "disability": "حالة الإعاقة",
+    "disabilities": {
+      "none": "لا توجد",
+      "physical": "حركية",
+      "visual": "بصرية",
+      "hearing": "سمعية",
+      "cognitive": "إدراكية",
+      "multiple": "متعددة",
+      "prefer_not_to_say": "أفضّل عدم الإفصاح"
+    },
+    "groupSize": "حجم المجموعة",
+    "dataSharingConsent": "يوافق على مشاركة البيانات",
+    "followUpConsent": "يوافق على التواصل للمتابعة",
+    "followUpMethod": "طريقة المتابعة المفضلة",
+    "followUpMethods": {
+      "email": "بريد إلكتروني",
+      "phone": "هاتف",
+      "in_person": "شخصياً",
+      "sms": "رسالة نصية",
+      "none": "لا شيء"
+    },
+    "isAnonymized": "إخفاء هوية هذه الحالة",
+    "region": "المنطقة",
+    "governorate": "المحافظة",
+    "community": "المجتمع",
+    "communityHint": "اختر المنطقة والمحافظة أولاً. اتركه فارغاً للإبقاء عليه دون تغيير عند التعديل.",
+    "locationText": "الموقع / المنطقة",
+    "coordinates": "الإحداثيات"
   }
 }

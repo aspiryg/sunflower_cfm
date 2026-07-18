@@ -190,6 +190,7 @@ export interface CaseFilters {
   priorityId?: number;
   categoryId?: number;
   assignedTo?: number;
+  createdBy?: number;
   search?: string;
 }
 
@@ -212,6 +213,7 @@ export async function listCases(params: {
   if (filters.priorityId) conds.push(eq(cases.priorityId, filters.priorityId));
   if (filters.categoryId) conds.push(eq(cases.categoryId, filters.categoryId));
   if (filters.assignedTo) conds.push(eq(cases.assignedTo, filters.assignedTo));
+  if (filters.createdBy) conds.push(eq(cases.createdBy, filters.createdBy));
   if (filters.search) {
     conds.push(
       or(

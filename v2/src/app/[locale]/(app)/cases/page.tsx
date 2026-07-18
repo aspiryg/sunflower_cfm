@@ -42,6 +42,7 @@ export default function CasesPage() {
   const [statusId, setStatusId] = useState("");
   const [priorityId, setPriorityId] = useState("");
   const [categoryId, setCategoryId] = useState("");
+  const [mine, setMine] = useState<"" | "assigned" | "created">("");
 
   // Debounce free-text search.
   useEffect(() => {
@@ -67,6 +68,7 @@ export default function CasesPage() {
   if (statusId) params.set("statusId", statusId);
   if (priorityId) params.set("priorityId", priorityId);
   if (categoryId) params.set("categoryId", categoryId);
+  if (mine) params.set("mine", mine);
   const qs = params.toString();
 
   const { data, isLoading, isError } = useQuery({
@@ -109,6 +111,24 @@ export default function CasesPage() {
         <Link href="/cases/new" className="btn btn-primary">
           {t("new")}
         </Link>
+      </div>
+
+      <div className="scope-tabs" role="tablist">
+        {(["", "assigned", "created"] as const).map((s) => (
+          <button
+            key={s || "all"}
+            type="button"
+            role="tab"
+            aria-selected={mine === s}
+            className={`scope-tab ${mine === s ? "is-active" : ""}`}
+            onClick={() => {
+              setMine(s);
+              setPage(1);
+            }}
+          >
+            {s === "" ? t("scopeAll") : s === "assigned" ? t("scopeAssigned") : t("scopeCreated")}
+          </button>
+        ))}
       </div>
 
       <div className="filters-bar">

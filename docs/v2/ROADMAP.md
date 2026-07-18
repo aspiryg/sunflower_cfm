@@ -205,13 +205,16 @@ depth — no minimal stand-ins — built as reusable components.** Parity checkl
   Card/InfoCard, Breadcrumb, LoadingSpinner, Empty state.
 - ◐ Overlays: **Menu primitive** (dropdowns), **UserMenu/account menu**,
   ContextMenu (row actions), **Modal + ConfirmationModal**, one toast system.
-- ☐ **Tabs** compound component (case form + case detail).
+- ✅ **Tabs** compound component (Tabs/TabsList/TabsTrigger/TabsContent, badges,
+  keepMounted for forms) — used by the case form and case detail.
 - ◐ **Advanced DataTable**: typed columns, sortable, page-size control, row
   actions, empty state — cases + users on it.
-- ☐ Cases: multi-tab form (Basic/Classification/Provider/Location/Advanced —
-  the full v1 field model incl. provider demographics, consent, geography,
-  program links), case detail as tabs (Overview/Assignment/Timeline/Comments/
-  Location/Settings), assigned-to-me / created-by-me views, delete-case flow.
+- ◐ Cases: ✅ multi-tab form (Basic/Classification/Provider/Location — full v1
+  field model: impact/urgency/beneficiaries, program→project→activity cascade,
+  provider demographics + consent/privacy, region→governorate→community
+  cascade, tags/refs; API schema extended to match). ✅ case detail as tabs
+  (Overview/Comments+count/Attachments/History). ✅ assigned-to-me /
+  created-by-me scope tabs (server-side `mine=` param). ☐ delete-case flow UI.
 - ☐ Dashboard: charts (trend line, status distribution, category breakdown),
   quick actions.
 - ☐ Profile: picture upload (S3 layer), contact/security editing, completion.
