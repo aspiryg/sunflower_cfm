@@ -166,7 +166,8 @@
     "confirmDeleteTitle": "حذف هذه الحالة؟",
     "confirmDeleteBody": "ستُزال الحالة {number} من جميع القوائم. تُحفظ بياناتها للتدقيق.",
     "confirmDelete": "حذف الحالة",
-    "cancel": "إلغاء"
+    "cancel": "إلغاء",
+    "details": "التفاصيل"
   },
   "users": {
     "title": "المستخدمون",

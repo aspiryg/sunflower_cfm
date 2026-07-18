@@ -166,7 +166,8 @@
     "confirmDeleteTitle": "Delete this case?",
     "confirmDeleteBody": "Case {number} will be removed from all lists. Its data is retained for audit.",
     "confirmDelete": "Delete case",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "details": "Details"
   },
   "users": {
     "title": "Users",

@@ -16,6 +16,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/ui/Tabs";
 import { TextField, TextAreaField, SelectField, CheckboxField, type SelectOption } from "@/ui/form";
 import { TagInput } from "@/ui/TagInput";
 import { DatePicker } from "@/ui/DatePicker";
+import { EnhancedSelect } from "@/ui/EnhancedSelect";
 
 interface Ref {
   id: number;
@@ -245,6 +246,7 @@ export function CaseForm({
   const [isSensitive, setIsSensitive] = useState(initial?.isSensitive ?? false);
   const [programId, setProgramId] = useState<number | undefined>(initial?.programId ?? undefined);
   const [projectId, setProjectId] = useState<number | undefined>(initial?.projectId ?? undefined);
+  const [activityId, setActivityId] = useState<number | undefined>(initial?.activityId ?? undefined);
   const [regionId, setRegionId] = useState<number | undefined>(undefined);
   const [governorateId, setGovernorateId] = useState<number | undefined>(undefined);
   const [tags, setTags] = useState<string[]>(
@@ -283,6 +285,9 @@ export function CaseForm({
 
   const label = (r: Ref) => (locale === "ar" && r.arabicName ? r.arabicName : r.name);
   const refOptions = (list: Ref[] | undefined): SelectOption[] =>
+    (list ?? []).map((r) => ({ value: r.id, label: label(r) }));
+  // EnhancedSelect requires string labels (it filters/searches on them).
+  const refOptionsE = (list: Ref[] | undefined): { value: number; label: string }[] =>
     (list ?? []).map((r) => ({ value: r.id, label: label(r) }));
   const enumOptions = (values: readonly string[], ns: string): SelectOption[] =>
     values.map((v) => ({ value: v, label: tf(`${ns}.${v}`) }));
@@ -356,7 +361,7 @@ export function CaseForm({
       affectedBeneficiaries: beneficiaries ? Number(beneficiaries) : undefined,
       programId,
       projectId,
-      activityId: num(f, "activityId"),
+      activityId,
       providerTypeId: num(f, "providerTypeId"),
       providerName: str(f, "providerName"),
       providerEmail: str(f, "providerEmail"),
@@ -557,21 +562,22 @@ export function CaseForm({
               </div>
 
               <div className="field-row">
-                <SelectField
+                <EnhancedSelect
                   id="categoryId"
                   label={t("category")}
-                  required
-                  options={refOptions(categories.data?.data)}
-                  value={categoryId}
-                  onChange={(e) => setCategoryId(e.target.value ? Number(e.target.value) : "")}
+                  searchable
+                  options={refOptionsE(categories.data?.data)}
+                  placeholder="—"
+                  value={categoryId === "" ? null : categoryId}
+                  onChange={(v) => setCategoryId(v == null ? "" : Number(v))}
                 />
-                <SelectField
+                <EnhancedSelect
                   id="priorityId"
                   label={t("priorityLabel")}
-                  required
-                  options={refOptions(priorities.data?.data)}
-                  value={priorityId}
-                  onChange={(e) => setPriorityId(e.target.value ? Number(e.target.value) : "")}
+                  options={refOptionsE(priorities.data?.data)}
+                  placeholder="—"
+                  value={priorityId === "" ? null : priorityId}
+                  onChange={(v) => setPriorityId(v == null ? "" : Number(v))}
                 />
               </div>
               <div className="field-row">
@@ -602,35 +608,45 @@ export function CaseForm({
 
             <Section icon="shield" title={tf("sections.programLinks")} sub={tf("sections.programLinksSub")}>
               <div className="field-row">
-                <SelectField
+                <EnhancedSelect
                   id="programSel"
                   label={tf("program")}
-                  options={refOptions(programs.data?.data)}
+                  searchable
+                  clearable
+                  options={refOptionsE(programs.data?.data)}
                   placeholder="—"
-                  value={programId ?? ""}
-                  onChange={(e) => {
-                    setProgramId(e.target.value ? Number(e.target.value) : undefined);
+                  value={programId ?? null}
+                  onChange={(v) => {
+                    setProgramId(v == null ? undefined : Number(v));
                     setProjectId(undefined);
+                    setActivityId(undefined);
                   }}
                 />
-                <SelectField
+                <EnhancedSelect
                   id="projectSel"
                   label={tf("project")}
-                  options={refOptions(projects.data?.data)}
+                  searchable
+                  clearable
+                  options={refOptionsE(projects.data?.data)}
                   placeholder="—"
                   disabled={!programId}
-                  value={projectId ?? ""}
-                  onChange={(e) => setProjectId(e.target.value ? Number(e.target.value) : undefined)}
+                  value={projectId ?? null}
+                  onChange={(v) => {
+                    setProjectId(v == null ? undefined : Number(v));
+                    setActivityId(undefined);
+                  }}
                 />
               </div>
-              <SelectField
+              <EnhancedSelect
                 id="activityId"
-                name="activityId"
                 label={tf("activity")}
-                options={refOptions(activities.data?.data)}
+                searchable
+                clearable
+                options={refOptionsE(activities.data?.data)}
                 placeholder="—"
                 disabled={!projectId}
-                defaultValue=""
+                value={activityId ?? null}
+                onChange={(v) => setActivityId(v == null ? undefined : Number(v))}
               />
             </Section>
 

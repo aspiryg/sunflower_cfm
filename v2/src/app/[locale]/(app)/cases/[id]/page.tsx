@@ -339,7 +339,7 @@ export default function CaseDetailPage() {
         {/* ---- Sidebar: details + actions ---- */}
         <aside className="detail-side">
           <section className="panel">
-            <h3>{t("tabOverview")}</h3>
+            <h3>{t("details")}</h3>
             <dl className="detail-list">
               <dt>{t("status")}</dt>
               <dd>
