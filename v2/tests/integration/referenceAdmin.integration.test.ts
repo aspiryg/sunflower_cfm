@@ -116,17 +116,16 @@ describe.skipIf(!hasDb)("Reference admin (integration)", () => {
     expect(res.status).toBe(403);
   });
 
-  it("statuses are locked (lifecycle-critical)", async () => {
+  it("statuses are admin-only (lifecycle-critical): a manager is forbidden", async () => {
     const res = await refCreateRoute(
       req("/api/reference/statuses", {
         method: "POST",
         cookie: await cookieFor(manager),
-        body: { name: "Sneaky Status" },
+        body: { name: "Sneaky Status", color: "#123456" },
       }),
       ctx({ resource: "statuses" }),
     );
-    expect(res.status).toBe(400);
-    expect((await res.json()).error).toBe("UNSUPPORTED");
+    expect(res.status).toBe(403);
   });
 
   it("regions require a code", async () => {
